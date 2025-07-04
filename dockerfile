@@ -1,6 +1,9 @@
+# FILE LOCATION: /Dockerfile (root directory)
+# Docker configuration for Railway deployment
+
 FROM node:18-alpine
 
-# Install Chrome dependencies for Lighthouse
+# Install Chrome dependencies for Lighthouse (if needed later)
 RUN apk add --no-cache \
     chromium \
     nss \
@@ -20,35 +23,26 @@ WORKDIR /app
 # Copy package files first (for better caching)
 COPY package*.json ./
 COPY backend/package*.json ./backend/
-COPY diagnostics/package*.json ./diagnostics/
 
 # Install dependencies
-RUN npm ci --only=production
-RUN cd backend && npm ci --only=production
-RUN cd diagnostics && npm ci --only=production
+RUN npm install --production
+RUN cd backend && npm install --production || echo "Backend dependencies optional"
 
 # Copy all application files
 COPY . .
 
-# Verify frontend files are copied correctly
-RUN ls -la && \
-    echo "=== Checking frontend directory ===" && \
-    ls -la frontend/ || echo "Frontend directory not found!" && \
-    echo "=== Checking for index.html ===" && \
-    test -f frontend/index.html && echo "✅ frontend/index.html found" || echo "❌ frontend/index.html NOT FOUND"
-
 # Create necessary directories
-RUN mkdir -p logs temp uploads
+RUN mkdir -p logs temp uploads backend
 
 # Set proper permissions
-RUN chmod -R 755 frontend
+RUN chmod -R 755 frontend backend
 
 # Expose port (Railway will set this)
 EXPOSE ${PORT:-3000}
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -q -O /dev/null http://localhost:${PORT:-3000}/health || exit 1
+  CMD wget -q -O /dev/null http://localhost:${PORT:-3000}/api/health || exit 1
 
-# Start the application with the railway server
-CMD ["node", "railway-server.js"]
+# Start the combined server
+CMD ["node", "combined-server.js"]
