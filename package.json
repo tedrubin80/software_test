@@ -1,7 +1,7 @@
 {
     "name": "testlab-web-app",
     "version": "1.0.0",
-    "description": "TestLab Web Application",
+    "description": "FILE LOCATION: /package.json (root directory) - Main package file",
     "main": "railway-server.js",
     "scripts": {
         "start": "node railway-server.js",

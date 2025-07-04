@@ -1,3 +1,6 @@
+// FILE LOCATION: /backend/middleware/adminAuth.js
+// Authentication middleware for admin routes
+
 const crypto = require('crypto');
 
 // In production, store this in environment variables

@@ -1,3 +1,6 @@
+// FILE LOCATION: /railway-server.js (root directory)
+// This is the main server file that Railway runs
+
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
