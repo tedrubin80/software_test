@@ -63,9 +63,9 @@ app.get('/diagnostics', (req, res) => {
   res.sendFile(path.join(__dirname, 'diagnostics', 'frontend', 'index.html'));
 });
 
-// Catch-all handler
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+// Optional: respond with 404 for unmatched routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
 });
 
 // Error handling
