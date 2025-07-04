@@ -1,0 +1,9 @@
+# FILE LOCATION: /.railwayignore (root directory)
+# Ignore files that might cause conflicts
+
+railway-server.js
+combined-server.js
+backend/
+node_modules/
+.git/
+*.log
