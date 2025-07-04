@@ -28,10 +28,6 @@ app.get('/health', (req, res) => {
 
 // Import and mount backend routes
 try {
-  const backendApp = require('./backend/server');
-  app.use('/api', backendApp);
-  console.log('✅ Backend routes mounted');
-} catch (error) {
   console.warn('⚠️  Backend not available:', error.message);
   
   // Fallback API health check
@@ -42,10 +38,6 @@ try {
 
 // Import and mount diagnostics routes
 try {
-  const diagnosticsApp = require('./diagnostics/diagnostics-server');
-  app.use('/diagnostics', diagnosticsApp);
-  console.log('✅ Diagnostics routes mounted');
-} catch (error) {
   console.warn('⚠️  Diagnostics not available:', error.message);
   
   // Fallback diagnostics health check
