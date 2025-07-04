@@ -16,6 +16,12 @@
             line-height: 1.6;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
         }
 
         .container {
@@ -326,6 +332,53 @@
             50% { opacity: 0.5; }
         }
 
+        /* Footer Styles */
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-links {
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            margin: 0 1rem;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        .footer-copyright {
+            font-size: 0.85rem;
+            color: #999;
+            margin-top: 1rem;
+        }
+
+        .admin-link {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        .admin-link:hover {
+            opacity: 1;
+        }
+
         @media (max-width: 768px) {
             .testing-sections {
                 grid-template-columns: 1fr;
@@ -338,294 +391,317 @@
             .ai-comparison {
                 grid-template-columns: 1fr;
             }
+
+            .footer-links a {
+                display: block;
+                margin: 0.5rem 0;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🔍 TestLab</h1>
-            <p class="subtitle">Master Software Testing Skills Through Practice</p>
-        </header>
+    <div class="main-content">
+        <div class="container">
+            <header>
+                <h1>🔍 TestLab</h1>
+                <p class="subtitle">Master Software Testing Skills Through Practice</p>
+            </header>
 
-        <div class="dashboard">
-            <div class="stat-card">
-                <div class="stat-number" id="issuesFound">0</div>
-                <div class="stat-label">Issues Found</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalIssues">15</div>
-                <div class="stat-label">Total Issues</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="completionRate">0%</div>
-                <div class="stat-label">Completion Rate</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="currentScore">0</div>
-                <div class="stat-label">Testing Score</div>
-            </div>
-        </div>
-
-        <div class="testing-sections">
-            <!-- HTML Validation Section -->
-            <div class="section">
-                <h2>🔧 HTML Validation Testing</h2>
-                <p>Find the HTML markup issues in this section:</p>
-                
-                <div class="issue-list">
-                    <div class="issue" data-issue="missing-alt" onclick="markIssueFound(this)">
-                        <strong>Missing Alt Attributes:</strong> Images without alt text
-                    </div>
-                    <div class="issue" data-issue="invalid-nesting" onclick="markIssueFound(this)">
-                        <strong>Invalid Nesting:</strong> Block elements inside inline elements
-                    </div>
-                    <div class="issue" data-issue="missing-labels" onclick="markIssueFound(this)">
-                        <strong>Missing Form Labels:</strong> Form inputs without proper labels
-                    </div>
+            <div class="dashboard">
+                <div class="stat-card">
+                    <div class="stat-number" id="issuesFound">0</div>
+                    <div class="stat-label">Issues Found</div>
                 </div>
-
-                <!-- Intentional HTML Issues -->
-                <div style="margin: 1rem 0;">
-                    <img src="broken-image.jpg" width="100" height="50">
-                    <span><div>Invalid nesting here</div></span>
-                    <input type="text" placeholder="Unlabeled input">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalIssues">15</div>
+                    <div class="stat-label">Total Issues</div>
                 </div>
-
-                <button class="btn" onclick="runHTMLValidation()">🔍 Run HTML Validation</button>
+                <div class="stat-card">
+                    <div class="stat-number" id="completionRate">0%</div>
+                    <div class="stat-label">Completion Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="currentScore">0</div>
+                    <div class="stat-label">Testing Score</div>
+                </div>
             </div>
 
-            <!-- Performance Testing Section -->
-            <div class="section">
-                <h2>⚡ Performance Testing</h2>
-                <p>Identify performance bottlenecks:</p>
+            <div class="testing-sections">
+                <!-- HTML Validation Section -->
+                <div class="section">
+                    <h2>🔧 HTML Validation Testing</h2>
+                    <p>Find the HTML markup issues in this section:</p>
+                    
+                    <div class="issue-list">
+                        <div class="issue" data-issue="missing-alt" onclick="markIssueFound(this)">
+                            <strong>Missing Alt Attributes:</strong> Images without alt text
+                        </div>
+                        <div class="issue" data-issue="invalid-nesting" onclick="markIssueFound(this)">
+                            <strong>Invalid Nesting:</strong> Block elements inside inline elements
+                        </div>
+                        <div class="issue" data-issue="missing-labels" onclick="markIssueFound(this)">
+                            <strong>Missing Form Labels:</strong> Form inputs without proper labels
+                        </div>
+                    </div>
 
-                <div class="issue-list">
-                    <div class="issue" data-issue="large-images" onclick="markIssueFound(this)">
-                        <strong>Unoptimized Images:</strong> Large image files slowing page load
+                    <!-- Intentional HTML Issues -->
+                    <div style="margin: 1rem 0;">
+                        <img src="broken-image.jpg" width="100" height="50">
+                        <span><div>Invalid nesting here</div></span>
+                        <input type="text" placeholder="Unlabeled input">
                     </div>
-                    <div class="issue" data-issue="blocking-scripts" onclick="markIssueFound(this)">
-                        <strong>Blocking Scripts:</strong> JavaScript blocking page rendering
-                    </div>
-                    <div class="issue" data-issue="no-compression" onclick="markIssueFound(this)">
-                        <strong>No Compression:</strong> Large uncompressed resources
-                    </div>
+
+                    <button class="btn" onclick="runHTMLValidation()">🔍 Run HTML Validation</button>
                 </div>
 
-                <div class="performance-demo">
-                    <div class="slow-loading"></div>
-                    <p>This "image" simulates a slow-loading 100KB file</p>
+                <!-- Performance Testing Section -->
+                <div class="section">
+                    <h2>⚡ Performance Testing</h2>
+                    <p>Identify performance bottlenecks:</p>
+
+                    <div class="issue-list">
+                        <div class="issue" data-issue="large-images" onclick="markIssueFound(this)">
+                            <strong>Unoptimized Images:</strong> Large image files slowing page load
+                        </div>
+                        <div class="issue" data-issue="blocking-scripts" onclick="markIssueFound(this)">
+                            <strong>Blocking Scripts:</strong> JavaScript blocking page rendering
+                        </div>
+                        <div class="issue" data-issue="no-compression" onclick="markIssueFound(this)">
+                            <strong>No Compression:</strong> Large uncompressed resources
+                        </div>
+                    </div>
+
+                    <div class="performance-demo">
+                        <div class="slow-loading"></div>
+                        <p>This "image" simulates a slow-loading 100KB file</p>
+                    </div>
+
+                    <button class="btn" onclick="runPerformanceTest()">⚡ Run Performance Test</button>
                 </div>
 
-                <button class="btn" onclick="runPerformanceTest()">⚡ Run Performance Test</button>
-            </div>
+                <!-- Accessibility Testing Section -->
+                <div class="section">
+                    <h2>♿ Accessibility Testing</h2>
+                    <p>Find accessibility violations:</p>
 
-            <!-- Accessibility Testing Section -->
-            <div class="section">
-                <h2>♿ Accessibility Testing</h2>
-                <p>Find accessibility violations:</p>
+                    <div class="issue-list">
+                        <div class="issue" data-issue="low-contrast" onclick="markIssueFound(this)">
+                            <strong>Low Color Contrast:</strong> Text that's hard to read
+                        </div>
+                        <div class="issue" data-issue="missing-headings" onclick="markIssueFound(this)">
+                            <strong>Missing Headings:</strong> Poor document structure
+                        </div>
+                        <div class="issue" data-issue="no-focus" onclick="markIssueFound(this)">
+                            <strong>No Focus Indicators:</strong> Elements can't be reached by keyboard
+                        </div>
+                    </div>
 
-                <div class="issue-list">
-                    <div class="issue" data-issue="low-contrast" onclick="markIssueFound(this)">
-                        <strong>Low Color Contrast:</strong> Text that's hard to read
+                    <div class="accessibility-test">
+                        <div class="low-contrast">This text has poor contrast - can you read it easily?</div>
+                        <button style="outline: none; border: none; background: #eee; padding: 10px;">No Focus Button</button>
                     </div>
-                    <div class="issue" data-issue="missing-headings" onclick="markIssueFound(this)">
-                        <strong>Missing Headings:</strong> Poor document structure
-                    </div>
-                    <div class="issue" data-issue="no-focus" onclick="markIssueFound(this)">
-                        <strong>No Focus Indicators:</strong> Elements can't be reached by keyboard
-                    </div>
+
+                    <button class="btn" onclick="runAccessibilityTest()">♿ Run Accessibility Test</button>
                 </div>
 
-                <div class="accessibility-test">
-                    <div class="low-contrast">This text has poor contrast - can you read it easily?</div>
-                    <button style="outline: none; border: none; background: #eee; padding: 10px;">No Focus Button</button>
+                <!-- Form Testing Section -->
+                <div class="section">
+                    <h2>📝 Form Testing</h2>
+                    <p>Test this form for validation issues:</p>
+
+                    <div class="issue-list">
+                        <div class="issue" data-issue="weak-validation" onclick="markIssueFound(this)">
+                            <strong>Weak Validation:</strong> Email accepts invalid formats
+                        </div>
+                        <div class="issue" data-issue="no-required" onclick="markIssueFound(this)">
+                            <strong>Missing Required:</strong> Required fields not marked
+                        </div>
+                        <div class="issue" data-issue="sql-injection" onclick="markIssueFound(this)">
+                            <strong>SQL Injection Risk:</strong> Unescaped user input
+                        </div>
+                    </div>
+
+                    <form class="broken-form" onsubmit="handleFormSubmit(event)">
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="text" id="email" placeholder="any@text.works">
+                        </div>
+                        <div class="form-group">
+                            <label>Password:</label>
+                            <input type="text" id="password" placeholder="Stored as plain text!">
+                        </div>
+                        <div class="form-group">
+                            <label>Comments:</label>
+                            <textarea id="comments" placeholder="Try: '; DROP TABLE users; --"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger">Submit (Unsafe)</button>
+                    </form>
                 </div>
 
-                <button class="btn" onclick="runAccessibilityTest()">♿ Run Accessibility Test</button>
-            </div>
+                <!-- Security Testing Section -->
+                <div class="section">
+                    <h2>🔒 Security Testing</h2>
+                    <p>Identify security vulnerabilities:</p>
 
-            <!-- Form Testing Section -->
-            <div class="section">
-                <h2>📝 Form Testing</h2>
-                <p>Test this form for validation issues:</p>
+                    <div class="issue-list">
+                        <div class="issue" data-issue="xss-vulnerable" onclick="markIssueFound(this)">
+                            <strong>XSS Vulnerability:</strong> Unescaped user content
+                        </div>
+                        <div class="issue" data-issue="weak-passwords" onclick="markIssueFound(this)">
+                            <strong>Weak Password Policy:</strong> No password requirements
+                        </div>
+                        <div class="issue" data-issue="exposed-data" onclick="markIssueFound(this)">
+                            <strong>Data Exposure:</strong> Sensitive info in client-side code
+                        </div>
+                    </div>
 
-                <div class="issue-list">
-                    <div class="issue" data-issue="weak-validation" onclick="markIssueFound(this)">
-                        <strong>Weak Validation:</strong> Email accepts invalid formats
-                    </div>
-                    <div class="issue" data-issue="no-required" onclick="markIssueFound(this)">
-                        <strong>Missing Required:</strong> Required fields not marked
-                    </div>
-                    <div class="issue" data-issue="sql-injection" onclick="markIssueFound(this)">
-                        <strong>SQL Injection Risk:</strong> Unescaped user input
-                    </div>
-                </div>
-
-                <form class="broken-form" onsubmit="handleFormSubmit(event)">
-                    <div class="form-group">
-                        <label>Email:</label>
-                        <input type="text" id="email" placeholder="any@text.works">
-                    </div>
-                    <div class="form-group">
-                        <label>Password:</label>
-                        <input type="text" id="password" placeholder="Stored as plain text!">
-                    </div>
-                    <div class="form-group">
-                        <label>Comments:</label>
-                        <textarea id="comments" placeholder="Try: '; DROP TABLE users; --"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-danger">Submit (Unsafe)</button>
-                </form>
-            </div>
-
-            <!-- Security Testing Section -->
-            <div class="section">
-                <h2>🔒 Security Testing</h2>
-                <p>Identify security vulnerabilities:</p>
-
-                <div class="issue-list">
-                    <div class="issue" data-issue="xss-vulnerable" onclick="markIssueFound(this)">
-                        <strong>XSS Vulnerability:</strong> Unescaped user content
-                    </div>
-                    <div class="issue" data-issue="weak-passwords" onclick="markIssueFound(this)">
-                        <strong>Weak Password Policy:</strong> No password requirements
-                    </div>
-                    <div class="issue" data-issue="exposed-data" onclick="markIssueFound(this)">
-                        <strong>Data Exposure:</strong> Sensitive info in client-side code
-                    </div>
-                </div>
-
-                <div style="background: #fff3cd; padding: 1rem; border-radius: 5px; margin: 1rem 0;">
-                    <p><strong>Debug Info (Should be hidden in production):</strong></p>
-                    <pre>API_KEY: abc123secretkey
+                    <div style="background: #fff3cd; padding: 1rem; border-radius: 5px; margin: 1rem 0;">
+                        <p><strong>Debug Info (Should be hidden in production):</strong></p>
+                        <pre>API_KEY: abc123secretkey
 DATABASE_PASSWORD: admin123
 SESSION_TOKEN: user_12345_token</pre>
+                    </div>
+
+                    <button class="btn" onclick="runSecurityTest()">🔒 Run Security Test</button>
                 </div>
 
-                <button class="btn" onclick="runSecurityTest()">🔒 Run Security Test</button>
-            </div>
+                <!-- Responsive Testing Section -->
+                <div class="section">
+                    <h2>📱 Responsive Design Testing</h2>
+                    <p>Check mobile compatibility issues:</p>
 
-            <!-- Responsive Testing Section -->
-            <div class="section">
-                <h2>📱 Responsive Design Testing</h2>
-                <p>Check mobile compatibility issues:</p>
-
-                <div class="issue-list">
-                    <div class="issue" data-issue="viewport-missing" onclick="markIssueFound(this)">
-                        <strong>Missing Viewport:</strong> No mobile viewport meta tag
-                    </div>
-                    <div class="issue" data-issue="fixed-width" onclick="markIssueFound(this)">
-                        <strong>Fixed Width Elements:</strong> Elements don't scale
-                    </div>
-                    <div class="issue" data-issue="tiny-touch" onclick="markIssueFound(this)">
-                        <strong>Tiny Touch Targets:</strong> Buttons too small for mobile
-                    </div>
-                </div>
-
-                <div style="background: #f8f9fa; padding: 1rem; margin: 1rem 0;">
-                    <div style="width: 800px; background: #ddd; padding: 10px; margin: 5px 0;">Fixed 800px width (breaks mobile)</div>
-                    <button style="padding: 2px 5px; font-size: 10px;">Tiny Button</button>
-                </div>
-
-                <button class="btn" onclick="runResponsiveTest()">📱 Run Responsive Test</button>
-            </div>
-
-            <!-- AI Code Review Section -->
-            <div class="section" style="grid-column: 1 / -1;">
-                <h2>🤖 AI-Powered Code Review</h2>
-                <p>Submit your code for intelligent analysis by Claude and ChatGPT:</p>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0;">
-                    <div>
-                        <h3>📝 Submit Code for Review</h3>
-                        <textarea id="codeInput" placeholder="Paste your HTML, CSS, or JavaScript code here for AI analysis..." 
-                                style="width: 100%; height: 200px; font-family: monospace; font-size: 14px; border: 2px solid #ddd; border-radius: 5px; padding: 1rem;"></textarea>
-                        
-                        <div style="margin: 1rem 0;">
-                            <label>
-                                <input type="checkbox" id="includeAccessibility" checked> Accessibility Analysis
-                            </label>
-                            <label style="margin-left: 1rem;">
-                                <input type="checkbox" id="includePerformance" checked> Performance Review
-                            </label>
-                            <label style="margin-left: 1rem;">
-                                <input type="checkbox" id="includeSecurity" checked> Security Audit
-                            </label>
+                    <div class="issue-list">
+                        <div class="issue" data-issue="viewport-missing" onclick="markIssueFound(this)">
+                            <strong>Missing Viewport:</strong> No mobile viewport meta tag
                         </div>
-
-                        <div style="display: flex; gap: 1rem;">
-                            <button class="btn" onclick="analyzeWithClaude()" id="claudeBtn">
-                                🧠 Analyze with Claude
-                            </button>
-                            <button class="btn" onclick="analyzeWithChatGPT()" id="chatgptBtn">
-                                🤖 Analyze with ChatGPT
-                            </button>
-                            <button class="btn" onclick="compareAnalysis()" id="compareBtn">
-                                ⚖️ Compare Both
-                            </button>
+                        <div class="issue" data-issue="fixed-width" onclick="markIssueFound(this)">
+                            <strong>Fixed Width Elements:</strong> Elements don't scale
+                        </div>
+                        <div class="issue" data-issue="tiny-touch" onclick="markIssueFound(this)">
+                            <strong>Tiny Touch Targets:</strong> Buttons too small for mobile
                         </div>
                     </div>
 
-                    <div>
-                        <h3>⚙️ AI Service Status</h3>
-                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 5px;">
-                            <div class="alert warning">
-                                <strong>⚠️ Checking Services...</strong><br>
-                                <small>Loading AI service availability...</small>
+                    <div style="background: #f8f9fa; padding: 1rem; margin: 1rem 0;">
+                        <div style="width: 800px; background: #ddd; padding: 10px; margin: 5px 0;">Fixed 800px width (breaks mobile)</div>
+                        <button style="padding: 2px 5px; font-size: 10px;">Tiny Button</button>
+                    </div>
+
+                    <button class="btn" onclick="runResponsiveTest()">📱 Run Responsive Test</button>
+                </div>
+
+                <!-- AI Code Review Section -->
+                <div class="section" style="grid-column: 1 / -1;">
+                    <h2>🤖 AI-Powered Code Review</h2>
+                    <p>Submit your code for intelligent analysis by Claude and ChatGPT:</p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0;">
+                        <div>
+                            <h3>📝 Submit Code for Review</h3>
+                            <textarea id="codeInput" placeholder="Paste your HTML, CSS, or JavaScript code here for AI analysis..." 
+                                    style="width: 100%; height: 200px; font-family: monospace; font-size: 14px; border: 2px solid #ddd; border-radius: 5px; padding: 1rem;"></textarea>
+                            
+                            <div style="margin: 1rem 0;">
+                                <label>
+                                    <input type="checkbox" id="includeAccessibility" checked> Accessibility Analysis
+                                </label>
+                                <label style="margin-left: 1rem;">
+                                    <input type="checkbox" id="includePerformance" checked> Performance Review
+                                </label>
+                                <label style="margin-left: 1rem;">
+                                    <input type="checkbox" id="includeSecurity" checked> Security Audit
+                                </label>
+                            </div>
+
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn" onclick="analyzeWithClaude()" id="claudeBtn">
+                                    🧠 Analyze with Claude
+                                </button>
+                                <button class="btn" onclick="analyzeWithChatGPT()" id="chatgptBtn">
+                                    🤖 Analyze with ChatGPT
+                                </button>
+                                <button class="btn" onclick="compareAnalysis()" id="compareBtn">
+                                    ⚖️ Compare Both
+                                </button>
                             </div>
                         </div>
 
-                        <div style="margin: 1rem 0;">
-                            <label for="reviewDepth">Analysis Depth:</label>
-                            <select id="reviewDepth" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
-                                <option value="quick">Quick Scan (Basic Issues)</option>
-                                <option value="thorough" selected>Thorough Review (Detailed)</option>
-                                <option value="comprehensive">Comprehensive Audit (Everything)</option>
-                            </select>
-                        </div>
+                        <div>
+                            <h3>⚙️ AI Service Status</h3>
+                            <div style="background: #f8f9fa; padding: 1rem; border-radius: 5px;">
+                                <div class="alert warning">
+                                    <strong>⚠️ Checking Services...</strong><br>
+                                    <small>Loading AI service availability...</small>
+                                </div>
+                            </div>
 
-                        <div style="margin: 1rem 0; padding: 1rem; background: #e8f5e8; border-radius: 5px;">
-                            <strong>🔧 For Administrators</strong><br>
-                            <small>
-                                Configure API credentials in the admin dashboard<br>
-                                <a href="admin.html" target="_blank">Open Admin Dashboard</a>
-                            </small>
+                            <div style="margin: 1rem 0;">
+                                <label for="reviewDepth">Analysis Depth:</label>
+                                <select id="reviewDepth" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                                    <option value="quick">Quick Scan (Basic Issues)</option>
+                                    <option value="thorough" selected>Thorough Review (Detailed)</option>
+                                    <option value="comprehensive">Comprehensive Audit (Everything)</option>
+                                </select>
+                            </div>
+
+                            <div style="margin: 1rem 0; padding: 1rem; background: #e8f5e8; border-radius: 5px;">
+                                <strong>🔧 For Administrators</strong><br>
+                                <small>
+                                    Configure API credentials in the admin dashboard<br>
+                                    <a href="/admin" target="_blank">Open Admin Dashboard</a>
+                                </small>
+                            </div>
                         </div>
                     </div>
+
+                    <div id="aiAnalysisResults" style="margin-top: 2rem;"></div>
                 </div>
+            </div>
 
-                <div id="aiAnalysisResults" style="margin-top: 2rem;"></div>
-            </div>
-        </div>
-
-        <!-- Testing Tools Panel -->
-        <div class="tools-panel">
-            <h2>🛠️ Built-in Testing Tools</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0;">
-                <button class="btn" onclick="validateHTML()">HTML Validator</button>
-                <button class="btn" onclick="checkPerformance()">Performance Check</button>
-                <button class="btn" onclick="checkAccessibility()">Accessibility Scan</button>
-                <button class="btn" onclick="checkSecurity()">Security Audit</button>
-            </div>
-            
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-            <p>Overall Testing Progress</p>
-            
-            <div class="tool-results" id="toolResults">
-                Welcome to TestLab! Start by clicking on issues you find or use the testing tools above.
+            <!-- Testing Tools Panel -->
+            <div class="tools-panel">
+                <h2>🛠️ Built-in Testing Tools</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0;">
+                    <button class="btn" onclick="validateHTML()">HTML Validator</button>
+                    <button class="btn" onclick="checkPerformance()">Performance Check</button>
+                    <button class="btn" onclick="checkAccessibility()">Accessibility Scan</button>
+                    <button class="btn" onclick="checkSecurity()">Security Audit</button>
+                </div>
                 
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p>Overall Testing Progress</p>
+                
+                <div class="tool-results" id="toolResults">
+                    Welcome to TestLab! Start by clicking on issues you find or use the testing tools above.
+                    
 Tips for testers:
 • Look for visual problems first
 • Check form validation by trying edge cases  
 • Test keyboard navigation (Tab key)
 • Try different screen sizes
 • View page source for hidden issues
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#top">Back to Top</a>
+                <a href="/diagnostics">Diagnostics Tool</a>
+                <a href="https://github.com/yourusername/testlab" target="_blank">GitHub</a>
+                <a href="#" onclick="showAbout()">About TestLab</a>
+                <a href="/admin" class="admin-link">Admin</a>
+            </div>
+            <div class="footer-copyright">
+                <p>&copy; 2024 TestLab. Educational testing platform for web developers.</p>
+            </div>
+        </div>
+    </footer>
 
     <!-- Modal for detailed explanations -->
     <div class="modal" id="explanationModal">
@@ -812,6 +888,25 @@ In a real application, this could compromise user data!
 
         function updateToolResults(content) {
             document.getElementById('toolResults').textContent = content;
+        }
+
+        function showAbout() {
+            const content = `
+                <h3>About TestLab</h3>
+                <p>TestLab is an interactive educational platform designed to help developers learn software testing best practices through hands-on exercises.</p>
+                <p><strong>Features:</strong></p>
+                <ul style="text-align: left; margin-left: 2rem;">
+                    <li>Interactive testing exercises</li>
+                    <li>Real-world bug scenarios</li>
+                    <li>AI-powered code analysis</li>
+                    <li>Progress tracking</li>
+                    <li>Multiple testing categories</li>
+                </ul>
+                <p style="margin-top: 1rem;">Created for developers who want to improve their testing skills!</p>
+            `;
+            
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('explanationModal').style.display = 'block';
         }
 
         // Simulate some performance issues

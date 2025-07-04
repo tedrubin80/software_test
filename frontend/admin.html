@@ -738,6 +738,57 @@ http://localhost:3001</textarea>
             ? 'http://localhost:3001/api' 
             : '/api';
 
+        // Check authentication on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/auth/check`, {
+                    credentials: 'include',
+                    headers: {
+                        'x-session-token': localStorage.getItem('adminSessionToken') || ''
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Not authenticated');
+                }
+                
+                const data = await response.json();
+                if (!data.authenticated) {
+                    // Not logged in, redirect to login page
+                    window.location.href = '/admin-login.html';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                // Redirect to login page
+                window.location.href = '/admin-login.html';
+            }
+        });
+
+        // Add auth headers to all API requests
+        async function authenticatedFetch(url, options = {}) {
+            const sessionToken = localStorage.getItem('adminSessionToken');
+            
+            const defaultOptions = {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-session-token': sessionToken || '',
+                    ...options.headers
+                }
+            };
+            
+            const response = await fetch(url, { ...options, ...defaultOptions });
+            
+            // If unauthorized, redirect to login
+            if (response.status === 401) {
+                localStorage.removeItem('adminSessionToken');
+                window.location.href = '/admin-login.html';
+                throw new Error('Unauthorized');
+            }
+            
+            return response;
+        }
+
         // Tab Navigation
         function showTab(tabName) {
             // Hide all tabs
@@ -760,7 +811,7 @@ http://localhost:3001</textarea>
         // Load configuration on page load
         async function loadConfiguration() {
             try {
-                const response = await fetch(`${API_BASE}/admin/config`);
+                const response = await authenticatedFetch(`${API_BASE}/admin/config`);
                 if (response.ok) {
                     const config = await response.json();
                     
@@ -962,9 +1013,24 @@ http://localhost:3001</textarea>
         });
 
         // Placeholder functions for demo
-        function logout() {
+        async function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                window.location.href = '/';
+                try {
+                    await authenticatedFetch(`${API_BASE}/auth/logout`, {
+                        method: 'POST'
+                    });
+                    
+                    // Clear session
+                    localStorage.removeItem('adminSessionToken');
+                    
+                    // Redirect to login
+                    window.location.href = '/admin-login.html';
+                } catch (error) {
+                    console.error('Logout failed:', error);
+                    // Force redirect anyway
+                    localStorage.removeItem('adminSessionToken');
+                    window.location.href = '/admin-login.html';
+                }
             }
         }
 
