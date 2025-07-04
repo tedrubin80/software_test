@@ -1,0 +1,75 @@
+# Simple GitHub workflow - No syntax errors
+# Save as: .github/workflows/deploy-simple.yml
+
+name: Deploy TestLab Simple
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Setup files
+      run: |
+        # Copy frontend files to root
+        if [ -f "frontend/index.html" ]; then
+          cp frontend/index.html ./
+        fi
+        if [ -f "frontend/admin.html" ]; then
+          cp frontend/admin.html ./
+        fi
+        
+        # Create simple server
+        cat > server.js << 'EOF'
+        const express = require('express');
+        const app = express();
+        const PORT = process.env.PORT || 8080;
+        
+        app.get('/health', (req, res) => {
+          res.json({ status: 'healthy' });
+        });
+        
+        app.use(express.static('.'));
+        
+        app.get('/', (req, res) => {
+          res.send('<h1>TestLab Works!</h1><p>Port: ' + PORT + '</p>');
+        });
+        
+        app.listen(PORT, '0.0.0.0', () => {
+          console.log('Server running on port', PORT);
+        });
+        EOF
+        
+        # Create simple package.json
+        cat > package.json << 'EOF'
+        {
+          "scripts": {
+            "start": "node server.js"
+          },
+          "dependencies": {
+            "express": "^4.18.2"
+          }
+        }
+        EOF
+    
+    - name: Install
+      run: npm install
+    
+    - name: Test
+      run: |
+        timeout 5s node server.js &
+        sleep 3
+        curl http://localhost:8080/health
+    
+    - name: Success
+      run: echo "Deployment ready!"
