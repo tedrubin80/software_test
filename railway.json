@@ -1,26 +1,20 @@
 {
-  "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "cd backend && npm install",
-    "environment": {
-      "NODE_VERSION": "18"
-    }
-  },
-  "deploy": {
-    "startCommand": "cd backend && npm start",
-    "healthcheckPath": "/health",
-    "healthcheckTimeout": 100,
-    "restartPolicyType": "ON_FAILURE"
-  },
-  "variables": {
-    "PORT": {
-      "type": "runtime",
-      "value": "3000"
+    "name": "testlab-web-app",
+    "version": "1.0.0",
+    "description": "TestLab Web Application",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "build": "echo 'No build step required'"
     },
-    "NODE_ENV": {
-      "type": "runtime",
-      "value": "production"
+    "keywords": ["testlab", "web", "application"],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^4.18.2",
+        "cors": "^2.8.5"
+    },
+    "engines": {
+        "node": ">=18.0.0"
     }
-  }
 }
