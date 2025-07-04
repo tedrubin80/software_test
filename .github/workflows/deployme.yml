@@ -1,0 +1,520 @@
+# Lightweight GitHub Deployment for TestLab
+# Fixed file structure for GitHub deployment
+
+# github-lite-server.js - Corrected paths and lightweight
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+
+const app = express();
+const PORT = process.env.PORT || 8080;
+
+console.log(`🐙 Starting TestLab Lite on port ${PORT}`);
+console.log(`📁 Working directory: ${process.cwd()}`);
+console.log(`📁 Available files: ${fs.readdirSync('.').join(', ')}`);
+
+// Lightweight middleware
+app.use(express.json({ limit: '1mb' }));
+
+// Health check (REQUIRED for GitHub)
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    port: PORT,
+    mode: 'github-lite',
+    memory: process.memoryUsage(),
+    uptime: process.uptime()
+  });
+});
+
+// Serve static files from multiple possible locations
+const possibleStaticDirs = ['frontend', 'public', '.'];
+let staticDir = '.';
+
+for (const dir of possibleStaticDirs) {
+  if (fs.existsSync(dir)) {
+    staticDir = dir;
+    console.log(`📂 Using static directory: ${dir}`);
+    break;
+  }
+}
+
+app.use(express.static(staticDir));
+
+// Main route - try multiple file locations
+app.get('/', (req, res) => {
+  const possibleIndexFiles = [
+    'index.html',
+    'frontend/index.html',
+    'public/index.html'
+  ];
+  
+  for (const file of possibleIndexFiles) {
+    if (fs.existsSync(file)) {
+      console.log(`📄 Serving index from: ${file}`);
+      return res.sendFile(path.resolve(file));
+    }
+  }
+  
+  // Fallback HTML if no index.html found
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TestLab Lite - GitHub Deployment</title>
+        <style>
+            body { 
+                font-family: Arial, sans-serif; 
+                max-width: 800px; 
+                margin: 0 auto; 
+                padding: 2rem;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+            .container { 
+                background: rgba(255,255,255,0.9); 
+                padding: 2rem; 
+                border-radius: 10px; 
+                color: #333;
+            }
+            .status { background: #d4edda; padding: 1rem; border-radius: 5px; margin: 1rem 0; }
+            .info { background: #d1ecf1; padding: 1rem; border-radius: 5px; margin: 1rem 0; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🔍 TestLab Lite</h1>
+            <p>Lightweight version optimized for GitHub deployment</p>
+            
+            <div class="status">
+                <h3>✅ Deployment Status</h3>
+                <p>Server is running successfully on port ${PORT}</p>
+                <p>Health check: <a href="/health">Available</a></p>
+            </div>
+            
+            <div class="info">
+                <h3>📁 File Structure</h3>
+                <p>Working directory: ${process.cwd()}</p>
+                <p>Static files served from: ${staticDir}</p>
+                <p>Available files: ${fs.readdirSync('.').join(', ')}</p>
+            </div>
+            
+            <h2>🎯 Next Steps</h2>
+            <ol>
+                <li>Upload your index.html and admin.html to the root directory</li>
+                <li>Or place them in a 'frontend' folder</li>
+                <li>Redeploy to see your full TestLab interface</li>
+            </ol>
+            
+            <h2>📚 Available Routes</h2>
+            <ul>
+                <li><a href="/health">Health Check</a></li>
+                <li><a href="/admin">Admin Dashboard</a></li>
+                <li><a href="/api/health">API Health</a></li>
+            </ul>
+        </div>
+    </body>
+    </html>
+  `);
+});
+
+// Admin route - try multiple locations
+app.get('/admin', (req, res) => {
+  const possibleAdminFiles = [
+    'admin.html',
+    'frontend/admin.html',
+    'public/admin.html'
+  ];
+  
+  for (const file of possibleAdminFiles) {
+    if (fs.existsSync(file)) {
+      console.log(`📄 Serving admin from: ${file}`);
+      return res.sendFile(path.resolve(file));
+    }
+  }
+  
+  // Fallback admin interface
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>TestLab Admin - GitHub Deployment</title>
+        <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 2rem; }
+            .alert { background: #fff3cd; padding: 1rem; border-radius: 5px; margin: 1rem 0; }
+        </style>
+    </head>
+    <body>
+        <h1>🛠️ TestLab Admin (Lite)</h1>
+        <div class="alert">
+            <h3>⚠️ Admin Interface Not Found</h3>
+            <p>The admin.html file was not found in the expected locations:</p>
+            <ul>
+                <li>./admin.html</li>
+                <li>./frontend/admin.html</li>
+                <li>./public/admin.html</li>
+            </ul>
+            <p><strong>Solution:</strong> Place your admin.html file in the root directory or frontend folder.</p>
+        </div>
+        <p><a href="/">← Back to Main</a></p>
+    </body>
+    </html>
+  `);
+});
+
+// Basic API endpoints
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'api-lite',
+    message: 'Lightweight API for GitHub deployment',
+    features: ['health-check', 'basic-routing'],
+    limitations: ['no-database', 'no-ai-services', 'minimal-backend']
+  });
+});
+
+// Catch-all for missing routes
+app.use('*', (req, res) => {
+  res.status(404).json({
+    error: 'Route not found',
+    requested: req.originalUrl,
+    available: ['/', '/health', '/admin', '/api/health'],
+    note: 'This is TestLab Lite - a minimal version for GitHub deployment'
+  });
+});
+
+// Error handling
+app.use((err, req, res, next) => {
+  console.error('Error:', err.message);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: 'TestLab Lite encountered an error',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Start server with resource monitoring
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ TestLab Lite running on port ${PORT}`);
+  console.log(`📊 Memory usage: ${JSON.stringify(process.memoryUsage(), null, 2)}`);
+  console.log(`🌐 Available at: http://0.0.0.0:${PORT}`);
+  console.log(`❤️  Health check: http://0.0.0.0:${PORT}/health`);
+});
+
+// Resource monitoring
+setInterval(() => {
+  const usage = process.memoryUsage();
+  console.log(`📊 Memory: ${Math.round(usage.heapUsed / 1024 / 1024)}MB used, ${Math.round(usage.heapTotal / 1024 / 1024)}MB total`);
+}, 30000);
+
+// Graceful shutdown
+const gracefulShutdown = (signal) => {
+  console.log(`🛑 ${signal} received, shutting down gracefully`);
+  server.close(() => {
+    console.log('✅ Server closed successfully');
+    process.exit(0);
+  });
+  
+  // Force close after 5 seconds
+  setTimeout(() => {
+    console.log('⚠️  Forcing shutdown');
+    process.exit(1);
+  }, 5000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+module.exports = app;
+
+---
+# package-lite.json - Minimal dependencies for GitHub
+{
+  "name": "testlab-github-lite",
+  "version": "1.0.0",
+  "description": "TestLab Lite - Optimized for GitHub deployment",
+  "main": "github-lite-server.js",
+  "scripts": {
+    "start": "node github-lite-server.js",
+    "dev": "node github-lite-server.js",
+    "health": "curl -f http://localhost:8080/health || exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["testing", "education", "github", "lightweight"],
+  "author": "TestLab",
+  "license": "MIT"
+}
+
+---
+# Dockerfile.github-lite - Ultra-lightweight with correct paths
+FROM node:18-alpine
+
+# Minimal dependencies
+RUN apk add --no-cache curl
+
+# Resource limits
+ENV NODE_ENV=production \
+    PORT=8080 \
+    NODE_OPTIONS="--max-old-space-size=256" \
+    MINIMAL_MODE=true
+
+WORKDIR /app
+
+# Copy minimal package.json
+COPY package-lite.json ./package.json
+
+# Install minimal dependencies
+RUN npm ci --only=production --ignore-scripts && \
+    npm cache clean --force && \
+    rm -rf /tmp/* ~/.npm
+
+# Copy server file
+COPY github-lite-server.js ./
+
+# Copy frontend files to root (GitHub deployment structure)
+COPY index.html ./ 2>/dev/null || echo "<!DOCTYPE html><html><head><title>TestLab</title></head><body><h1>TestLab Lite</h1></body></html>" > ./index.html
+COPY admin.html ./ 2>/dev/null || echo "<!DOCTYPE html><html><head><title>Admin</title></head><body><h1>Admin Lite</h1></body></html>" > ./admin.html
+
+# Create frontend directory as fallback
+RUN mkdir -p frontend
+COPY frontend/ ./frontend/ 2>/dev/null || true
+
+# Set permissions
+RUN adduser -D testlab && \
+    chown -R testlab:testlab /app
+
+USER testlab
+
+EXPOSE 8080
+
+# Simple health check
+HEALTHCHECK --interval=60s --timeout=5s --start-period=10s --retries=2 \
+  CMD curl -f http://localhost:8080/health || exit 1
+
+CMD ["node", "github-lite-server.js"]
+
+---
+# .github/workflows/deploy-lite.yml - Resource-optimized deployment
+name: 🚀 Deploy TestLab Lite to GitHub
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  PORT: 8080
+
+jobs:
+  deploy-lite:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      
+    - name: 📋 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: 🔧 Create lite deployment
+      run: |
+        # Copy files to root for GitHub deployment
+        if [ -f "frontend/index.html" ]; then
+          cp frontend/index.html ./
+          echo "✅ Copied index.html to root"
+        fi
+        
+        if [ -f "frontend/admin.html" ]; then
+          cp frontend/admin.html ./
+          echo "✅ Copied admin.html to root"
+        fi
+        
+        # Create minimal package.json if not exists
+        if [ ! -f "package.json" ]; then
+          cat > package.json << 'EOF'
+        {
+          "name": "testlab-lite",
+          "version": "1.0.0",
+          "main": "github-lite-server.js",
+          "scripts": {
+            "start": "node github-lite-server.js"
+          },
+          "dependencies": {
+            "express": "^4.18.2"
+          },
+          "engines": {
+            "node": ">=18.0.0"
+          }
+        }
+        EOF
+        fi
+        
+        # List final structure
+        echo "📁 Final file structure:"
+        ls -la
+        
+    - name: 📦 Install dependencies
+      run: npm ci --only=production --ignore-scripts
+      
+    - name: 🧪 Test server
+      run: |
+        timeout 10s node github-lite-server.js &
+        sleep 5
+        curl -f http://localhost:8080/health || exit 1
+        echo "✅ Health check passed"
+        
+    - name: 🚀 Deploy info
+      run: |
+        echo "✅ TestLab Lite ready for deployment"
+        echo "📁 Files in root:"
+        ls -la *.html 2>/dev/null || echo "No HTML files in root"
+        echo "📁 Files in frontend/:"
+        ls -la frontend/ 2>/dev/null || echo "No frontend directory"
+
+---
+# GitHub deployment instructions
+# Save as: GITHUB_DEPLOYMENT_FIX.md
+
+# 🚨 GitHub Deployment Fix - File Structure Issue
+
+## The Problem
+Your container is failing because:
+1. **File location mismatch**: GitHub expects files in root, not frontend/
+2. **Resource limits**: Container using too much memory
+3. **Missing dependencies**: Heavy packages causing crashes
+
+## The Solution
+
+### Option 1: Quick Fix (Move Files to Root)
+```bash
+# Move files from frontend/ to root directory
+mv frontend/index.html ./
+mv frontend/admin.html ./
+
+# Update package.json
+{
+  "scripts": {
+    "start": "node github-lite-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+
+# Create github-lite-server.js (from above)
+# Deploy with minimal dependencies
+```
+
+### Option 2: Keep Frontend Folder (Update Server)
+The `github-lite-server.js` above automatically handles both:
+- Files in root directory
+- Files in frontend/ directory
+- Falls back to generated HTML if files missing
+
+### Option 3: Automatic Fix with GitHub Action
+1. Use the deployment workflow above
+2. It automatically copies files from frontend/ to root
+3. Creates minimal package.json
+4. Deploys lightweight version
+
+## File Structure for GitHub Success
+
+### ✅ Working Structure:
+```
+your-repo/
+├── index.html          # In root (GitHub expects this)
+├── admin.html          # In root (GitHub expects this)
+├── package.json        # Minimal dependencies
+├── github-lite-server.js  # Lightweight server
+└── frontend/           # Optional, for development
+    ├── index.html
+    └── admin.html
+```
+
+### ❌ Problematic Structure:
+```
+your-repo/
+├── package.json        # Heavy dependencies
+├── complex-server.js   # Resource-intensive
+└── frontend/           # GitHub can't find files
+    ├── index.html      # Should be in root
+    └── admin.html      # Should be in root
+```
+
+## Resource Optimization
+
+### Memory Limits
+```javascript
+// Set Node.js memory limit
+NODE_OPTIONS="--max-old-space-size=256"
+
+// Monitor memory usage
+setInterval(() => {
+  const usage = process.memoryUsage();
+  console.log(`Memory: ${Math.round(usage.heapUsed/1024/1024)}MB`);
+}, 30000);
+```
+
+### Minimal Dependencies
+```json
+{
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+```
+
+## Test Locally
+```bash
+# Set GitHub environment
+export PORT=8080
+export NODE_OPTIONS="--max-old-space-size=256"
+
+# Test with minimal setup
+node github-lite-server.js
+
+# Should see:
+# ✅ TestLab Lite running on port 8080
+# 📊 Memory: 25MB used, 50MB total
+```
+
+## GitHub Deployment Success Checklist
+
+- [ ] ✅ index.html in root directory
+- [ ] ✅ admin.html in root directory  
+- [ ] ✅ Minimal package.json (only express)
+- [ ] ✅ github-lite-server.js with path fallbacks
+- [ ] ✅ PORT=8080 environment variable
+- [ ] ✅ Health check at /health
+- [ ] ✅ Memory limit under 256MB
+- [ ] ✅ No heavy dependencies (Chrome, Lighthouse, etc.)
+
+## After Fix
+
+Your GitHub deployment should:
+- ✅ Start without resource errors
+- ✅ Find index.html and admin.html
+- ✅ Use minimal memory
+- ✅ Pass health checks
+- ✅ Stay running without crashes
