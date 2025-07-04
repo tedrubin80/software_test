@@ -1,0 +1,21 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.DS_Store
+*.log
+logs
+temp
+uploads
+.vscode
+.idea
+*.swp
+*.swo
+*~
+README.md
+.github
+
+# Do NOT ignore frontend files!
+# !frontend/
+# !frontend/**/*
