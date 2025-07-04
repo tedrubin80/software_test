@@ -1,0 +1,23 @@
+{
+  "name": "multi-ai-website-diagnostics",
+  "version": "1.0.0",
+  "description": "Comprehensive website diagnostics using ChatGPT, Claude, and Llama AI models",
+  "main": "diagnostics-server.js",
+  "scripts": {
+    "start": "node diagnostics-server.js",
+    "dev": "nodemon diagnostics-server.js",
+    "test": "node test-diagnostics.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "express-rate-limit": "^6.10.0",
+    "axios": "^1.5.0",
+    "cheerio": "^1.0.0-rc.12",
+    "lighthouse": "^11.0.0",
+    "chrome-launcher": "^0.15.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

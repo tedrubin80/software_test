@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-AI Website Diagnostics</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { color: #333; text-align: center; }
+        .form-group { margin-bottom: 1rem; }
+        input, button { padding: 1rem; border-radius: 8px; border: 2px solid #ddd; }
+        button { background: #3498db; color: white; cursor: pointer; }
+        button:hover { background: #2980b9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Multi-AI Website Diagnostics</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 2rem;">
+            Comprehensive website analysis powered by ChatGPT, Claude, and Llama
+        </p>
+        
+        <div class="form-group">
+            <input type="url" id="websiteUrl" placeholder="https://example.com" style="width: 70%;">
+            <button onclick="analyzeWebsite()" style="width: 25%; margin-left: 2%;">
+                🚀 Analyze Website
+            </button>
+        </div>
+        
+        <div id="results" style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 10px; display: none;">
+            <h3>Analysis Results</h3>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+    
+    <script>
+        async function analyzeWebsite() {
+            const url = document.getElementById('websiteUrl').value;
+            const resultsDiv = document.getElementById('results');
+            const contentDiv = document.getElementById('resultsContent');
+            
+            if (!url) {
+                alert('Please enter a website URL');
+                return;
+            }
+            
+            resultsDiv.style.display = 'block';
+            contentDiv.innerHTML = '🤖 Analyzing website... Please wait.';
+            
+            try {
+                const response = await fetch('http://localhost:3002/api/diagnose-website', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                
+                const result = await response.json();
+                contentDiv.innerHTML = `
+                    <p><strong>URL:</strong> ${result.url}</p>
+                    <p><strong>Status:</strong> ${result.status}</p>
+                    <p><strong>Message:</strong> ${result.message}</p>
+                    <p><strong>Timestamp:</strong> ${result.timestamp}</p>
+                `;
+            } catch (error) {
+                contentDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

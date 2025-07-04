@@ -1,0 +1,43 @@
+{
+  "name": "testlab-complete",
+  "version": "1.0.0",
+  "description": "Complete TestLab software testing education platform",
+  "scripts": {
+    "setup:all": "npm run setup:backend && npm run setup:diagnostics",
+    "setup:backend": "cd backend && npm install",
+    "setup:diagnostics": "cd diagnostics && npm install",
+    "start:backend": "cd backend && npm start",
+    "start:diagnostics": "cd diagnostics && npm start",
+    "start:frontend": "cd frontend && python -m http.server 3000",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:diagnostics": "cd diagnostics && npm run dev",
+    "test:all": "npm run test:backend && npm run test:diagnostics",
+    "test:backend": "cd backend && npm test",
+    "test:diagnostics": "cd diagnostics && npm test",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --write .",
+    "clean": "rm -rf node_modules backend/node_modules diagnostics/node_modules"
+  },
+  "workspaces": [
+    "backend",
+    "diagnostics"
+  ],
+  "devDependencies": {
+    "eslint": "^8.49.0",
+    "prettier": "^3.0.3",
+    "concurrently": "^8.2.1"
+  },
+  "keywords": [
+    "testing",
+    "education",
+    "ai",
+    "website-analysis",
+    "code-review"
+  ],
+  "author": "TestLab Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/testlab/testlab.git"
+  }
+}
