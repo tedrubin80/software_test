@@ -1,66 +1,245 @@
-<!-- Filename: public/index.html -->
-<!-- Purpose: Main landing page for TestLab web application -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TestLab - Software Testing Platform</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-color: #f4f6f9;
+            --text-color: #333;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f4f6f9;
-            color: #333;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+        }
+
         .container {
-            max-width: 600px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
             background-color: white;
-            padding: 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logo img {
+            margin-right: 10px;
+        }
+
+        nav a {
+            margin-left: 15px;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .hero {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            background-color: white;
             border-radius: 10px;
+            padding: 3rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .hero-content {
+            flex: 1;
+        }
+
+        .hero-image {
+            flex: 1;
             text-align: center;
         }
+
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+        }
+
         h1 {
-            color: #2c3e50;
-            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
         }
-        .description {
-            margin-bottom: 30px;
-            line-height: 1.6;
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
         }
-        .status {
-            background-color: #e8f4f8;
-            padding: 15px;
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
             border-radius: 5px;
-            margin-top: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .feature:hover {
+            transform: scale(1.05);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                flex-direction: column;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            nav {
+                margin-top: 1rem;
+            }
         }
     </style>
 </head>
 <body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                🔍 TestLab
+            </div>
+            <nav>
+                <a href="#">Home</a>
+                <a href="#">Features</a>
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+            </nav>
+        </div>
+    </header>
+
     <div class="container">
-        <h1>🔍 TestLab</h1>
-        <div class="description">
-            <p>Welcome to the Software Testing Platform</p>
-            <p>Empowering developers with AI-powered code review and testing tools</p>
-        </div>
-        <div class="status">
-            <p>✅ Application Deployed Successfully</p>
-            <small>Version 1.0.0</small>
-        </div>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>AI-Powered Software Testing</h1>
+                <p>Revolutionize your testing workflow with intelligent code review and diagnostic tools.</p>
+                
+                <div class="cta-buttons">
+                    <a href="#" class="btn btn-primary">Get Started</a>
+                    <a href="#" class="btn btn-secondary">Learn More</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="auto">
+                    <circle cx="250" cy="250" r="240" fill="#f0f8ff"/>
+                    <rect x="100" y="200" width="300" height="150" fill="#3498db" rx="10"/>
+                    <text x="250" y="290" text-anchor="middle" fill="white" font-size="50">TestLab</text>
+                </svg>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="feature">
+                <div class="feature-icon">🤖</div>
+                <h3>AI Code Review</h3>
+                <p>Leverage advanced AI to analyze and improve your code quality.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔍</div>
+                <h3>Comprehensive Testing</h3>
+                <p>Conduct thorough software testing with intelligent diagnostics.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📊</div>
+                <h3>Performance Insights</h3>
+                <p>Get detailed performance metrics and actionable recommendations.</p>
+            </div>
+        </section>
     </div>
+
+    <footer>
+        <p>© 2025 TestLab. All Rights Reserved.</p>
+    </footer>
+
     <script>
-        // Basic client-side logging
+        // Optional: Add interactive elements or tracking
         console.log('TestLab Web Application Initialized');
         
-        // Optional: Add more client-side functionality
-        window.addEventListener('load', () => {
-            console.log('Page fully loaded');
+        // Simple analytics or interaction tracking
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                console.log(`Button clicked: ${e.target.textContent}`);
+            });
         });
     </script>
 </body>
