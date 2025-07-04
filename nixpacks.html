@@ -1,0 +1,12 @@
+[phases.build]
+cmds = [
+    "npm ci --only=production",
+    "cd backend && npm ci --only=production",
+    "cd diagnostics && npm ci --only=production"
+]
+
+[phases.install]
+cmds = ["npm install -g npm@latest"]
+
+[start]
+cmd = "npm run start:railway"
