@@ -1,18 +1,12 @@
 {
-  "name": "testlab-simple",
-  "version": "1.0.0",
-  "description": "FILE LOCATION: /package.json (root directory) - Minimal package for debugging",
-  "main": "simple-server.js",
-  "scripts": {
-    "start": "node simple-server.js"
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "./Dockerfile"
   },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "body-parser": "^1.20.1",
-    "cookie-parser": "^1.4.6"
-  },
-  "engines": {
-    "node": ">=16.0.0"
+  "deploy": {
+    "startCommand": "node simple-server.js",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
   }
 }
