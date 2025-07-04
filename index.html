@@ -1,37 +1,67 @@
+<!-- Filename: public/index.html -->
+<!-- Purpose: Main landing page for TestLab web application -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TestLab - Deployment Verification</title>
+    <title>TestLab - Software Testing Platform</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
-            background-color: #f0f0f0; 
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f6f9;
+            color: #333;
         }
         .container {
-            text-align: center;
-            background: white;
-            padding: 2rem;
+            max-width: 600px;
+            background-color: white;
+            padding: 40px;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .description {
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .status {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 TestLab Deployment</h1>
-        <p>Server is running successfully!</p>
-        <p>Deployed on Railway</p>
+        <h1>🔍 TestLab</h1>
+        <div class="description">
+            <p>Welcome to the Software Testing Platform</p>
+            <p>Empowering developers with AI-powered code review and testing tools</p>
+        </div>
+        <div class="status">
+            <p>✅ Application Deployed Successfully</p>
+            <small>Version 1.0.0</small>
+        </div>
     </div>
     <script>
-        // Optional: Add any client-side initialization here
-        console.log('TestLab web application loaded');
+        // Basic client-side logging
+        console.log('TestLab Web Application Initialized');
+        
+        // Optional: Add more client-side functionality
+        window.addEventListener('load', () => {
+            console.log('Page fully loaded');
+        });
     </script>
 </body>
 </html>

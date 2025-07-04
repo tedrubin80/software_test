@@ -1,12 +1,15 @@
 {
-  "name": "testlab-web-app",
+  // Filename: package.json
+  // Purpose: Root package configuration for TestLab project
+  "name": "testlab-web-application",
   "version": "1.0.0",
-  "description": "TestLab Software Testing Platform",
+  "description": "Software Testing Platform with AI-Powered Code Review",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "build": "echo 'No build step required'",
-    "test": "echo 'No tests configured'"
+    "test": "echo 'No tests configured'",
+    "dev": "nodemon server.js"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -15,5 +18,5 @@
     "express": "^4.19.2",
     "cors": "^2.8.5"
   },
-  "keywords": ["testlab", "software", "testing", "platform"]
+  "keywords": ["testlab", "software-testing", "ai", "code-review"]
 }

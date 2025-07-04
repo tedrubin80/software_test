@@ -1,16 +1,20 @@
 {
+  // Filename: railway.json
+  // Purpose: Railway deployment configuration for TestLab project
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "mkdir -p public && echo 'Build complete'",
+    "buildCommand": "npm install && npm run build",
     "environment": {
       "NODE_VERSION": "18"
     }
   },
   "deploy": {
-    "numReplicas": 1,
-    "sleepApplication": false,
-    "restartPolicyType": "ON_FAILURE"
+    "startCommand": "npm start",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 100,
+    "restartPolicyType": "ON_FAILURE",
+    "numReplicas": 1
   },
   "variables": {
     "PORT": {
@@ -18,7 +22,7 @@
       "value": "3000"
     },
     "NODE_ENV": {
-      "type": "runtime", 
+      "type": "runtime",
       "value": "production"
     }
   }
