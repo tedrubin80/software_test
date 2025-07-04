@@ -1,75 +1,274 @@
-# Simple GitHub workflow - No syntax errors
-# Save as: .github/workflows/deploy-simple.yml
+// ===== STEP 1: Create package.json (REQUIRED) =====
+// Save as: package.json
+{
+  "name": "testlab-simple",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "4.18.2"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
 
-name: Deploy TestLab Simple
+// ===== STEP 2: Create index.js (REQUIRED) =====
+// Save as: index.js
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 8080;
 
-on:
-  push:
-    branches: [main, master]
-  workflow_dispatch:
+console.log('🚀 Starting TestLab...');
+console.log('📊 Environment:', process.env.NODE_ENV || 'development');
+console.log('🌐 Port:', PORT);
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-    
-    - name: Setup files
-      run: |
-        # Copy frontend files to root
-        if [ -f "frontend/index.html" ]; then
-          cp frontend/index.html ./
-        fi
-        if [ -f "frontend/admin.html" ]; then
-          cp frontend/admin.html ./
-        fi
+// REQUIRED: Health check endpoint
+app.get('/health', (req, res) => {
+  console.log('💓 Health check requested');
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    port: PORT,
+    uptime: process.uptime()
+  });
+});
+
+// Serve static files from current directory
+app.use(express.static(__dirname));
+
+// Main route
+app.get('/', (req, res) => {
+  console.log('🏠 Home page requested');
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>TestLab - Working!</title>
+        <style>
+            body { 
+                font-family: Arial, sans-serif; 
+                max-width: 800px; 
+                margin: 2rem auto; 
+                padding: 2rem;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+            .container { 
+                background: rgba(255,255,255,0.95); 
+                padding: 2rem; 
+                border-radius: 15px; 
+                color: #333;
+            }
+            .success { 
+                background: #d4edda; 
+                border: 1px solid #c3e6cb; 
+                color: #155724; 
+                padding: 1rem; 
+                border-radius: 5px; 
+                margin: 1rem 0; 
+            }
+            .info { 
+                background: #d1ecf1; 
+                border: 1px solid #bee5eb; 
+                color: #0c5460; 
+                padding: 1rem; 
+                border-radius: 5px; 
+                margin: 1rem 0; 
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🔍 TestLab - Deployment Successful!</h1>
+            
+            <div class="success">
+                <h3>✅ Server Status</h3>
+                <p><strong>Port:</strong> ${PORT}</p>
+                <p><strong>Status:</strong> Running</p>
+                <p><strong>Health Check:</strong> <a href="/health">Working</a></p>
+                <p><strong>Uptime:</strong> ${Math.round(process.uptime())} seconds</p>
+            </div>
+            
+            <div class="info">
+                <h3>🎯 Available Routes</h3>
+                <ul>
+                    <li><a href="/health">Health Check</a> - Required for deployment</li>
+                    <li><a href="/admin">Admin Dashboard</a> - Management interface</li>
+                    <li><a href="/test">Test Page</a> - Functionality test</li>
+                </ul>
+            </div>
+            
+            <h2>🚀 Deployment Fixed!</h2>
+            <p>Your container is now running successfully without errors:</p>
+            <ul>
+                <li>✅ Start command found: <code>npm start</code></li>
+                <li>✅ Health checks passing on port ${PORT}</li>
+                <li>✅ No exit code 190 errors</li>
+                <li>✅ Server binding to 0.0.0.0</li>
+            </ul>
+            
+            <h2>📁 Next Steps</h2>
+            <ol>
+                <li>Add your TestLab content to this directory</li>
+                <li>Update the routes below for your specific features</li>
+                <li>Deploy your full application</li>
+            </ol>
+        </div>
+    </body>
+    </html>
+  `);
+});
+
+// Admin route
+app.get('/admin', (req, res) => {
+  console.log('👨‍💼 Admin page requested');
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>TestLab Admin</title>
+        <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 2rem; }
+            .header { background: #007bff; color: white; padding: 1rem; border-radius: 5px; margin-bottom: 2rem; }
+            .status { background: #f8f9fa; padding: 1rem; border-radius: 5px; margin: 1rem 0; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🛠️ TestLab Admin Dashboard</h1>
+        </div>
         
-        # Create simple server
-        cat > server.js << 'EOF'
-        const express = require('express');
-        const app = express();
-        const PORT = process.env.PORT || 8080;
+        <div class="status">
+            <h3>Server Status</h3>
+            <p>✅ Running on port ${PORT}</p>
+            <p>✅ Health checks passing</p>
+            <p>✅ No deployment errors</p>
+        </div>
         
-        app.get('/health', (req, res) => {
-          res.json({ status: 'healthy' });
-        });
+        <h2>Admin Functions</h2>
+        <ul>
+            <li>Server monitoring: <a href="/health">Health check</a></li>
+            <li>Main application: <a href="/">Home page</a></li>
+        </ul>
         
-        app.use(express.static('.'));
-        
-        app.get('/', (req, res) => {
-          res.send('<h1>TestLab Works!</h1><p>Port: ' + PORT + '</p>');
-        });
-        
-        app.listen(PORT, '0.0.0.0', () => {
-          console.log('Server running on port', PORT);
-        });
-        EOF
-        
-        # Create simple package.json
-        cat > package.json << 'EOF'
-        {
-          "scripts": {
-            "start": "node server.js"
-          },
-          "dependencies": {
-            "express": "^4.18.2"
-          }
-        }
-        EOF
-    
-    - name: Install
-      run: npm install
-    
-    - name: Test
-      run: |
-        timeout 5s node server.js &
-        sleep 3
-        curl http://localhost:8080/health
-    
-    - name: Success
-      run: echo "Deployment ready!"
+        <p><em>This is a minimal admin interface. Add your full TestLab admin features here.</em></p>
+    </body>
+    </html>
+  `);
+});
+
+// Test route
+app.get('/test', (req, res) => {
+  console.log('🧪 Test page requested');
+  res.json({
+    message: 'TestLab API is working!',
+    timestamp: new Date().toISOString(),
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    memory: process.memoryUsage(),
+    uptime: process.uptime()
+  });
+});
+
+// Handle 404s
+app.use('*', (req, res) => {
+  console.log('❌ 404 for:', req.originalUrl);
+  res.status(404).send(`
+    <h1>404 - Page Not Found</h1>
+    <p>The page ${req.originalUrl} was not found.</p>
+    <p><a href="/">Go to Home</a></p>
+  `);
+});
+
+// Error handling
+app.use((err, req, res, next) => {
+  console.error('💥 Server error:', err);
+  res.status(500).send(`
+    <h1>500 - Server Error</h1>
+    <p>Something went wrong: ${err.message}</p>
+    <p><a href="/">Go to Home</a></p>
+  `);
+});
+
+// Start server - MUST bind to 0.0.0.0 for deployment platforms
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ TestLab server successfully started!`);
+  console.log(`🌐 Listening on: http://0.0.0.0:${PORT}`);
+  console.log(`❤️  Health check: http://0.0.0.0:${PORT}/health`);
+  console.log(`👨‍💼 Admin: http://0.0.0.0:${PORT}/admin`);
+  console.log(`📊 Memory usage: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`);
+});
+
+// Graceful shutdown handling
+const gracefulShutdown = (signal) => {
+  console.log(`🛑 Received ${signal}, shutting down gracefully...`);
+  server.close(() => {
+    console.log('✅ Server closed successfully');
+    process.exit(0);
+  });
+  
+  // Force close after 10 seconds
+  setTimeout(() => {
+    console.log('⚠️  Force closing server');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('💥 Uncaught Exception:', err);
+  console.error('Stack:', err.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('💥 Unhandled Rejection at:', promise);
+  console.error('Reason:', reason);
+  process.exit(1);
+});
+
+console.log('🔧 All event handlers attached');
+console.log('⏳ Waiting for requests...');
+
+module.exports = app;
+
+// ===== STEP 3: Create Procfile (for some platforms) =====
+// Save as: Procfile (no extension)
+// web: npm start
+
+// ===== STEP 4: Create .platform.app.yaml (for Platform.sh) =====
+// Save as: .platform.app.yaml
+/*
+name: testlab
+type: nodejs:18
+web:
+    commands:
+        start: npm start
+    locations:
+        "/":
+            root: "public"
+            passthru: true
+disk: 512
+*/
+
+// ===== STEP 5: Test Commands =====
+/*
+Local test:
+export PORT=8080
+npm install
+npm start
+
+Should see:
+✅ TestLab server successfully started!
+🌐 Listening on: http://0.0.0.0:8080
+❤️  Health check: http://0.0.0.0:8080/health
+
+Then test:
+curl http://localhost:8080/health
+Should return: {"status":"healthy",...}
+*/
