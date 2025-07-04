@@ -820,13 +820,17 @@
             showAlert(3, 'Setting up TestLab...', 'info');
             
             try {
+                console.log('Sending setup data:', setupData);
+                
                 const response = await fetch('./api/setup/complete', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(setupData)
                 });
                 
+                console.log('Response status:', response.status);
                 const result = await response.json();
+                console.log('Response data:', result);
                 
                 if (result.success) {
                     // Show completion screen
@@ -860,10 +864,17 @@ Setup completed at: ${new Date().toLocaleString()}`;
                     
                     document.getElementById('configPreview').textContent = config;
                 } else {
-                    showAlert(3, `Setup failed: ${result.error}`, 'danger');
+                    showAlert(3, `Setup failed: ${result.error || 'Unknown error'}`, 'danger');
+                    console.error('Setup failed:', result);
                 }
             } catch (error) {
-                showAlert(3, `Setup error: ${error.message}`, 'danger');
+                console.error('Setup error:', error);
+                showAlert(3, `Setup error: ${error.message}. Check browser console for details.`, 'danger');
+                
+                // Show more details in console
+                console.log('Current URL:', window.location.href);
+                console.log('API URL:', './api/setup/complete');
+                console.log('Full error:', error);
             }
         }
 

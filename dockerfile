@@ -1,48 +1,39 @@
 # FILE LOCATION: /Dockerfile (root directory)
-# Docker configuration for Railway deployment
+# Simple Dockerfile for Railway deployment debugging
 
 FROM node:18-alpine
-
-# Install Chrome dependencies for Lighthouse (if needed later)
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont
-
-# Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # Create app directory
 WORKDIR /app
 
-# Copy package files first (for better caching)
+# Copy package files
 COPY package*.json ./
-COPY backend/package*.json ./backend/
 
-# Install dependencies
+# Install only production dependencies
 RUN npm install --production
-RUN cd backend && npm install --production || echo "Backend dependencies optional"
 
-# Copy all application files
+# Copy application files
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p logs temp uploads backend
+# Create directories and ensure permissions
+RUN mkdir -p frontend backend && \
+    chmod -R 755 .
 
-# Set proper permissions
-RUN chmod -R 755 frontend backend
+# Show what files we have (for debugging)
+RUN echo "=== Files in /app ===" && \
+    ls -la && \
+    echo "=== Files in /app/frontend ===" && \
+    ls -la frontend/ || echo "No frontend directory" && \
+    echo "=== Environment ===" && \
+    echo "NODE_ENV: $NODE_ENV" && \
+    echo "PORT: $PORT"
 
-# Expose port (Railway will set this)
+# Expose port (Railway sets this automatically)
 EXPOSE ${PORT:-3000}
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -q -O /dev/null http://localhost:${PORT:-3000}/api/health || exit 1
+  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 3000) + '/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => { process.exit(1); });"
 
-# Start the combined server
-CMD ["node", "combined-server.js"]
+# Use the simple server for debugging
+CMD ["node", "simple-server.js"]
