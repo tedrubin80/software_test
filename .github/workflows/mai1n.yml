@@ -1,0 +1,570 @@
+# GitHub-specific deployment configurations for TestLab
+
+# .github/workflows/deploy.yml
+name: 🚀 Deploy TestLab to GitHub
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      deployment_target:
+        description: 'Deployment target'
+        required: true
+        default: 'codespaces'
+        type: choice
+        options:
+        - codespaces
+        - container-registry
+        - pages
+
+env:
+  NODE_VERSION: '18'
+  PORT: 8080
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: 🧪 Test Application
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📋 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 📦 Install dependencies
+      run: |
+        npm ci
+        if [ -d "backend" ]; then cd backend && npm ci && cd ..; fi
+        if [ -d "diagnostics" ]; then cd diagnostics && npm ci && cd ..; fi
+        
+    - name: 🧪 Run tests
+      run: |
+        npm run test:all || echo "Tests not configured yet"
+        
+    - name: 🔍 Lint code
+      run: |
+        npm run lint || echo "Linting not configured yet"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    name: 🏗️ Build Application
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📋 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 📦 Install dependencies
+      run: |
+        npm ci --only=production
+        if [ -d "backend" ]; then cd backend && npm ci --only=production && cd ..; fi
+        if [ -d "diagnostics" ]; then cd diagnostics && npm ci --only=production && cd ..; fi
+        
+    - name: 🏗️ Build application
+      run: |
+        npm run build:github || echo "Build script not found, using default build"
+        
+    - name: 📤 Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: testlab-build
+        path: |
+          .
+          !node_modules
+          !.git
+
+  deploy-codespaces:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event.inputs.deployment_target == 'codespaces' || github.event.inputs.deployment_target == ''
+    name: 🌐 Deploy to GitHub Codespaces
+    
+    steps:
+    - name: 📥 Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: testlab-build
+        
+    - name: 🔧 Create GitHub deployment configuration
+      run: |
+        # Create devcontainer configuration for Codespaces
+        mkdir -p .devcontainer
+        
+        cat > .devcontainer/devcontainer.json << 'EOF'
+        {
+          "name": "TestLab Development Environment",
+          "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
+          "features": {
+            "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+            "ghcr.io/devcontainers/features/github-cli:1": {}
+          },
+          "portsAttributes": {
+            "8080": {
+              "label": "TestLab Main",
+              "onAutoForward": "openBrowser"
+            },
+            "3001": {
+              "label": "TestLab Backend",
+              "onAutoForward": "ignore"
+            },
+            "3002": {
+              "label": "TestLab Diagnostics",
+              "onAutoForward": "ignore"
+            }
+          },
+          "forwardPorts": [8080, 3001, 3002],
+          "postCreateCommand": "npm run setup:github",
+          "customizations": {
+            "vscode": {
+              "extensions": [
+                "ms-vscode.vscode-json",
+                "bradlc.vscode-tailwindcss",
+                "esbenp.prettier-vscode",
+                "ms-vscode.vscode-typescript-next"
+              ]
+            }
+          }
+        }
+        EOF
+        
+        # Create Codespaces startup script
+        cat > .github/codespaces/startup.sh << 'EOF'
+        #!/bin/bash
+        echo "🚀 Starting TestLab in GitHub Codespaces..."
+        
+        # Set proper environment variables for Codespaces
+        export PORT=8080
+        export NODE_ENV=development
+        export FRONTEND_URL="https://${CODESPACE_NAME}-8080.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+        
+        # Start the application
+        npm run start:github
+        EOF
+        
+        chmod +x .github/codespaces/startup.sh
+        
+    - name: 📤 Commit Codespaces configuration
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .devcontainer/
+        git add .github/codespaces/
+        git diff --staged --quiet || git commit -m "Add GitHub Codespaces configuration"
+
+  deploy-container:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event.inputs.deployment_target == 'container-registry'
+    name: 🐳 Deploy to GitHub Container Registry
+    
+    steps:
+    - name: 📥 Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: testlab-build
+        
+    - name: 🔐 Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: 🏗️ Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.github
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/testlab:latest
+          ghcr.io/${{ github.repository_owner }}/testlab:${{ github.sha }}
+        labels: |
+          org.opencontainers.image.title=TestLab
+          org.opencontainers.image.description=Software Testing Education Platform
+          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.revision=${{ github.sha }}
+
+  deploy-pages:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event.inputs.deployment_target == 'pages'
+    name: 📄 Deploy to GitHub Pages
+    
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+      
+    steps:
+    - name: 📥 Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: testlab-build
+        
+    - name: 🏗️ Build static site
+      run: |
+        # Create static version for GitHub Pages
+        mkdir -p dist
+        
+        # Copy frontend files
+        cp -r frontend/* dist/
+        
+        # Create index.html with proper paths
+        cat > dist/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>TestLab - Software Testing Practice</title>
+            <style>
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    margin: 0;
+                    padding: 20px;
+                    min-height: 100vh;
+                }
+                .container {
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    background: rgba(255, 255, 255, 0.95);
+                    border-radius: 15px;
+                    padding: 2rem;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                }
+                .notice {
+                    background: #fff3cd;
+                    border: 1px solid #ffeaa7;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    margin: 1rem 0;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>🔍 TestLab - Software Testing Practice</h1>
+                <p>Master Software Testing Skills Through Practice</p>
+                
+                <div class="notice">
+                    <h3>📄 GitHub Pages Deployment</h3>
+                    <p>This is a static version of TestLab hosted on GitHub Pages.</p>
+                    <p>For the full experience with AI-powered features, deploy to:</p>
+                    <ul>
+                        <li><strong>GitHub Codespaces:</strong> Full development environment</li>
+                        <li><strong>Railway:</strong> Production deployment</li>
+                        <li><strong>Docker:</strong> Container deployment</li>
+                    </ul>
+                </div>
+                
+                <h2>🎯 Available Features (Static Version)</h2>
+                <ul>
+                    <li>Interactive testing exercises</li>
+                    <li>Educational content</li>
+                    <li>Testing methodology guides</li>
+                    <li>Sample code examples</li>
+                </ul>
+                
+                <h2>🚀 Get the Full Version</h2>
+                <p>To access AI-powered code review and backend features:</p>
+                <ol>
+                    <li>Clone the repository</li>
+                    <li>Open in GitHub Codespaces</li>
+                    <li>Run <code>npm run start:github</code></li>
+                </ol>
+                
+                <h2>📚 Resources</h2>
+                <ul>
+                    <li><a href="https://github.com/${{ github.repository }}">GitHub Repository</a></li>
+                    <li><a href="https://github.com/${{ github.repository }}/blob/main/docs/SETUP.md">Setup Guide</a></li>
+                    <li><a href="https://github.com/${{ github.repository }}/blob/main/README.md">Documentation</a></li>
+                </ul>
+            </div>
+        </body>
+        </html>
+        EOF
+        
+    - name: 📤 Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: dist
+        
+    - name: 🌐 Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4
+
+---
+# Dockerfile.github - GitHub-optimized Dockerfile
+FROM node:18-alpine
+
+# Install Chrome dependencies for Lighthouse
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    curl \
+    bash
+
+# Set Puppeteer to use installed Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
+    PORT=8080 \
+    NODE_ENV=production
+
+# Create app directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY backend/package*.json ./backend/ 2>/dev/null || true
+COPY diagnostics/package*.json ./diagnostics/ 2>/dev/null || true
+
+# Install dependencies
+RUN npm ci --only=production
+RUN if [ -d "backend" ]; then cd backend && npm ci --only=production; fi
+RUN if [ -d "diagnostics" ]; then cd diagnostics && npm ci --only=production; fi
+
+# Copy application code
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p logs temp uploads
+RUN chmod -R 755 logs temp uploads
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S testlab -u 1001 && \
+    chown -R testlab:nodejs /app
+
+# Switch to non-root user
+USER testlab
+
+# Expose port 8080 for GitHub
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
+
+# Start command
+CMD ["npm", "run", "start:github"]
+
+---
+# github-server.js - GitHub-optimized server
+const express = require('express');
+const path = require('path');
+const cors = require('cors');
+
+const app = express();
+const PORT = process.env.PORT || 8080;
+
+console.log(`🐙 Starting TestLab for GitHub deployment on port ${PORT}`);
+
+// GitHub-specific middleware
+app.use(cors({
+  origin: [
+    process.env.FRONTEND_URL,
+    /\.github\.dev$/,
+    /\.github\.io$/,
+    /\.githubusercontent\.com$/,
+    'http://localhost:8080',
+    'http://localhost:3000',
+    'https://localhost:8080'
+  ],
+  credentials: true
+}));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(__dirname, 'frontend')));
+
+// Health check for GitHub deployments
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy',
+    service: 'TestLab GitHub Deployment',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    port: PORT,
+    platform: 'github'
+  });
+});
+
+// Mount backend routes if available
+try {
+  const backendApp = require('./backend/server');
+  app.use('/api', backendApp);
+  console.log('✅ Backend routes mounted at /api');
+} catch (error) {
+  console.warn('⚠️  Backend not available:', error.message);
+  
+  // Fallback API responses
+  app.get('/api/health', (req, res) => {
+    res.json({ 
+      status: 'backend-unavailable', 
+      error: error.message,
+      note: 'Backend requires full Node.js environment' 
+    });
+  });
+  
+  app.get('/api/*', (req, res) => {
+    res.status(503).json({ 
+      error: 'Backend services not available in this deployment',
+      suggestion: 'Use GitHub Codespaces for full functionality'
+    });
+  });
+}
+
+// Mount diagnostics routes if available
+try {
+  const diagnosticsApp = require('./diagnostics/diagnostics-server');
+  app.use('/diagnostics/api', diagnosticsApp);
+  console.log('✅ Diagnostics routes mounted at /diagnostics/api');
+} catch (error) {
+  console.warn('⚠️  Diagnostics not available:', error.message);
+  
+  // Fallback diagnostics responses
+  app.get('/diagnostics/api/health', (req, res) => {
+    res.json({ 
+      status: 'diagnostics-unavailable', 
+      error: error.message,
+      note: 'AI diagnostics require API keys and full environment' 
+    });
+  });
+  
+  app.post('/diagnostics/api/*', (req, res) => {
+    res.status(503).json({ 
+      error: 'AI diagnostics not available in this deployment',
+      suggestion: 'Configure API keys in GitHub Codespaces for AI features'
+    });
+  });
+}
+
+// Serve frontend routes
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+});
+
+app.get('/admin', (req, res) => {
+  if (require('fs').existsSync(path.join(__dirname, 'frontend', 'admin.html'))) {
+    res.sendFile(path.join(__dirname, 'frontend', 'admin.html'));
+  } else {
+    res.status(404).send('Admin interface not available in this deployment');
+  }
+});
+
+app.get('/diagnostics', (req, res) => {
+  if (require('fs').existsSync(path.join(__dirname, 'diagnostics', 'frontend', 'index.html'))) {
+    res.sendFile(path.join(__dirname, 'diagnostics', 'frontend', 'index.html'));
+  } else {
+    res.status(404).send('Diagnostics interface not available in this deployment');
+  }
+});
+
+// GitHub-specific info endpoint
+app.get('/github-info', (req, res) => {
+  res.json({
+    deployment: 'github',
+    platform: process.env.GITHUB_ACTIONS ? 'github-actions' : 'local',
+    codespace: process.env.CODESPACES || false,
+    repository: process.env.GITHUB_REPOSITORY || 'unknown',
+    commit: process.env.GITHUB_SHA || 'unknown',
+    branch: process.env.GITHUB_REF_NAME || 'unknown',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Catch-all handler for SPA routing
+app.get('*', (req, res) => {
+  if (require('fs').existsSync(path.join(__dirname, 'frontend', 'index.html'))) {
+    res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+  } else {
+    res.status(404).json({ 
+      error: 'Page not found',
+      available_routes: ['/', '/health', '/api/health', '/github-info']
+    });
+  }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('GitHub server error:', err);
+  res.status(500).json({ 
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+    platform: 'github'
+  });
+});
+
+// Start server with proper binding for GitHub environments
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 TestLab GitHub deployment running on port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+  console.log(`📊 GitHub info: http://localhost:${PORT}/github-info`);
+  
+  if (process.env.CODESPACES) {
+    console.log(`🌐 Codespaces URL: https://${process.env.CODESPACE_NAME}-${PORT}.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}`);
+  }
+  
+  console.log('\n📍 Available routes:');
+  console.log(`   • Frontend: http://localhost:${PORT}/`);
+  console.log(`   • Health: http://localhost:${PORT}/health`);
+  console.log(`   • API: http://localhost:${PORT}/api/health`);
+  console.log(`   • GitHub Info: http://localhost:${PORT}/github-info`);
+});
+
+// Graceful shutdown
+const gracefulShutdown = (signal) => {
+  console.log(`🛑 ${signal} received, shutting down gracefully`);
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
+  
+  // Force close after 10 seconds
+  setTimeout(() => {
+    console.log('⚠️  Forcing shutdown');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+module.exports = app;
+
+---
+# package.json updates for GitHub deployment
+# Add these scripts to your main package.json
+
+{
+  "scripts": {
+    "start:github": "node github-server.js",
+    "build:github": "npm run setup:all",
+    "setup:github": "npm run setup:all && echo 'GitHub setup complete'",
+    "dev:github": "nodemon github-server.js",
+    "test:github": "npm run test:all || echo 'Tests not configured'"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

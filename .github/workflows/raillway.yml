@@ -1,0 +1,492 @@
+# Railway-specific deployment configurations for TestLab
+
+# railway.json - Railway service configuration
+# Save as: railway.json
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "sleepApplication": false,
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
+
+---
+# Dockerfile for Railway deployment
+# Save as: Dockerfile
+FROM node:18-alpine
+
+# Install Chrome dependencies for Lighthouse
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
+
+# Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Create app directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY backend/package*.json ./backend/
+COPY diagnostics/package*.json ./diagnostics/
+
+# Install dependencies
+RUN npm ci --only=production
+RUN cd backend && npm ci --only=production
+RUN cd diagnostics && npm ci --only=production
+
+# Copy application code
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p logs temp uploads
+
+# Expose ports
+EXPOSE $PORT
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:$PORT/api/health || exit 1
+
+# Start the application
+CMD ["npm", "run", "start:railway"]
+
+---
+# .dockerignore
+# Save as: .dockerignore
+node_modules
+.git
+.gitignore
+README.md
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.db
+logs/
+temp/
+uploads/
+coverage/
+.nyc_output/
+
+---
+# Railway-optimized package.json scripts
+# Add these scripts to your main package.json
+{
+  "scripts": {
+    "start:railway": "node railway-server.js",
+    "build:railway": "npm run setup:all",
+    "deploy:railway": "railway up",
+    "railway:backend": "cd backend && PORT=$PORT npm start",
+    "railway:diagnostics": "cd diagnostics && PORT=$DIAGNOSTICS_PORT npm start",
+    "railway:combined": "node railway-server.js"
+  }
+}
+
+---
+# Railway environment variables template
+# Set these in Railway dashboard or .env for local testing
+# 
+# Required Environment Variables for Railway:
+# PORT=3000 (automatically set by Railway)
+# NODE_ENV=production
+# DATABASE_URL=postgresql://user:pass@host:port/db (if using PostgreSQL)
+# 
+# TestLab Specific:
+# JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+# FRONTEND_URL=https://your-app.railway.app
+# 
+# AI Service API Keys:
+# OPENAI_API_KEY=sk-your-openai-key
+# ANTHROPIC_API_KEY=sk-ant-your-claude-key  
+# TOGETHER_AI_API_KEY=your-together-ai-key
+# 
+# Optional:
+# DIAGNOSTICS_PORT=3002
+# CORS_ORIGIN=https://your-frontend-domain.com
+# LOG_LEVEL=info
+# DISABLE_LIGHTHOUSE=true (if Chrome issues on Railway)
+
+---
+# Railway server configuration
+# Save as: railway-server.js
+const express = require('express');
+const path = require('path');
+const cors = require('cors');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'https://*.railway.app',
+  credentials: true
+}));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(__dirname, 'frontend')));
+
+// Health check for Railway
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy',
+    service: 'TestLab Railway Deployment',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Import and mount backend routes
+try {
+  const backendApp = require('./backend/server');
+  app.use('/api', backendApp);
+  console.log('✅ Backend routes mounted');
+} catch (error) {
+  console.warn('⚠️  Backend not available:', error.message);
+  
+  // Fallback API health check
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'backend-unavailable', error: error.message });
+  });
+}
+
+// Import and mount diagnostics routes
+try {
+  const diagnosticsApp = require('./diagnostics/diagnostics-server');
+  app.use('/diagnostics', diagnosticsApp);
+  console.log('✅ Diagnostics routes mounted');
+} catch (error) {
+  console.warn('⚠️  Diagnostics not available:', error.message);
+  
+  // Fallback diagnostics health check
+  app.get('/diagnostics/api/health', (req, res) => {
+    res.json({ status: 'diagnostics-unavailable', error: error.message });
+  });
+}
+
+// Serve frontend
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+});
+
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'admin.html'));
+});
+
+app.get('/diagnostics', (req, res) => {
+  res.sendFile(path.join(__dirname, 'diagnostics', 'frontend', 'index.html'));
+});
+
+// Catch-all handler
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+});
+
+// Error handling
+app.use((err, req, res, next) => {
+  console.error('Railway server error:', err);
+  res.status(500).json({ 
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
+});
+
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 TestLab running on Railway at port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+  
+  // Log available routes
+  console.log('\n📍 Available routes:');
+  console.log(`   • Frontend: http://localhost:${PORT}/`);
+  console.log(`   • Admin: http://localhost:${PORT}/admin`);
+  console.log(`   • Diagnostics: http://localhost:${PORT}/diagnostics`);
+  console.log(`   • API: http://localhost:${PORT}/api/health`);
+  console.log(`   • Diagnostics API: http://localhost:${PORT}/diagnostics/api/health`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 SIGINT received, shutting down gracefully');
+  process.exit(0);
+});
+
+module.exports = app;
+
+---
+# Railway deployment script
+# Save as: scripts/deploy-railway.sh
+#!/bin/bash
+
+echo "🚂 Deploying TestLab to Railway..."
+
+# Check if Railway CLI is installed
+if ! command -v railway &> /dev/null; then
+    echo "❌ Railway CLI not found. Installing..."
+    npm install -g @railway/cli
+fi
+
+# Login to Railway (if not already logged in)
+echo "🔐 Checking Railway authentication..."
+if ! railway whoami &> /dev/null; then
+    echo "Please login to Railway:"
+    railway login
+fi
+
+# Create new Railway project (if needed)
+if [ ! -f "railway.json" ]; then
+    echo "📋 Creating Railway project..."
+    railway init
+fi
+
+# Set environment variables
+echo "⚙️  Setting up environment variables..."
+
+# Required variables
+railway variables set NODE_ENV=production
+railway variables set JWT_SECRET=$(openssl rand -base64 32)
+
+# Prompt for API keys if not set
+if [ -z "$OPENAI_API_KEY" ]; then
+    read -p "Enter OpenAI API Key (optional): " OPENAI_KEY
+    if [ ! -z "$OPENAI_KEY" ]; then
+        railway variables set OPENAI_API_KEY="$OPENAI_KEY"
+    fi
+fi
+
+if [ -z "$ANTHROPIC_API_KEY" ]; then
+    read -p "Enter Anthropic API Key (optional): " ANTHROPIC_KEY
+    if [ ! -z "$ANTHROPIC_KEY" ]; then
+        railway variables set ANTHROPIC_API_KEY="$ANTHROPIC_KEY"
+    fi
+fi
+
+if [ -z "$TOGETHER_AI_API_KEY" ]; then
+    read -p "Enter Together AI API Key (optional): " TOGETHER_KEY
+    if [ ! -z "$TOGETHER_KEY" ]; then
+        railway variables set TOGETHER_AI_API_KEY="$TOGETHER_KEY"
+    fi
+fi
+
+# Deploy to Railway
+echo "🚀 Deploying to Railway..."
+railway up
+
+# Get deployment URL
+DEPLOY_URL=$(railway domain)
+if [ ! -z "$DEPLOY_URL" ]; then
+    echo "✅ Deployment successful!"
+    echo "🌍 Your TestLab is available at: https://$DEPLOY_URL"
+    
+    # Set frontend URL
+    railway variables set FRONTEND_URL="https://$DEPLOY_URL"
+    
+    echo ""
+    echo "🎯 Access points:"
+    echo "   • Main app: https://$DEPLOY_URL"
+    echo "   • Admin: https://$DEPLOY_URL/admin"
+    echo "   • Diagnostics: https://$DEPLOY_URL/diagnostics"
+    echo "   • API Health: https://$DEPLOY_URL/api/health"
+else
+    echo "❌ Could not retrieve deployment URL"
+    echo "Check Railway dashboard for deployment status"
+fi
+
+echo ""
+echo "🎉 Railway deployment complete!"
+
+---
+# Railway-specific backend modifications
+# Add to backend/server.js for Railway compatibility
+
+// Railway-specific configurations
+const isRailway = process.env.RAILWAY_ENVIRONMENT_NAME || process.env.RAILWAY_PROJECT_ID;
+
+if (isRailway) {
+    console.log('🚂 Running on Railway environment');
+    
+    // Use PostgreSQL on Railway instead of SQLite
+    const dbUrl = process.env.DATABASE_URL;
+    if (dbUrl) {
+        console.log('📊 Using PostgreSQL database');
+        // Configure PostgreSQL connection here
+    } else {
+        console.log('📊 Using SQLite database (dev mode)');
+    }
+    
+    // Disable Lighthouse on Railway if Chrome issues
+    if (process.env.DISABLE_LIGHTHOUSE === 'true') {
+        console.log('🔍 Lighthouse disabled for Railway deployment');
+    }
+}
+
+// Port configuration for Railway
+const PORT = process.env.PORT || 3001;
+
+// CORS configuration for Railway
+const corsOptions = {
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            process.env.FRONTEND_URL,
+            /\.railway\.app$/,
+            'http://localhost:3000',
+            'http://localhost:3001',
+            'http://localhost:3002'
+        ];
+        
+        if (!origin || allowedOrigins.some(allowed => 
+            typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
+        )) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+};
+
+app.use(cors(corsOptions));
+
+---
+# Railway deployment checklist
+# Save as: docs/RAILWAY_DEPLOYMENT.md
+
+# 🚂 Railway Deployment Guide for TestLab
+
+## Prerequisites
+- Railway account (https://railway.app)
+- Railway CLI installed (`npm install -g @railway/cli`)
+- GitHub repository with TestLab code
+
+## Quick Deploy
+
+### Option 1: Automated Script
+```bash
+chmod +x scripts/deploy-railway.sh
+./scripts/deploy-railway.sh
+```
+
+### Option 2: Manual Setup
+1. **Install Railway CLI**
+   ```bash
+   npm install -g @railway/cli
+   railway login
+   ```
+
+2. **Create Railway Project**
+   ```bash
+   railway init
+   ```
+
+3. **Set Environment Variables**
+   ```bash
+   railway variables set NODE_ENV=production
+   railway variables set JWT_SECRET=$(openssl rand -base64 32)
+   railway variables set OPENAI_API_KEY=your-key
+   railway variables set ANTHROPIC_API_KEY=your-key
+   railway variables set TOGETHER_AI_API_KEY=your-key
+   ```
+
+4. **Deploy**
+   ```bash
+   railway up
+   ```
+
+## Railway-Specific Features
+
+### Environment Variables
+Railway automatically provides:
+- `PORT` - Application port (use this instead of hardcoded ports)
+- `RAILWAY_ENVIRONMENT_NAME` - Environment identifier
+- `DATABASE_URL` - PostgreSQL connection string (if database added)
+
+### Database Options
+1. **SQLite (Development)** - Works for testing
+2. **PostgreSQL (Production)** - Recommended for production
+   ```bash
+   railway add postgresql
+   ```
+
+### Custom Domain
+```bash
+railway domain set your-domain.com
+```
+
+## Troubleshooting
+
+### Common Issues
+1. **Port Issues** - Always use `process.env.PORT`
+2. **CORS Errors** - Configure CORS for `.railway.app` domains
+3. **Chrome/Lighthouse Issues** - Set `DISABLE_LIGHTHOUSE=true`
+4. **Database Connection** - Check `DATABASE_URL` variable
+
+### Logs
+```bash
+railway logs
+```
+
+### Connect to Service
+```bash
+railway shell
+```
+
+## Performance Optimization
+
+1. **Use PostgreSQL** for production
+2. **Enable compression** in Express
+3. **Set up caching** with Redis
+4. **Monitor with Railway metrics**
+
+## Security
+
+1. **Environment Variables** - Never commit API keys
+2. **HTTPS** - Automatic with Railway
+3. **CORS** - Properly configured for your domain
+4. **Rate Limiting** - Already included in TestLab
+
+## Scaling
+
+Railway automatically handles:
+- **Load balancing**
+- **Auto-scaling** based on traffic
+- **Zero-downtime deployments**
+- **Health checks**
+
+---
+# nixpacks.toml - Railway build configuration
+# Save as: nixpacks.toml
+
+[phases.build]
+cmds = [
+    "npm ci --only=production",
+    "cd backend && npm ci --only=production",
+    "cd diagnostics && npm ci --only=production"
+]
+
+[phases.install]
+cmds = ["npm install -g npm@latest"]
+
+[start]
+cmd = "npm run start:railway"
