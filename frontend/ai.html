@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-AI Website Diagnostics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        .diagnostic-form {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .ai-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .ai-option {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-option:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+        }
+
+        .ai-option.selected {
+            border-color: #27ae60;
+            background: #d4edda;
+        }
+
+        .ai-option input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.btn-large {
+            width: 100%;
+            padding: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .status-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .status-item {
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .status-item.active {
+            background: #d4edda;
+            border: 2px solid #27ae60;
+        }
+
+        .status-item.inactive {
+            background: #f8d7da;
+            border: 2px solid #e74c3c;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-container {
+            display: none;
+        }
+
+        .results-container.show {
+            display: block;
+        }
+
+        .results-overview {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .score-display {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .consensus-score {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 0.5rem;
+        }
+
+        .lighthouse-scores {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .lighthouse-score {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0 auto 0.5rem;
+            color: white;
+        }
+
+        .score-excellent { background: #27ae60; }
+        .score-good { background: #f39c12; }
+        .score-poor { background: #e74c3c; }
+
+        .issues-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .issue-item {
+            background: #f8f9fa;
+            border-left: 4px solid #f39c12;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+        }
+
+        .issue-item.critical {
+            border-left-color: #e74c3c;
+            background: #fdf2f2;
+        }
+
+        .issue-item.high {
+            border-left-color: #f39c12;
+            background: #fffbf0;
+        }
+
+        .issue-item.medium {
+            border-left-color: #3498db;
+            background: #f0f9ff;
+        }
+
+        .issue-item.low {
+            border-left-color: #27ae60;
+            background: #f0fff4;
+        }
+
+        .issue-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .issue-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .severity-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: auto;
+        }
+
+        .confidence-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .ai-badges {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .ai-badge {
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .ai-badge.chatgpt { background: #10a37f; }
+        .ai-badge.claude { background: #d97757; }
+        .ai-badge.llama { background: #4a90e2; }
+
+        .ai-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .ai-result {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .ai-result h3 {
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .agreement-meter {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .agreement-bar {
+            background: #e9ecef;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .agreement-fill {
+            background: linear-gradient(90deg, #e74c3c, #f39c12, #27ae60);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .error-alert {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        .success-alert {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .ai-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .lighthouse-scores {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .ai-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Multi-AI Website Diagnostics</h1>
+            <p>Comprehensive website analysis powered by ChatGPT, Claude, and Llama</p>
+        </div>
+
+        <!-- Service Status Panel -->
+        <div class="status-panel">
+            <h3 style="margin-bottom: 1rem;">🤖 AI Service Status</h3>
+            <div class="status-grid" id="serviceStatus">
+                <div class="status-item inactive">
+                    <strong>ChatGPT</strong><br>
+                    <small>Checking status...</small>
+                </div>
+                <div class="status-item inactive">
+                    <strong>Claude</strong><br>
+                    <small>Checking status...</small>
+                </div>
+                <div class="status-item inactive">
+                    <strong>Llama</strong><br>
+                    <small>Checking status...</small>
+                </div>
+                <div class="status-item active">
+                    <strong>Lighthouse</strong><br>
+                    <small>Performance auditing</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagnostic Form -->
+        <div class="diagnostic-form">
+            <h2 style="margin-bottom: 1.5rem;">🌐 Website Analysis</h2>
+            
+            <form id="diagnosticForm">
+                <div class="form-group">
+                    <label for="websiteUrl">Website URL:</label>
+                    <input type="url" id="websiteUrl" placeholder="https://example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Select AI Models for Analysis:</label>
+                    <div class="ai-selector">
+                        <div class="ai-option selected" onclick="toggleAI('chatgpt')">
+                            <input type="checkbox" id="ai-chatgpt" checked>
+                            <strong>🤖 ChatGPT</strong><br>
+                            <small>GPT-4 analysis</small>
+                        </div>
+                        <div class="ai-option selected" onclick="toggleAI('claude')">
+                            <input type="checkbox" id="ai-claude" checked>
+                            <strong>🧠 Claude</strong><br>
+                            <small>Claude 3 Sonnet</small>
+                        </div>
+                        <div class="ai-option selected" onclick="toggleAI('llama')">
+                            <input type="checkbox" id="ai-llama" checked>
+                            <strong>🦙 Llama</strong><br>
+                            <small>Llama 2 70B</small>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-large" id="analyzeBtn">
+                    🚀 Start Comprehensive Analysis
+                </button>
+            </form>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loadingState">
+            <div class="spinner"></div>
+            <h3>Analyzing Website...</h3>
+            <p id="loadingStatus">Fetching website content...</p>
+            <div style="background: rgba(255,255,255,0.9); padding: 1rem; border-radius: 10px; margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Website Content</span>
+                    <span id="step1">⏳</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Lighthouse Audit</span>
+                    <span id="step2">⏳</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>AI Analysis</span>
+                    <span id="step3">⏳</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Generating Report</span>
+                    <span id="step4">⏳</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Container -->
+        <div class="results-container" id="resultsContainer">
+            <!-- Overview Section -->
+            <div class="results-overview">
+                <div class="score-display">
+                    <div class="consensus-score" id="consensusScore">-</div>
+                    <h3>Consensus Score</h3>
+                    <p>Based on analysis from multiple AI models</p>
+                </div>
+
+                <div class="agreement-meter">
+                    <h4>AI Agreement Level</h4>
+                    <div class="agreement-bar">
+                        <div class="agreement-fill" id="agreementFill" style="width: 0%"></div>
+                    </div>
+                    <p id="agreementText">Analyzing consensus...</p>
+                </div>
+
+                <div class="lighthouse-scores" id="lighthouseScores">
+                    <!-- Lighthouse scores will be populated here -->
+                </div>
+            </div>
+
+            <!-- High Priority Issues -->
+            <div class="issues-section">
+                <h2>🚨 High Priority Issues (Consensus)</h2>
+                <p style="margin-bottom: 1rem;">Issues identified by multiple AI models</p>
+                <div id="consensusIssues">
+                    <!-- Consensus issues will be populated here -->
+                </div>
+            </div>
+
+            <!-- All Issues -->
+            <div class="issues-section">
+                <h2>📋 All Identified Issues</h2>
+                <div id="allIssues">
+                    <!-- All issues will be populated here -->
+                </div>
+            </div>
+
+            <!-- Individual AI Results -->
+            <div class="ai-comparison" id="aiComparison">
+                <!-- Individual AI results will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3002/api';
+        let selectedAIs = ['chatgpt', 'claude', 'llama'];
+
+        // Check service status on load
+        async function checkServiceStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/diagnostic-status`);
+                const status = await response.json();
+                
+                updateServiceStatus(status.services);
+            } catch (error) {
+                console.error('Failed to check service status:', error);
+            }
+        }
+
+        function updateServiceStatus(services) {
+            const statusGrid = document.getElementById('serviceStatus');
+            const items = statusGrid.children;
+            
+            items[0].className = `status-item ${services.chatgpt ? 'active' : 'inactive'}`;
+            items[0].innerHTML = `<strong>ChatGPT</strong><br><small>${services.chatgpt ? 'Ready' : 'Not configured'}</small>`;
+            
+            items[1].className = `status-item ${services.claude ? 'active' : 'inactive'}`;
+            items[1].innerHTML = `<strong>Claude</strong><br><small>${services.claude ? 'Ready' : 'Not configured'}</small>`;
+            
+            items[2].className = `status-item ${services.llama ? 'active' : 'inactive'}`;
+            items[2].innerHTML = `<strong>Llama</strong><br><small>${services.llama ? 'Ready' : 'Not configured'}</small>`;
+        }
+
+        function toggleAI(aiName) {
+            const checkbox = document.getElementById(`ai-${aiName}`);
+            const option = checkbox.closest('.ai-option');
+            
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                option.classList.add('selected');
+                selectedAIs.push(aiName);
+            } else {
+                option.classList.remove('selected');
+                selectedAIs = selectedAIs.filter(ai => ai !== aiName);
+            }
+        }
+
+        async function startDiagnosis(url) {
+            const loadingState = document.getElementById('loadingState');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            
+            // Show loading state
+            loadingState.classList.add('show');
+            resultsContainer.classList.remove('show');
+            analyzeBtn.disabled = true;
+            
+            // Update progress steps
+            const updateStep = (stepId, status) => {
+                document.getElementById(stepId).textContent = status === 'success' ? '✅' : status === 'error' ? '❌' : '⏳';
+            };
+
+            try {
+                // Step 1: Start analysis
+                updateStep('step1', 'loading');
+                document.getElementById('loadingStatus').textContent = 'Fetching website content and running Lighthouse audit...';
+                
+                const response = await fetch(`${API_BASE}/diagnose-website`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        enabledAIs: selectedAIs
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Analysis failed');
+                }
+
+                updateStep('step1', 'success');
+                updateStep('step2', 'success');
+                
+                document.getElementById('loadingStatus').textContent = 'Running AI analysis...';
+                updateStep('step3', 'loading');
+                
+                const results = await response.json();
+                
+                updateStep('step3', 'success');
+                updateStep('step4', 'loading');
+                document.getElementById('loadingStatus').textContent = 'Generating comprehensive report...';
+                
+                // Brief delay for UX
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                updateStep('step4', 'success');
+                
+                // Display results
+                displayResults(results);
+                
+            } catch (error) {
+                console.error('Diagnosis failed:', error);
+                document.getElementById('loadingStatus').textContent = `Error: ${error.message}`;
+                updateStep('step1', 'error');
+            } finally {
+                analyzeBtn.disabled = false;
+            }
+        }
+
+        function displayResults(results) {
+            const loadingState = document.getElementById('loadingState');
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            // Hide loading, show results
+            loadingState.classList.remove('show');
+            resultsContainer.classList.add('show');
+            
+            // Display consensus score
+            document.getElementById('consensusScore').textContent = results.aiAnalysis.consensusScore || 'N/A';
+            
+            // Display AI agreement
+            const agreementLevel = results.aiAnalysis.aiAgreement.agreementLevel;
+            document.getElementById('agreementFill').style.width = `${agreementLevel}%`;
+            document.getElementById('agreementText').textContent = 
+                `${agreementLevel}% agreement between AI models (${results.aiAnalysis.aiAgreement.consensusIssues} consensus issues out of ${results.aiAnalysis.aiAgreement.totalIssuesFound} total)`;
+            
+            // Display Lighthouse scores
+            displayLighthouseScores(results.lighthouse);
+            
+            // Display consensus issues
+            displayConsensusIssues(results.aiAnalysis.highConfidenceIssues);
+            
+            // Display all issues
+            displayAllIssues(results.aiAnalysis.allIssues);
+            
+            // Display individual AI results
+            displayAIComparison(results.aiAnalysis.individualResults);
+        }
+
+        function displayLighthouseScores(lighthouse) {
+            const container = document.getElementById('lighthouseScores');
+            
+            if (!lighthouse) {
+                container.innerHTML = '<p>Lighthouse audit unavailable</p>';
+                return;
+            }
+            
+            const scores = [
+                { name: 'Performance', score: lighthouse.performance, color: getScoreColor(lighthouse.performance) },
+                { name: 'Accessibility', score: lighthouse.accessibility, color: getScoreColor(lighthouse.accessibility) },
+                { name: 'Best Practices', score: lighthouse.bestPractices, color: getScoreColor(lighthouse.bestPractices) },
+                { name: 'SEO', score: lighthouse.seo, color: getScoreColor(lighthouse.seo) }
+            ];
+            
+            container.innerHTML = scores.map(score => `
+                <div class="lighthouse-score">
+                    <div class="score-circle ${score.color}">
+                        ${Math.round(score.score)}
+                    </div>
+                    <strong>${score.name}</strong>
+                </div>
+            `).join('');
+        }
+
+        function getScoreColor(score) {
+            if (score >= 80) return 'score-excellent';
+            if (score >= 60) return 'score-good';
+            return 'score-poor';
+        }
+
+        function displayConsensusIssues(issues) {
+            const container = document.getElementById('consensusIssues');
+            
+            if (!issues || issues.length === 0) {
+                container.innerHTML = '<p style="color: #666;">No consensus issues found - AI models had different perspectives.</p>';
+                return;
+            }
+            
+            container.innerHTML = issues.map(issue => `
+                <div class="issue-item ${issue.severity}">
+                    <div class="issue-header">
+                        <div class="issue-title">${issue.title}</div>
+                        <div class="severity-badge" style="background: ${getSeverityColor(issue.severity)}">
+                            ${issue.severity.toUpperCase()}
+                        </div>
+                    </div>
+                    <div class="confidence-indicator">
+                        <strong>Confidence: ${issue.confidence}</strong>
+                        <div class="ai-badges">
+                            ${issue.agreedBy.map(ai => `<span class="ai-badge ${ai.toLowerCase()}">${ai}</span>`).join('')}
+                        </div>
+                    </div>
+                    <p><strong>Issue:</strong> ${issue.description}</p>
+                    <p><strong>Recommendation:</strong> ${issue.recommendation}</p>
+                    <p><strong>Impact:</strong> ${issue.impact}</p>
+                </div>
+            `).join('');
+        }
+
+        function displayAllIssues(issues) {
+            const container = document.getElementById('allIssues');
+            
+            if (!issues || issues.length === 0) {
+                container.innerHTML = '<p style="color: #666;">No issues found by AI analysis.</p>';
+                return;
+            }
+            
+            // Group issues by category
+            const groupedIssues = {};
+            issues.forEach(issue => {
+                if (!groupedIssues[issue.category]) {
+                    groupedIssues[issue.category] = [];
+                }
+                groupedIssues[issue.category].push(issue);
+            });
+            
+            let html = '';
+            Object.keys(groupedIssues).forEach(category => {
+                html += `<h3 style="margin: 1.5rem 0 1rem 0; text-transform: capitalize;">${category} Issues (${groupedIssues[category].length})</h3>`;
+                html += groupedIssues[category].map(issue => `
+                    <div class="issue-item ${issue.severity}">
+                        <div class="issue-header">
+                            <div class="issue-title">${issue.title}</div>
+                            <div class="severity-badge" style="background: ${getSeverityColor(issue.severity)}">
+                                ${issue.severity.toUpperCase()}
+                            </div>
+                        </div>
+                        <p><strong>Description:</strong> ${issue.description}</p>
+                        <p><strong>Recommendation:</strong> ${issue.recommendation}</p>
+                        ${issue.impact ? `<p><strong>Impact:</strong> ${issue.impact}</p>` : ''}
+                    </div>
+                `).join('');
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function displayAIComparison(individualResults) {
+            const container = document.getElementById('aiComparison');
+            
+            const aiNames = ['chatgpt', 'claude', 'llama'];
+            
+            container.innerHTML = aiNames.map(ai => {
+                const result = individualResults[ai];
+                
+                if (!result) {
+                    return `
+                        <div class="ai-result">
+                            <h3>🤖 ${ai.charAt(0).toUpperCase() + ai.slice(1)} Analysis</h3>
+                            <div class="error-alert">
+                                Service not available or analysis failed
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="ai-result">
+                        <h3>🤖 ${ai.charAt(0).toUpperCase() + ai.slice(1)} Analysis</h3>
+                        <div style="text-align: center; margin-bottom: 1rem;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #3498db;">
+                                ${result.overallScore || 'N/A'}
+                            </div>
+                            <small>Overall Score</small>
+                        </div>
+                        <p><strong>Summary:</strong> ${result.summary}</p>
+                        <p><strong>Issues Found:</strong> ${result.issues ? result.issues.length : 0}</p>
+                        ${result.priorityFixes && result.priorityFixes.length > 0 ? `
+                            <h4 style="margin-top: 1rem;">Priority Fixes:</h4>
+                            <ul>
+                                ${result.priorityFixes.map(fix => `<li>${fix}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getSeverityColor(severity) {
+            const colors = {
+                critical: '#e74c3c',
+                high: '#f39c12',
+                medium: '#3498db',
+                low: '#27ae60'
+            };
+            return colors[severity] || '#6c757d';
+        }
+
+        // Event listeners
+        document.getElementById('diagnosticForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('websiteUrl').value;
+            
+            if (selectedAIs.length === 0) {
+                alert('Please select at least one AI model for analysis');
+                return;
+            }
+            
+            await startDiagnosis(url);
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkServiceStatus();
+        });
+    </script>
+</body>
+</html>
