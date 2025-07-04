@@ -33,8 +33,12 @@ try {
   console.log('✅ Backend routes mounted');
 } catch (error) {
   console.warn('⚠️  Backend not available:', error.message);
-  
- 
+
+  // Fallback API health check
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'backend-unavailable', error: error.message });
+  });
+}
 
 // Import and mount diagnostics routes
 try {
@@ -43,14 +47,14 @@ try {
   console.log('✅ Diagnostics routes mounted');
 } catch (error) {
   console.warn('⚠️  Diagnostics not available:', error.message);
-  
+
   // Fallback diagnostics health check
   app.get('/diagnostics/api/health', (req, res) => {
     res.json({ status: 'diagnostics-unavailable', error: error.message });
   });
 }
 
-// Serve frontend
+// Serve specific frontend files
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
@@ -82,7 +86,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 TestLab running on Railway at port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-  
+
   // Log available routes
   console.log('\n📍 Available routes:');
   console.log(`   • Frontend: http://localhost:${PORT}/`);
