@@ -1,5 +1,3 @@
-// FILE PATH: railway-server.js (save in root directory)
-
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -26,25 +24,15 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Import and mount backend routes
-try {
-  console.warn('⚠️  Backend not available:', error.message);
-  
-  // Fallback API health check
-  app.get('/api/health', (req, res) => {
-    res.json({ status: 'backend-unavailable', error: error.message });
-  });
-}
+// Fallback API health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'backend-unavailable', error: 'No backend/server.js present' });
+});
 
-// Import and mount diagnostics routes
-try {
-  console.warn('⚠️  Diagnostics not available:', error.message);
-  
-  // Fallback diagnostics health check
-  app.get('/diagnostics/api/health', (req, res) => {
-    res.json({ status: 'diagnostics-unavailable', error: error.message });
-  });
-}
+// Fallback diagnostics health check
+app.get('/diagnostics/api/health', (req, res) => {
+  res.json({ status: 'diagnostics-unavailable', error: 'No diagnostics-server.js present' });
+});
 
 // Serve frontend
 app.get('/', (req, res) => {
@@ -78,7 +66,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 TestLab running on Railway at port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-  
+
   // Log available routes
   console.log('\n📍 Available routes:');
   console.log(`   • Frontend: http://localhost:${PORT}/`);
