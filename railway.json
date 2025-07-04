@@ -1,5 +1,3 @@
-// FILE PATH: railway.json (save in root directory)
-
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
