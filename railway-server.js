@@ -14,7 +14,14 @@ app.use(cors({
 }));
 
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'frontend')));
+
+// Static files – no implicit SPA fallback
+app.use(
+  express.static(
+    path.join(__dirname, 'frontend'),
+    { fallthrough: false }        // ⬅️ key change: prevents automatic index.html fallback
+  )
+);
 
 // Health check for Railway
 app.get('/health', (req, res) => {
@@ -67,7 +74,7 @@ app.get('/diagnostics', (req, res) => {
   res.sendFile(path.join(__dirname, 'diagnostics', 'frontend', 'index.html'));
 });
 
-// Optional: respond with 404 for unmatched routes
+// Generic 404 for any other request
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
