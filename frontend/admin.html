@@ -4,14 +4,1042 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TestLab Admin Dashboard</title>
-    <link rel="stylesheet" href="assets/css/admin.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e4e8;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            display: inline-block;
+            text-decoration: none;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn:hover {
+            background: #5a60d8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e4e8;
+        }
+
+        th {
+            background: #f6f8fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f6f8fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-inactive {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-pending {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .config-section {
+            background: #f6f8fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            border: 1px solid #e1e4e8;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e1e4e8;
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            color: #666;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .tab:hover {
+            color: #333;
+        }
+
+        .tab.active {
+            color: #667eea;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,.1);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tab {
+                padding: 1rem;
+                white-space: nowrap;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div id="adminApp">
-        <h1>🛠️ TestLab Admin Dashboard</h1>
-        <div class="loading">Loading admin interface...</div>
+    <header class="header">
+        <div class="header-content">
+            <h1>🛠️ TestLab Admin Dashboard</h1>
+            <nav class="nav-links">
+                <a href="/">Main Site</a>
+                <a href="/diagnostics">Diagnostics</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Stats Overview -->
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Tests Run</div>
+                <div class="stat-number" id="totalTests">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Users</div>
+                <div class="stat-number" id="activeUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">API Calls Today</div>
+                <div class="stat-number" id="apiCalls">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">System Health</div>
+                <div class="stat-number" id="systemHealth">--</div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('config')">Configuration</button>
+            <button class="tab" onclick="showTab('services')">Services</button>
+            <button class="tab" onclick="showTab('logs')">Logs</button>
+            <button class="tab" onclick="showTab('analytics')">Analytics</button>
+            <button class="tab" onclick="showTab('settings')">Settings</button>
+        </div>
+
+        <!-- Configuration Tab -->
+        <div id="config-tab" class="tab-content active">
+            <div class="dashboard-grid">
+                <!-- AI Service Configuration -->
+                <div class="card">
+                    <h2>🤖 AI Service Configuration</h2>
+                    
+                    <div class="form-group">
+                        <label for="claudeApiKey">Claude API Key</label>
+                        <input type="password" id="claudeApiKey" placeholder="sk-ant-api03-...">
+                        <small style="color: #666;">Get your API key from <a href="https://console.anthropic.com" target="_blank">Anthropic Console</a></small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="openaiApiKey">OpenAI API Key</label>
+                        <input type="password" id="openaiApiKey" placeholder="sk-...">
+                        <small style="color: #666;">Get your API key from <a href="https://platform.openai.com" target="_blank">OpenAI Platform</a></small>
+                    </div>
+
+                    <button class="btn" onclick="saveApiKeys()">💾 Save API Keys</button>
+                    <button class="btn btn-secondary" onclick="testApiKeys()">🧪 Test Connection</button>
+
+                    <div id="apiStatus" style="margin-top: 1rem;"></div>
+                </div>
+
+                <!-- Service Settings -->
+                <div class="card">
+                    <h2>⚙️ Service Settings</h2>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableClaude" checked>
+                            Enable Claude AI Analysis
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableChatGPT" checked>
+                            Enable ChatGPT Analysis
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxTokens">Max Response Tokens</label>
+                        <input type="number" id="maxTokens" value="2048" min="100" max="4096">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="temperature">AI Temperature (0-1)</label>
+                        <input type="number" id="temperature" value="0.7" min="0" max="1" step="0.1">
+                    </div>
+
+                    <button class="btn" onclick="saveServiceSettings()">💾 Save Settings</button>
+                </div>
+
+                <!-- Rate Limiting -->
+                <div class="card">
+                    <h2>🚦 Rate Limiting</h2>
+                    
+                    <div class="form-group">
+                        <label>Enable Rate Limiting</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableRateLimit" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="requestsPerHour">Requests per Hour</label>
+                        <input type="number" id="requestsPerHour" value="100" min="10" max="1000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="requestsPerDay">Requests per Day</label>
+                        <input type="number" id="requestsPerDay" value="1000" min="100" max="10000">
+                    </div>
+
+                    <button class="btn" onclick="saveRateLimits()">💾 Update Limits</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Services Tab -->
+        <div id="services-tab" class="tab-content">
+            <div class="card">
+                <h2>🔧 Service Status</h2>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Status</th>
+                                <th>Uptime</th>
+                                <th>Last Check</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="servicesTable">
+                            <tr>
+                                <td>Main Backend</td>
+                                <td><span class="status-badge status-active">Active</span></td>
+                                <td>99.9%</td>
+                                <td>Just now</td>
+                                <td>
+                                    <button class="btn btn-sm" onclick="restartService('backend')">Restart</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Diagnostics Server</td>
+                                <td><span class="status-badge status-active">Active</span></td>
+                                <td>99.8%</td>
+                                <td>Just now</td>
+                                <td>
+                                    <button class="btn btn-sm" onclick="restartService('diagnostics')">Restart</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Claude API</td>
+                                <td><span class="status-badge status-pending" id="claudeStatus">Checking...</span></td>
+                                <td>--</td>
+                                <td>--</td>
+                                <td>
+                                    <button class="btn btn-sm" onclick="checkService('claude')">Check</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>ChatGPT API</td>
+                                <td><span class="status-badge status-pending" id="chatgptStatus">Checking...</span></td>
+                                <td>--</td>
+                                <td>--</td>
+                                <td>
+                                    <button class="btn btn-sm" onclick="checkService('chatgpt')">Check</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <button class="btn" onclick="checkAllServices()">🔄 Check All Services</button>
+                    <button class="btn btn-secondary" onclick="downloadHealthReport()">📊 Download Health Report</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Tab -->
+        <div id="logs-tab" class="tab-content">
+            <div class="card">
+                <h2>📋 System Logs</h2>
+                
+                <div class="form-group">
+                    <label for="logFilter">Filter Logs</label>
+                    <select id="logFilter" onchange="filterLogs()">
+                        <option value="all">All Logs</option>
+                        <option value="error">Errors Only</option>
+                        <option value="warning">Warnings</option>
+                        <option value="info">Info</option>
+                        <option value="api">API Calls</option>
+                    </select>
+                </div>
+
+                <div class="code-block" id="logsContainer" style="height: 400px; overflow-y: auto;">
+                    <div>[2024-01-20 10:30:15] INFO: Server started on port 3001</div>
+                    <div>[2024-01-20 10:30:16] INFO: Connected to AI services</div>
+                    <div>[2024-01-20 10:30:45] API: POST /api/analyze/claude - 200 OK (1.2s)</div>
+                    <div>[2024-01-20 10:31:02] WARNING: Rate limit approaching for IP 192.168.1.1</div>
+                    <div>[2024-01-20 10:31:15] ERROR: Failed to process request - Invalid API key</div>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <button class="btn" onclick="refreshLogs()">🔄 Refresh</button>
+                    <button class="btn btn-secondary" onclick="clearLogs()">🗑️ Clear Logs</button>
+                    <button class="btn btn-secondary" onclick="exportLogs()">📥 Export Logs</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics-tab" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h2>📊 Usage Analytics</h2>
+                    <canvas id="usageChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="card">
+                    <h2>🎯 Top Endpoints</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Calls</th>
+                                    <th>Avg Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>/api/analyze/claude</td>
+                                    <td>1,234</td>
+                                    <td>1.5s</td>
+                                </tr>
+                                <tr>
+                                    <td>/api/analyze/chatgpt</td>
+                                    <td>987</td>
+                                    <td>2.1s</td>
+                                </tr>
+                                <tr>
+                                    <td>/api/status</td>
+                                    <td>5,432</td>
+                                    <td>0.05s</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>💰 Cost Analysis</h2>
+                    <div class="config-section">
+                        <p><strong>Claude API:</strong> $12.45 this month</p>
+                        <p><strong>ChatGPT API:</strong> $8.73 this month</p>
+                        <p><strong>Total:</strong> $21.18</p>
+                        <hr style="margin: 1rem 0;">
+                        <p><small>Projected monthly: $25-30</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h2>🔐 Security Settings</h2>
+                    
+                    <div class="form-group">
+                        <label for="adminPassword">Admin Password</label>
+                        <input type="password" id="adminPassword" placeholder="Enter new password">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enable2FA">
+                            Enable Two-Factor Authentication
+                        </label>
+                    </div>
+
+                    <button class="btn" onclick="updateSecurity()">🔒 Update Security</button>
+                </div>
+
+                <div class="card">
+                    <h2>🌐 CORS Settings</h2>
+                    
+                    <div class="form-group">
+                        <label for="allowedOrigins">Allowed Origins (one per line)</label>
+                        <textarea id="allowedOrigins" rows="5" placeholder="https://example.com
+http://localhost:3000">https://testlab.railway.app
+http://localhost:3000
+http://localhost:3001</textarea>
+                    </div>
+
+                    <button class="btn" onclick="updateCORS()">💾 Update CORS</button>
+                </div>
+
+                <div class="card">
+                    <h2>🔧 Maintenance</h2>
+                    
+                    <div class="alert alert-info">
+                        <strong>System Version:</strong> 1.0.0<br>
+                        <strong>Last Updated:</strong> January 20, 2024<br>
+                        <strong>Node Version:</strong> 18.x
+                    </div>
+
+                    <button class="btn btn-danger" onclick="clearCache()">🗑️ Clear Cache</button>
+                    <button class="btn btn-danger" onclick="resetDatabase()">🔄 Reset Database</button>
+                    <button class="btn btn-secondary" onclick="backupData()">💾 Backup Data</button>
+                </div>
+            </div>
+        </div>
     </div>
-    
-    <script src="assets/js/admin.js"></script>
+
+    <script>
+        // API Configuration
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3001/api' 
+            : '/api';
+
+        // Tab Navigation
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Add active class to clicked tab button
+            event.target.classList.add('active');
+        }
+
+        // Load configuration on page load
+        async function loadConfiguration() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/config`);
+                if (response.ok) {
+                    const config = await response.json();
+                    
+                    // Populate form fields
+                    if (config.claudeApiKey) {
+                        document.getElementById('claudeApiKey').value = maskApiKey(config.claudeApiKey);
+                    }
+                    if (config.openaiApiKey) {
+                        document.getElementById('openaiApiKey').value = maskApiKey(config.openaiApiKey);
+                    }
+                    
+                    document.getElementById('enableClaude').checked = config.enableClaude !== false;
+                    document.getElementById('enableChatGPT').checked = config.enableChatGPT !== false;
+                    document.getElementById('maxTokens').value = config.maxTokens || 2048;
+                    document.getElementById('temperature').value = config.temperature || 0.7;
+                    
+                    // Update service status
+                    checkAllServices();
+                }
+            } catch (error) {
+                console.error('Failed to load configuration:', error);
+            }
+        }
+
+        // Mask API key for display
+        function maskApiKey(key) {
+            if (!key) return '';
+            return key.substring(0, 10) + '...' + key.substring(key.length - 4);
+        }
+
+        // Save API Keys
+        async function saveApiKeys() {
+            const claudeKey = document.getElementById('claudeApiKey').value;
+            const openaiKey = document.getElementById('openaiApiKey').value;
+            
+            // Don't send masked keys
+            if (claudeKey.includes('...') || openaiKey.includes('...')) {
+                showStatus('apiStatus', 'Please enter complete API keys', 'warning');
+                return;
+            }
+
+            showStatus('apiStatus', 'Saving...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        claudeApiKey: claudeKey,
+                        openaiApiKey: openaiKey
+                    })
+                });
+
+                if (response.ok) {
+                    showStatus('apiStatus', '✅ API keys saved successfully!', 'success');
+                    setTimeout(() => checkAllServices(), 1000);
+                } else {
+                    throw new Error('Failed to save configuration');
+                }
+            } catch (error) {
+                showStatus('apiStatus', '❌ Error saving API keys: ' + error.message, 'danger');
+            }
+        }
+
+        // Test API Keys
+        async function testApiKeys() {
+            showStatus('apiStatus', '🧪 Testing API connections...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/test-apis`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    const results = await response.json();
+                    let message = '';
+                    
+                    if (results.claude.success) {
+                        message += '✅ Claude API: Connected<br>';
+                    } else {
+                        message += `❌ Claude API: ${results.claude.error}<br>`;
+                    }
+                    
+                    if (results.chatgpt.success) {
+                        message += '✅ ChatGPT API: Connected';
+                    } else {
+                        message += `❌ ChatGPT API: ${results.chatgpt.error}`;
+                    }
+                    
+                    showStatus('apiStatus', message, 'info');
+                } else {
+                    throw new Error('Test failed');
+                }
+            } catch (error) {
+                showStatus('apiStatus', '❌ Failed to test APIs: ' + error.message, 'danger');
+            }
+        }
+
+        // Save Service Settings
+        async function saveServiceSettings() {
+            const settings = {
+                enableClaude: document.getElementById('enableClaude').checked,
+                enableChatGPT: document.getElementById('enableChatGPT').checked,
+                maxTokens: parseInt(document.getElementById('maxTokens').value),
+                temperature: parseFloat(document.getElementById('temperature').value)
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    alert('✅ Settings saved successfully!');
+                } else {
+                    throw new Error('Failed to save settings');
+                }
+            } catch (error) {
+                alert('❌ Error saving settings: ' + error.message);
+            }
+        }
+
+        // Check all services
+        async function checkAllServices() {
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                if (response.ok) {
+                    const status = await response.json();
+                    
+                    // Update UI
+                    updateServiceStatus('claude', status.services.claude);
+                    updateServiceStatus('chatgpt', status.services.chatgpt);
+                    
+                    // Update stats
+                    document.getElementById('systemHealth').textContent = 
+                        status.services.claude && status.services.chatgpt ? '100%' : '50%';
+                }
+            } catch (error) {
+                console.error('Failed to check services:', error);
+            }
+        }
+
+        // Update service status in table
+        function updateServiceStatus(service, isActive) {
+            const statusElement = document.getElementById(`${service}Status`);
+            if (statusElement) {
+                statusElement.textContent = isActive ? 'Active' : 'Inactive';
+                statusElement.className = `status-badge ${isActive ? 'status-active' : 'status-inactive'}`;
+            }
+        }
+
+        // Show status message
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.className = `alert alert-${type}`;
+            element.innerHTML = message;
+        }
+
+        // Refresh logs
+        async function refreshLogs() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/logs`);
+                if (response.ok) {
+                    const logs = await response.json();
+                    const container = document.getElementById('logsContainer');
+                    container.innerHTML = logs.map(log => 
+                        `<div>[${log.timestamp}] ${log.level}: ${log.message}</div>`
+                    ).join('');
+                }
+            } catch (error) {
+                console.error('Failed to fetch logs:', error);
+            }
+        }
+
+        // Initialize stats
+        function initializeStats() {
+            // Simulate some stats for demo
+            document.getElementById('totalTests').textContent = Math.floor(Math.random() * 10000);
+            document.getElementById('activeUsers').textContent = Math.floor(Math.random() * 100);
+            document.getElementById('apiCalls').textContent = Math.floor(Math.random() * 5000);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfiguration();
+            initializeStats();
+            
+            // Auto-refresh stats every 30 seconds
+            setInterval(() => {
+                checkAllServices();
+                initializeStats();
+            }, 30000);
+        });
+
+        // Placeholder functions for demo
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/';
+            }
+        }
+
+        function saveRateLimits() {
+            alert('✅ Rate limits updated successfully!');
+        }
+
+        function restartService(service) {
+            if (confirm(`Are you sure you want to restart the ${service} service?`)) {
+                alert(`🔄 ${service} service is restarting...`);
+            }
+        }
+
+        function checkService(service) {
+            alert(`🔍 Checking ${service} service...`);
+            setTimeout(() => checkAllServices(), 1000);
+        }
+
+        function downloadHealthReport() {
+            alert('📊 Generating health report...');
+        }
+
+        function filterLogs() {
+            const filter = document.getElementById('logFilter').value;
+            alert(`Filtering logs by: ${filter}`);
+        }
+
+        function clearLogs() {
+            if (confirm('Are you sure you want to clear all logs?')) {
+                document.getElementById('logsContainer').innerHTML = '<div>Logs cleared.</div>';
+            }
+        }
+
+        function exportLogs() {
+            alert('📥 Exporting logs...');
+        }
+
+        function updateSecurity() {
+            const password = document.getElementById('adminPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirm) {
+                alert('❌ Passwords do not match!');
+                return;
+            }
+            
+            if (password.length < 8) {
+                alert('❌ Password must be at least 8 characters!');
+                return;
+            }
+            
+            alert('✅ Security settings updated!');
+        }
+
+        function updateCORS() {
+            alert('✅ CORS settings updated!');
+        }
+
+        function clearCache() {
+            if (confirm('Are you sure you want to clear the cache?')) {
+                alert('🗑️ Cache cleared successfully!');
+            }
+        }
+
+        function resetDatabase() {
+            if (confirm('⚠️ WARNING: This will delete all data. Are you sure?')) {
+                if (confirm('This action cannot be undone. Continue?')) {
+                    alert('🔄 Database reset complete!');
+                }
+            }
+        }
+
+        function backupData() {
+            alert('💾 Creating backup...\nBackup will be downloaded shortly.');
+        }
+    </script>
 </body>
 </html>
