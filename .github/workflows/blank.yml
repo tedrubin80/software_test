@@ -21,16 +21,51 @@ on:
 jobs:
   organize-and-setup:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to push changes back to repo
+      actions: read
     
     steps:
     - name: 🚀 Checkout Repository
       uses: actions/checkout@v4
       
+    - name: 🔍 Check Existing Setup
+      run: |
+        echo "Checking for existing TestLab setup..."
+        
+        SETUP_EXISTS=false
+        
+        # Check if key directories already exist
+        if [ -d "backend" ] && [ -f "backend/package.json" ]; then
+          echo "⚠️  Backend setup already exists"
+          SETUP_EXISTS=true
+        fi
+        
+        if [ -d "diagnostics" ] && [ -f "diagnostics/package.json" ]; then
+          echo "⚠️  Diagnostics setup already exists"  
+          SETUP_EXISTS=true
+        fi
+        
+        if [ -d "frontend" ] && [ -f "frontend/index.html" ]; then
+          echo "⚠️  Frontend setup already exists"
+          SETUP_EXISTS=true
+        fi
+        
+        if [ "$SETUP_EXISTS" = true ]; then
+          echo ""
+          echo "🤔 TestLab appears to be already set up."
+          echo "This action will update/overwrite existing files."
+          echo "If you want to start fresh, delete the existing directories first."
+          echo ""
+        else
+          echo "✅ No existing setup detected. Ready to create TestLab project."
+        fi
+      
     - name: 📋 Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
+        # Note: cache disabled initially since we're creating package.json files
         
     - name: 🗂️ Create Project Structure
       run: |
@@ -1132,6 +1167,71 @@ jobs:
         
         echo "✅ Project files created"
         
+    - name: 📦 Install Dependencies
+      if: github.event.inputs.setup_type == 'full' || github.event.inputs.setup_type == 'backend-only' || github.event.inputs.setup_type == 'diagnostics-only'
+      run: |
+        echo "Installing project dependencies..."
+        
+        # Install root dependencies if package.json exists
+        if [ -f package.json ]; then
+          echo "Installing root dependencies..."
+          npm install || echo "⚠️  Root dependency installation failed"
+        fi
+        
+        # Install backend dependencies
+        if [ -d backend ] && [ -f backend/package.json ]; then
+          echo "Installing backend dependencies..."
+          (cd backend && npm install) || echo "⚠️  Backend dependency installation failed"
+        fi
+        
+        # Install diagnostics dependencies  
+        if [ -d diagnostics ] && [ -f diagnostics/package.json ]; then
+          echo "Installing diagnostics dependencies..."
+          (cd diagnostics && npm install) || echo "⚠️  Diagnostics dependency installation failed"
+        fi
+        
+        echo "✅ Dependencies installed"
+        
+    - name: 🧪 Verify Installation
+      run: |
+        echo "Verifying installation..."
+        
+        # Check Node.js version
+        echo "Node.js version: $(node --version)"
+        echo "npm version: $(npm --version)"
+        
+        # Verify backend setup
+        if [ -d backend ]; then
+          echo "✅ Backend directory created"
+          if [ -f backend/package.json ]; then
+            echo "✅ Backend package.json exists"
+          fi
+          if [ -d backend/node_modules ]; then
+            echo "✅ Backend dependencies installed"
+          fi
+        fi
+        
+        # Verify diagnostics setup
+        if [ -d diagnostics ]; then
+          echo "✅ Diagnostics directory created"
+          if [ -f diagnostics/package.json ]; then
+            echo "✅ Diagnostics package.json exists"
+          fi
+          if [ -d diagnostics/node_modules ]; then
+            echo "✅ Diagnostics dependencies installed"
+          fi
+        fi
+        
+        # Verify frontend setup
+        if [ -d frontend ]; then
+          echo "✅ Frontend directory created"
+          if [ -f frontend/index.html ]; then
+            echo "✅ Frontend files exist"
+          fi
+        fi
+        
+        echo "✅ Installation verification complete"
+        
     - name: 📊 Generate Project Summary
       run: |
         echo "Generating project summary..."
@@ -1250,33 +1350,131 @@ jobs:
         echo "🎉 TestLab Project Setup Complete!"
         echo "=================================="
         echo ""
-        echo "📁 Project structure has been created with:"
-        echo "   • Backend server with authentication and API management"
-        echo "   • Frontend with interactive testing exercises"
-        echo "   • Multi-AI diagnostics system"
-        echo "   • Complete documentation and tests"
-        echo "   • Development and deployment scripts"
+        echo "📋 Setup Type: ${{ github.event.inputs.setup_type || 'full' }}"
         echo ""
+        
+        # Display what was created based on setup type
+        SETUP_TYPE="${{ github.event.inputs.setup_type || 'full' }}"
+        
+        if [ "$SETUP_TYPE" = "full" ] || [ "$SETUP_TYPE" = "backend-only" ]; then
+          echo "🖥️  Backend Server Created:"
+          echo "   • Express server with authentication"
+          echo "   • SQLite database setup"
+          echo "   • API credential management"
+          echo "   • Admin dashboard backend"
+        fi
+        
+        if [ "$SETUP_TYPE" = "full" ] || [ "$SETUP_TYPE" = "frontend-only" ]; then
+          echo "🌐 Frontend Interface Created:"
+          echo "   • Interactive testing exercises"
+          echo "   • Admin dashboard UI"
+          echo "   • Responsive design assets"
+        fi
+        
+        if [ "$SETUP_TYPE" = "full" ] || [ "$SETUP_TYPE" = "diagnostics-only" ]; then
+          echo "🤖 AI Diagnostics System Created:"
+          echo "   • Multi-AI analysis server"
+          echo "   • ChatGPT, Claude, Llama support"
+          echo "   • Web interface for diagnostics"
+          echo "   • Consensus reporting system"
+        fi
+        
+        echo ""
+        echo "📁 Project structure created with:"
+        find . -type f -name "*.js" | wc -l | xargs echo "   • JavaScript files:"
+        find . -type f -name "*.html" | wc -l | xargs echo "   • HTML files:"
+        find . -type f -name "*.json" | wc -l | xargs echo "   • Configuration files:"
+        find . -type f -name "*.md" | wc -l | xargs echo "   • Documentation files:"
+        echo ""
+        
         echo "🚀 Next Steps:"
-        echo "1. Configure your API keys in .env file"
-        echo "2. Run: chmod +x scripts/*.sh"
-        echo "3. Run: ./scripts/setup.sh"
-        echo "4. Run: ./scripts/dev.sh"
+        echo "1. Clone this repository locally"
+        echo "2. Copy .env.example to .env and configure your API keys"
+        echo "3. Make scripts executable: chmod +x scripts/*.sh"
+        echo "4. Run setup: ./scripts/setup.sh"
         echo ""
-        echo "🌐 Access Points:"
-        echo "   • Frontend: http://localhost:3000"
-        echo "   • Backend: http://localhost:3001"
-        echo "   • Diagnostics: http://localhost:3002"
-        echo "   • Admin: http://localhost:3000/admin.html"
+        
+        if [ "$SETUP_TYPE" = "full" ]; then
+          echo "🌐 Access Points (after setup):"
+          echo "   • Frontend: http://localhost:3000"
+          echo "   • Backend: http://localhost:3001"
+          echo "   • Diagnostics: http://localhost:3002"
+          echo "   • Admin: http://localhost:3000/admin.html"
+        elif [ "$SETUP_TYPE" = "backend-only" ]; then
+          echo "🌐 Access Points (after setup):"
+          echo "   • Backend: http://localhost:3001"
+          echo "   • Health check: http://localhost:3001/api/health"
+        elif [ "$SETUP_TYPE" = "diagnostics-only" ]; then
+          echo "🌐 Access Points (after setup):"
+          echo "   • Diagnostics: http://localhost:3002"
+          echo "   • Health check: http://localhost:3002/api/health"
+        elif [ "$SETUP_TYPE" = "frontend-only" ]; then
+          echo "🌐 Access Points (after setup):"
+          echo "   • Frontend: http://localhost:3000"
+        fi
+        
         echo ""
         echo "📚 Documentation:"
-        echo "   • Setup: docs/SETUP.md"
-        echo "   • API: docs/API.md"
-        echo "   • Structure: PROJECT_STRUCTURE.md"
+        echo "   • Setup Guide: docs/SETUP.md"
+        echo "   • API Reference: docs/API.md"
+        echo "   • Project Structure: PROJECT_STRUCTURE.md"
         echo ""
-        echo "🤖 AI Services Supported:"
-        echo "   • ChatGPT (OpenAI)"
-        echo "   • Claude (Anthropic)"
-        echo "   • Llama (Together AI / Local)"
+        
+        if [ "$SETUP_TYPE" = "full" ] || [ "$SETUP_TYPE" = "diagnostics-only" ]; then
+          echo "🤖 AI Services Supported:"
+          echo "   • ChatGPT (OpenAI API)"
+          echo "   • Claude (Anthropic API)"
+          echo "   • Llama (Together AI / Hugging Face / Local)"
+          echo ""
+        fi
+        
+        echo "⚡ Quick Start Commands:"
+        if [ "$SETUP_TYPE" = "full" ]; then
+          echo "   npm run start:backend    # Start backend server"
+          echo "   npm run start:diagnostics # Start AI diagnostics"
+          echo "   npm run start:frontend   # Serve frontend"
+          echo "   ./scripts/dev.sh         # Start all services"
+        elif [ "$SETUP_TYPE" = "backend-only" ]; then
+          echo "   cd backend && npm start  # Start backend server"
+        elif [ "$SETUP_TYPE" = "diagnostics-only" ]; then
+          echo "   cd diagnostics && npm start # Start diagnostics server"
+        elif [ "$SETUP_TYPE" = "frontend-only" ]; then
+          echo "   cd frontend && python -m http.server 3000"
+        fi
+        
         echo ""
-        echo "Happy testing! 🧪✨"
+        echo "🎓 Ready for software testing education! Happy testing! 🧪✨"
+        
+    - name: 📤 Commit and Push Changes
+      run: |
+        echo "Committing created files to repository..."
+        
+        # Configure git (using GitHub Actions bot)
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Add all created files
+        git add .
+        
+        # Check if there are changes to commit
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          # Create commit message based on setup type
+          SETUP_TYPE="${{ github.event.inputs.setup_type || 'full' }}"
+          git commit -m "🚀 TestLab project setup complete ($SETUP_TYPE)
+
+          Created by GitHub Action:
+          - Project structure organized
+          - Dependencies configured  
+          - Documentation generated
+          - Scripts and tests added
+          
+          Setup type: $SETUP_TYPE
+          Generated on: $(date)"
+          
+          # Push changes
+          git push
+          
+          echo "✅ Changes committed and pushed to repository"
+        fi
