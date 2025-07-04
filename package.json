@@ -1,13 +1,16 @@
-// FILE PATH: railway.json (save in root directory)
-
 {
-  "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS"
+  "name": "railway-app",
+  "version": "1.0.0",
+  "description": "Node/Express server for Railway deployment",
+  "main": "railway-server.js",
+  "scripts": {
+    "start": "node railway-server.js"
   },
-  "deploy": {
-    "numReplicas": 1,
-    "sleepApplication": false,
-    "restartPolicyType": "ON_FAILURE"
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
