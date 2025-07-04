@@ -1,42 +1,23 @@
-# FILE LOCATION: /Dockerfile (root directory)
-# Simple Dockerfile for Railway deployment debugging
-
+# FILE LOCATION: /Dockerfile (root directory - NO extension, just "Dockerfile")
 FROM node:18-alpine
 
-# Create app directory
 WORKDIR /app
 
-# Copy package files
+# Copy and install dependencies
 COPY package*.json ./
+RUN npm install
 
-# Install only production dependencies
-RUN npm install --production
-
-# Copy application files
+# Copy all files
 COPY . .
 
-# Remove conflicting files
+# Remove any conflicting server files
 RUN rm -f railway-server.js combined-server.js || true
 
-# Create directories and ensure permissions
-RUN mkdir -p frontend backend && \
-    chmod -R 755 .
+# Show what we have for debugging
+RUN echo "Files in /app:" && ls -la
 
-# Show what files we have (for debugging)
-RUN echo "=== Files in /app ===" && \
-    ls -la && \
-    echo "=== Files in /app/frontend ===" && \
-    ls -la frontend/ || echo "No frontend directory" && \
-    echo "=== Environment ===" && \
-    echo "NODE_ENV: $NODE_ENV" && \
-    echo "PORT: $PORT"
+# The port Railway provides
+EXPOSE ${PORT}
 
-# Expose port (Railway sets this automatically)
-EXPOSE ${PORT:-3000}
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 3000) + '/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => { process.exit(1); });"
-
-# Use the simple server for debugging
+# Start the simple server
 CMD ["node", "simple-server.js"]
