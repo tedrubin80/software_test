@@ -1,16 +1,19 @@
 {
-  "name": "railway-app",
+  "name": "testlab-web-app",
   "version": "1.0.0",
-  "description": "Node/Express server for Railway deployment",
-  "main": "railway-server.js",
+  "description": "TestLab Software Testing Platform",
+  "main": "server.js",
   "scripts": {
-    "start": "node railway-server.js"
+    "start": "node server.js",
+    "build": "echo 'No build step required'",
+    "test": "echo 'No tests configured'"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "express": "^4.19.2",
     "cors": "^2.8.5"
   },
-  "engines": {
-    "node": ">=18"
-  }
+  "keywords": ["testlab", "software", "testing", "platform"]
 }
