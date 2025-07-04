@@ -17,7 +17,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 # Create app directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files first (for better caching)
 COPY package*.json ./
 COPY backend/package*.json ./backend/
 COPY diagnostics/package*.json ./diagnostics/
@@ -27,18 +27,28 @@ RUN npm ci --only=production
 RUN cd backend && npm ci --only=production
 RUN cd diagnostics && npm ci --only=production
 
-# Copy application code
+# Copy all application files
 COPY . .
+
+# Verify frontend files are copied correctly
+RUN ls -la && \
+    echo "=== Checking frontend directory ===" && \
+    ls -la frontend/ || echo "Frontend directory not found!" && \
+    echo "=== Checking for index.html ===" && \
+    test -f frontend/index.html && echo "✅ frontend/index.html found" || echo "❌ frontend/index.html NOT FOUND"
 
 # Create necessary directories
 RUN mkdir -p logs temp uploads
 
-# Expose ports
-EXPOSE $PORT
+# Set proper permissions
+RUN chmod -R 755 frontend
+
+# Expose port (Railway will set this)
+EXPOSE ${PORT:-3000}
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:$PORT/api/health || exit 1
+  CMD wget -q -O /dev/null http://localhost:${PORT:-3000}/health || exit 1
 
-# Start the application
-CMD ["npm", "run", "start:railway"]
+# Start the application with the railway server
+CMD ["node", "railway-server.js"]

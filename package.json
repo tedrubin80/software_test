@@ -2,9 +2,11 @@
     "name": "testlab-web-app",
     "version": "1.0.0",
     "description": "TestLab Web Application",
-    "main": "server.js",
+    "main": "railway-server.js",
     "scripts": {
-        "start": "node server.js",
+        "start": "node railway-server.js",
+        "start:railway": "node railway-server.js",
+        "start:dev": "nodemon railway-server.js",
         "build": "echo 'No build step required'"
     },
     "keywords": ["testlab", "web", "application"],
