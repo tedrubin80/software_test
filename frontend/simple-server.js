@@ -251,11 +251,15 @@ app.post('/api/setup/initial', async (req, res) => {
     }
 });
 
-// Admin login endpoint
-app.post('/api/admin/login', async (req, res) => {
+// Admin login endpoint (support both paths for compatibility)
+app.post('/api/admin/login', handleLogin);
+app.post('/api/auth/login', handleLogin);
+
+async function handleLogin(req, res) {
     console.log('Login attempt');
-    const { password } = req.body;
+    const { password, username } = req.body;
     
+    // Username is optional, we only check password
     if (!config.adminPassword) {
         console.log('No admin password configured');
         return res.status(400).json({ error: 'Admin not configured' });
@@ -291,7 +295,7 @@ app.post('/api/admin/login', async (req, res) => {
         console.error('Login error:', error);
         res.status(500).json({ error: 'Login failed' });
     }
-});
+}
 
 // Admin logout endpoint
 app.post('/api/admin/logout', (req, res) => {
@@ -303,12 +307,15 @@ app.post('/api/admin/logout', (req, res) => {
     res.json({ success: true });
 });
 
-// Check admin authentication
-app.get('/api/admin/check', (req, res) => {
+// Check admin authentication (support both paths)
+app.get('/api/admin/check', checkAuth);
+app.get('/api/auth/check', checkAuth);
+
+function checkAuth(req, res) {
     const sessionId = req.cookies.sessionId;
     const authenticated = sessionId && sessions.has(sessionId);
     res.json({ authenticated });
-});
+}
 
 // Reset setup endpoint (for debugging)
 app.post('/api/debug/reset-setup', (req, res) => {
@@ -373,6 +380,27 @@ app.post('/api/admin/api-keys', requireAuth, (req, res) => {
         console.error('Failed to save config:', error);
         res.status(500).json({ error: 'Failed to save configuration' });
     }
+});
+
+// Serve specific HTML files
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+app.get('/admin-login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-login.html'));
+});
+
+app.get('/setup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'setup.html'));
+});
+
+app.get('/test', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test.html'));
+});
+
+app.get('/ai-chat', (req, res) => {
+    res.sendFile(path.join(__dirname, 'ai-chat.html'));
 });
 
 // Catch all route - serve index.html for client-side routing
