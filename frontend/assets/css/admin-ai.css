@@ -1,0 +1,371 @@
+/* File Location: testlab/frontend/assets/css/admin-ai.css */
+
+/* AI Routing Tab Styles */
+.ai-routing-header {
+    margin-bottom: 2rem;
+}
+
+.ai-routing-header h1 {
+    color: #00d4ff;
+    margin-bottom: 0.5rem;
+}
+
+.ai-routing-header p {
+    color: #888;
+    font-size: 1.1rem;
+}
+
+/* Statistics Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: #1e2543;
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid #2a3050;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    border-color: #00d4ff;
+}
+
+.stat-card h3 {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.stat-card .value {
+    color: #00d4ff;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.stat-card .sub-value {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Routing Categories */
+.routing-categories {
+    margin-bottom: 2rem;
+}
+
+.category-card {
+    background: #1e2543;
+    border: 1px solid #2a3050;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.category-header {
+    background: #151a35;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.category-header:hover {
+    background: #1a1f3a;
+}
+
+.category-header h3 {
+    color: #00d4ff;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-info {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.llm-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.llm-badge.claude {
+    background: #8b5cf6;
+    color: white;
+}
+
+.llm-badge.openai {
+    background: #10b981;
+    color: white;
+}
+
+.expand-icon {
+    transition: transform 0.3s ease;
+}
+
+.category-card.expanded .expand-icon {
+    transform: rotate(180deg);
+}
+
+.category-content {
+    padding: 1.5rem;
+    display: none;
+}
+
+.category-card.expanded .category-content {
+    display: block;
+}
+
+/* Keywords Section */
+.keywords-section {
+    margin-bottom: 1.5rem;
+}
+
+.keywords-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.keyword-tag {
+    background: #2a3050;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.keyword-tag:hover {
+    background: #3a4060;
+}
+
+.keyword-tag .remove {
+    cursor: pointer;
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+.add-keyword {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.add-keyword input {
+    flex: 1;
+    padding: 0.75rem;
+    background: #0a0e27;
+    border: 1px solid #2a3050;
+    border-radius: 5px;
+    color: #e0e0e0;
+    font-size: 1rem;
+}
+
+.add-keyword input:focus {
+    outline: none;
+    border-color: #00d4ff;
+}
+
+/* Model Selection */
+.model-selection {
+    margin-bottom: 1.5rem;
+}
+
+.model-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.model-option {
+    padding: 1rem;
+    background: #0a0e27;
+    border: 2px solid #2a3050;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.model-option:hover {
+    border-color: #00d4ff;
+}
+
+.model-option.selected {
+    border-color: #00d4ff;
+    background: #1a1f3a;
+}
+
+.model-option h4 {
+    color: #00d4ff;
+    margin-bottom: 0.5rem;
+}
+
+.model-option p {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+/* Settings */
+.settings-section {
+    margin-bottom: 1.5rem;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #2a3050;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-label {
+    color: #e0e0e0;
+}
+
+.setting-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    width: 60px;
+    height: 30px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #2a3050;
+    transition: .4s;
+    border-radius: 30px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #00d4ff;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(30px);
+}
+
+/* Performance Chart */
+.performance-chart {
+    background: #1e2543;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-top: 2rem;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.chart-header h3 {
+    color: #00d4ff;
+}
+
+/* Toast Notifications */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    background: #1e2543;
+    border: 1px solid #00d4ff;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+    display: none;
+    animation: slideIn 0.3s ease;
+    z-index: 1000;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.toast.success {
+    border-color: #10b981;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+}
+
+.toast.error {
+    border-color: #ff6b6b;
+    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3);
+}
+
+/* Loading State */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #2a3050;
+    border-top-color: #00d4ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .model-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}

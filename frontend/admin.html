@@ -3,585 +3,992 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TestLab Admin Panel</title>
+    <title>TestLab Admin - AI Routing Management</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #0a0e27;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .admin-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: #151a35;
+            padding: 2rem 0;
+            border-right: 1px solid #2a3050;
+        }
+
+        .sidebar h2 {
+            color: #00d4ff;
+            padding: 0 2rem;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+        }
+
+        .nav-item {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 0.5rem;
         }
-        
-        .container {
-            width: 100%;
-            max-width: 1200px;
+
+        .nav-item:hover {
+            background: #1e2543;
+            border-left: 3px solid #00d4ff;
+        }
+
+        .nav-item.active {
+            background: #1e2543;
+            border-left: 3px solid #00d4ff;
+            color: #00d4ff;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
             padding: 2rem;
+            overflow-y: auto;
         }
-        
-        .login-form, .admin-panel {
-            background: #1e293b;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+        .tab-content {
+            display: none;
         }
-        
-        .login-form {
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        
-        h1, h2 {
-            margin-bottom: 1.5rem;
-            color: #60a5fa;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        label {
+
+        .tab-content.active {
             display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* AI Routing Tab Styles */
+        .ai-routing-header {
+            margin-bottom: 2rem;
+        }
+
+        .ai-routing-header h1 {
+            color: #00d4ff;
             margin-bottom: 0.5rem;
-            color: #94a3b8;
-            font-size: 0.9rem;
         }
-        
-        input[type="password"],
-        input[type="text"] {
-            width: 100%;
-            padding: 0.75rem;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            color: #e2e8f0;
-            font-size: 1rem;
-            transition: border-color 0.3s;
+
+        .ai-routing-header p {
+            color: #888;
+            font-size: 1.1rem;
         }
-        
-        input:focus {
-            outline: none;
-            border-color: #60a5fa;
-        }
-        
-        .btn {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            width: 100%;
-        }
-        
-        .btn:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
-        }
-        
-        .btn-secondary {
-            background: #475569;
-            margin-right: 0.5rem;
-            width: auto;
-        }
-        
-        .btn-danger {
-            background: #ef4444;
-        }
-        
-        .error {
-            background: #dc2626;
-            color: white;
-            padding: 0.75rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            display: none;
-        }
-        
-        .success {
-            background: #10b981;
-            color: white;
-            padding: 0.75rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            display: none;
-        }
-        
-        .api-section {
-            background: #0f172a;
-            padding: 1.5rem;
-            border-radius: 8px;
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
             margin-bottom: 2rem;
         }
-        
-        .api-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        
-        .api-key-input {
-            position: relative;
-        }
-        
-        .api-key-input input {
-            padding-right: 3rem;
-        }
-        
-        .toggle-visibility {
-            position: absolute;
-            right: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #60a5fa;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
+
         .stat-card {
-            background: #0f172a;
+            background: #1e2543;
             padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
+            border-radius: 10px;
+            border: 1px solid #2a3050;
+            transition: transform 0.3s ease;
         }
-        
-        .stat-value {
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: #00d4ff;
+        }
+
+        .stat-card h3 {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            color: #00d4ff;
             font-size: 2rem;
             font-weight: bold;
-            color: #60a5fa;
         }
-        
-        .stat-label {
-            color: #94a3b8;
+
+        .stat-card .sub-value {
+            color: #666;
             font-size: 0.9rem;
+            margin-top: 0.5rem;
         }
-        
-        .agent-card {
-            background: #0f172a;
-            padding: 1rem;
-            border-radius: 8px;
-            border: 2px solid #334155;
-            transition: all 0.3s;
+
+        /* Routing Categories */
+        .routing-categories {
+            margin-bottom: 2rem;
         }
-        
-        .agent-card:hover {
-            border-color: #60a5fa;
-            transform: translateY(-2px);
+
+        .category-card {
+            background: #1e2543;
+            border: 1px solid #2a3050;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
         }
-        
-        .hidden {
+
+        .category-header {
+            background: #151a35;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .category-header:hover {
+            background: #1a1f3a;
+        }
+
+        .category-header h3 {
+            color: #00d4ff;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category-info {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .llm-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .llm-badge.claude {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .llm-badge.openai {
+            background: #10b981;
+            color: white;
+        }
+
+        .expand-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .category-card.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .category-content {
+            padding: 1.5rem;
             display: none;
         }
-        
-        .footer {
-            text-align: center;
+
+        .category-card.expanded .category-content {
+            display: block;
+        }
+
+        /* Keywords Section */
+        .keywords-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .keywords-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .keyword-tag {
+            background: #2a3050;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .keyword-tag:hover {
+            background: #3a4060;
+        }
+
+        .keyword-tag .remove {
+            cursor: pointer;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .add-keyword {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .add-keyword input {
+            flex: 1;
+            padding: 0.75rem;
+            background: #0a0e27;
+            border: 1px solid #2a3050;
+            border-radius: 5px;
+            color: #e0e0e0;
+            font-size: 1rem;
+        }
+
+        .add-keyword input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        /* Model Selection */
+        .model-selection {
+            margin-bottom: 1.5rem;
+        }
+
+        .model-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .model-option {
+            padding: 1rem;
+            background: #0a0e27;
+            border: 2px solid #2a3050;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .model-option:hover {
+            border-color: #00d4ff;
+        }
+
+        .model-option.selected {
+            border-color: #00d4ff;
+            background: #1a1f3a;
+        }
+
+        .model-option h4 {
+            color: #00d4ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .model-option p {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* Settings */
+        .settings-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #2a3050;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            color: #e0e0e0;
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #00d4ff;
+            color: #0a0e27;
+        }
+
+        .btn-primary:hover {
+            background: #00b8e6;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #2a3050;
+            color: #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #3a4060;
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff5252;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2a3050;
+            transition: .4s;
+            border-radius: 30px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #00d4ff;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(30px);
+        }
+
+        /* Performance Chart */
+        .performance-chart {
+            background: #1e2543;
+            padding: 1.5rem;
+            border-radius: 10px;
             margin-top: 2rem;
-            color: #64748b;
         }
-        
-        .back-link {
-            color: #60a5fa;
-            text-decoration: none;
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
         }
-        
-        .back-link:hover {
-            text-decoration: underline;
+
+        .chart-header h3 {
+            color: #00d4ff;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: #1e2543;
+            border: 1px solid #00d4ff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .toast.success {
+            border-color: #10b981;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .toast.error {
+            border-color: #ff6b6b;
+            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        /* Loading State */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #2a3050;
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Login Form -->
-        <div id="loginForm" class="login-form">
-            <h1>🔐 Admin Login</h1>
-            <div id="loginError" class="error"></div>
-            <div class="form-group">
-                <label for="password">Admin Password</label>
-                <input type="password" id="password" placeholder="Enter admin password" autofocus>
-            </div>
-            <button class="btn" onclick="login()">Login</button>
-            <div class="footer">
-                <a href="/" class="back-link">← Back to TestLab</a>
-            </div>
-        </div>
-        
-        <!-- Admin Panel -->
-        <div id="adminPanel" class="admin-panel hidden">
-            <h1>🛠️ TestLab Admin Panel</h1>
-            
-            <div id="successMessage" class="success"></div>
-            <div id="errorMessage" class="error"></div>
-            
-            <!-- Statistics -->
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-value" id="setupStatus">-</div>
-                    <div class="stat-label">Setup Status</div>
+    <div class="admin-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <h2>TestLab Admin</h2>
+            <nav>
+                <div class="nav-item" onclick="switchTab('dashboard')">
+                    <span>📊</span> Dashboard
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="apiKeyCount">0/3</div>
-                    <div class="stat-label">API Keys Configured</div>
+                <div class="nav-item" onclick="switchTab('users')">
+                    <span>👥</span> Users
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="serverStatus">🟢</div>
-                    <div class="stat-label">Server Status</div>
+                <div class="nav-item" onclick="switchTab('api-keys')">
+                    <span>🔑</span> API Keys
                 </div>
-            </div>
-            
-            <!-- API Keys Section -->
-            <div class="api-section">
-                <h2>🔑 API Configuration</h2>
-                <p style="color: #94a3b8; margin-bottom: 1rem;">Configure your AI service API keys for enhanced testing capabilities.</p>
-                
-                <div class="api-grid">
-                    <div class="form-group">
-                        <label for="openaiKey">OpenAI API Key (GPT-4)</label>
-                        <div class="api-key-input">
-                            <input type="password" id="openaiKey" placeholder="sk-..." data-visible="false">
-                            <button class="toggle-visibility" onclick="toggleVisibility('openaiKey')">Show</button>
-                        </div>
+                <div class="nav-item active" onclick="switchTab('ai-routing')">
+                    <span>🤖</span> AI Routing
+                </div>
+                <div class="nav-item" onclick="switchTab('analytics')">
+                    <span>📈</span> Analytics
+                </div>
+                <div class="nav-item" onclick="switchTab('settings')">
+                    <span>⚙️</span> Settings
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- AI Routing Tab -->
+            <div id="ai-routing-tab" class="tab-content active">
+                <div class="ai-routing-header">
+                    <h1>AI Model Routing Management</h1>
+                    <p>Configure keyword-based routing between Claude and OpenAI models for optimal responses</p>
+                </div>
+
+                <!-- Statistics Overview -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Queries</h3>
+                        <div class="value" id="total-queries">1,247</div>
+                        <div class="sub-value">+23% this week</div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="anthropicKey">Anthropic API Key (Claude)</label>
-                        <div class="api-key-input">
-                            <input type="password" id="anthropicKey" placeholder="sk-ant-..." data-visible="false">
-                            <button class="toggle-visibility" onclick="toggleVisibility('anthropicKey')">Show</button>
-                        </div>
+                    <div class="stat-card">
+                        <h3>Claude Usage</h3>
+                        <div class="value" id="claude-usage">42%</div>
+                        <div class="sub-value">Security & Integration</div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="togetherKey">Together AI API Key (Llama)</label>
-                        <div class="api-key-input">
-                            <input type="password" id="togetherKey" placeholder="..." data-visible="false">
-                            <button class="toggle-visibility" onclick="toggleVisibility('togetherKey')">Show</button>
-                        </div>
+                    <div class="stat-card">
+                        <h3>OpenAI Usage</h3>
+                        <div class="value" id="openai-usage">58%</div>
+                        <div class="sub-value">Unit & E2E Testing</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Avg Confidence</h3>
+                        <div class="value" id="avg-confidence">87%</div>
+                        <div class="sub-value">Routing accuracy</div>
                     </div>
                 </div>
-                
-                <div style="margin-top: 1.5rem;">
-                    <button class="btn btn-secondary" onclick="loadCurrentKeys()">Load Current Keys</button>
-                    <button class="btn" onclick="saveApiKeys()">Save API Keys</button>
-                </div>
-            </div>
-            
-            <!-- AI Agents Section -->
-            <div class="api-section" style="margin-top: 2rem;">
-                <h2>🤖 AI Agents</h2>
-                <p style="color: #94a3b8; margin-bottom: 1rem;">Configure AI agents that respond to specific keywords in conversations.</p>
-                
-                <div id="agentsList" style="display: grid; gap: 1rem; margin-bottom: 1rem;">
-                    <!-- Agents will be loaded here -->
-                </div>
-                
-                <div style="margin-top: 1.5rem; text-align: center;">
-                    <button class="btn btn-secondary" onclick="testAgents()">🧪 Test Agents</button>
-                    <button class="btn" onclick="window.open('/ai-chat.html', '_blank')">💬 Open AI Chat</button>
-                </div>
-            </div>
-            
-            <!-- Actions -->
-            <div style="text-align: center; margin-top: 2rem;">
-                <button class="btn btn-secondary" onclick="window.location.href='/ai-chat.html'">💬 AI Chat</button>
-                <button class="btn btn-danger" onclick="logout()">Logout</button>
-            </div>
-            
-            <div class="footer">
-                <a href="/" class="back-link">← Back to TestLab</a>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        // Check if already authenticated
-        async function checkAuth() {
-            try {
-                const response = await fetch('/api/admin/check');
-                const data = await response.json();
-                
-                if (data.authenticated) {
-                    showAdminPanel();
-                } else {
-                    showLoginForm();
-                }
-            } catch (error) {
-                showLoginForm();
-            }
-        }
-        
-        // Check setup status first
-        async function checkSetup() {
-            try {
-                const response = await fetch('/api/setup/status');
-                const data = await response.json();
-                
-                if (!data.isSetup) {
-                    // Redirect to initial setup
-                    const password = prompt('Create an admin password (min 6 characters):');
-                    if (password && password.length >= 6) {
-                        const setupResponse = await fetch('/api/setup/initial', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ adminPassword: password })
-                        });
-                        
-                        if (setupResponse.ok) {
-                            alert('Setup complete! Please login with your admin password.');
-                            checkAuth();
-                        }
-                    }
-                } else {
-                    checkAuth();
-                }
-            } catch (error) {
-                console.error('Setup check failed:', error);
-            }
-        }
-        
-        function showLoginForm() {
-            document.getElementById('loginForm').classList.remove('hidden');
-            document.getElementById('adminPanel').classList.add('hidden');
-        }
-        
-        function showAdminPanel() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('adminPanel').classList.remove('hidden');
-            loadDashboard();
-        }
-        
-        async function login() {
-            const password = document.getElementById('password').value;
-            
-            if (!password) {
-                showError('loginError', 'Please enter password');
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/admin/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showAdminPanel();
-                } else {
-                    showError('loginError', data.error || 'Login failed');
-                }
-            } catch (error) {
-                showError('loginError', 'Connection error');
-            }
-        }
-        
-        async function logout() {
-            try {
-                await fetch('/api/admin/logout', { method: 'POST' });
-                showLoginForm();
-                document.getElementById('password').value = '';
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        }
-        
-        async function loadDashboard() {
-            // Load current status
-            try {
-                const response = await fetch('/api/debug');
-                const data = await response.json();
-                
-                document.getElementById('setupStatus').textContent = data.config.isSetup ? '✅' : '❌';
-                
-                const apiCount = Object.values(data.config.hasApiKeys).filter(v => v).length;
-                document.getElementById('apiKeyCount').textContent = `${apiCount}/3`;
-                
-                loadCurrentKeys();
-                loadAgents();
-            } catch (error) {
-                console.error('Dashboard load error:', error);
-            }
-        }
-        
-        async function loadAgents() {
-            try {
-                const response = await fetch('/api/ai/agents');
-                const data = await response.json();
-                
-                const agentsList = document.getElementById('agentsList');
-                agentsList.innerHTML = '';
-                
-                data.agents.forEach(agent => {
-                    const agentCard = document.createElement('div');
-                    agentCard.style.cssText = 'background: #0f172a; padding: 1rem; border-radius: 8px; border: 2px solid #334155;';
+
+                <!-- Routing Categories -->
+                <div class="routing-categories">
+                    <h2 style="margin-bottom: 1rem; color: #00d4ff;">Testing Categories</h2>
                     
-                    const keywords = agent.keywords.map(k => 
-                        `<span style="background: #334155; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin: 0.25rem;">${k}</span>`
-                    ).join('');
-                    
-                    agentCard.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
-                            <span style="font-size: 2rem;">${agent.icon}</span>
-                            <div>
-                                <h4 style="color: #60a5fa; margin: 0;">${agent.name}</h4>
-                                <small style="color: #94a3b8;">Uses ${agent.model}</small>
+                    <!-- Unit Testing Category -->
+                    <div class="category-card expanded" id="unit-testing">
+                        <div class="category-header" onclick="toggleCategory('unit-testing')">
+                            <h3><span>🧪</span> Unit Testing</h3>
+                            <div class="category-info">
+                                <span class="llm-badge openai">OpenAI GPT-4</span>
+                                <span class="expand-icon">▼</span>
                             </div>
                         </div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-                            ${keywords}
+                        <div class="category-content">
+                            <div class="keywords-section">
+                                <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
+                                <div class="keywords-grid" id="unit-keywords">
+                                    <span class="keyword-tag">unit test <span class="remove" onclick="removeKeyword('unit-testing', 'unit test')">×</span></span>
+                                    <span class="keyword-tag">mock <span class="remove" onclick="removeKeyword('unit-testing', 'mock')">×</span></span>
+                                    <span class="keyword-tag">stub <span class="remove" onclick="removeKeyword('unit-testing', 'stub')">×</span></span>
+                                    <span class="keyword-tag">jest <span class="remove" onclick="removeKeyword('unit-testing', 'jest')">×</span></span>
+                                    <span class="keyword-tag">pytest <span class="remove" onclick="removeKeyword('unit-testing', 'pytest')">×</span></span>
+                                    <span class="keyword-tag">mocha <span class="remove" onclick="removeKeyword('unit-testing', 'mocha')">×</span></span>
+                                    <span class="keyword-tag">jasmine <span class="remove" onclick="removeKeyword('unit-testing', 'jasmine')">×</span></span>
+                                    <span class="keyword-tag">test suite <span class="remove" onclick="removeKeyword('unit-testing', 'test suite')">×</span></span>
+                                </div>
+                                <div class="add-keyword">
+                                    <input type="text" placeholder="Add new keyword..." id="unit-keyword-input">
+                                    <button class="btn btn-primary btn-sm" onclick="addKeyword('unit-testing')">Add</button>
+                                </div>
+                            </div>
+                            
+                            <div class="model-selection">
+                                <h4 style="color: #888; margin-bottom: 0.5rem;">Preferred Model</h4>
+                                <div class="model-options">
+                                    <div class="model-option selected" onclick="selectModel('unit-testing', 'openai')">
+                                        <h4>OpenAI GPT-4</h4>
+                                        <p>Best for code generation, detailed explanations, and modern frameworks</p>
+                                    </div>
+                                    <div class="model-option" onclick="selectModel('unit-testing', 'claude')">
+                                        <h4>Claude 3</h4>
+                                        <p>Better for complex logic, edge cases, and thoughtful analysis</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-section">
+                                <h4 style="color: #888; margin-bottom: 0.5rem;">Advanced Settings</h4>
+                                <div class="setting-item">
+                                    <span class="setting-label">Confidence Threshold</span>
+                                    <div class="setting-control">
+                                        <input type="range" min="0" max="100" value="80" id="unit-confidence">
+                                        <span>80%</span>
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <span class="setting-label">Enable Secondary Model</span>
+                                    <div class="setting-control">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    `;
-                    
-                    agentsList.appendChild(agentCard);
-                });
-            } catch (error) {
-                console.error('Failed to load agents:', error);
+                    </div>
+
+                    <!-- Security Testing Category -->
+                    <div class="category-card" id="security-testing">
+                        <div class="category-header" onclick="toggleCategory('security-testing')">
+                            <h3><span>🔒</span> Security Testing</h3>
+                            <div class="category-info">
+                                <span class="llm-badge claude">Claude 3</span>
+                                <span class="expand-icon">▼</span>
+                            </div>
+                        </div>
+                        <div class="category-content">
+                            <div class="keywords-section">
+                                <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
+                                <div class="keywords-grid" id="security-keywords">
+                                    <span class="keyword-tag">security <span class="remove" onclick="removeKeyword('security-testing', 'security')">×</span></span>
+                                    <span class="keyword-tag">vulnerability <span class="remove" onclick="removeKeyword('security-testing', 'vulnerability')">×</span></span>
+                                    <span class="keyword-tag">penetration <span class="remove" onclick="removeKeyword('security-testing', 'penetration')">×</span></span>
+                                    <span class="keyword-tag">owasp <span class="remove" onclick="removeKeyword('security-testing', 'owasp')">×</span></span>
+                                    <span class="keyword-tag">sql injection <span class="remove" onclick="removeKeyword('security-testing', 'sql injection')">×</span></span>
+                                    <span class="keyword-tag">xss <span class="remove" onclick="removeKeyword('security-testing', 'xss')">×</span></span>
+                                    <span class="keyword-tag">authentication <span class="remove" onclick="removeKeyword('security-testing', 'authentication')">×</span></span>
+                                </div>
+                                <div class="add-keyword">
+                                    <input type="text" placeholder="Add new keyword..." id="security-keyword-input">
+                                    <button class="btn btn-primary btn-sm" onclick="addKeyword('security-testing')">Add</button>
+                                </div>
+                            </div>
+                            
+                            <div class="model-selection">
+                                <h4 style="color: #888; margin-bottom: 0.5rem;">Preferred Model</h4>
+                                <div class="model-options">
+                                    <div class="model-option" onclick="selectModel('security-testing', 'openai')">
+                                        <h4>OpenAI GPT-4</h4>
+                                        <p>Good for OWASP standards and common vulnerabilities</p>
+                                    </div>
+                                    <div class="model-option selected" onclick="selectModel('security-testing', 'claude')">
+                                        <h4>Claude 3</h4>
+                                        <p>Excellent for threat modeling and comprehensive security analysis</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Integration Testing Category -->
+                    <div class="category-card" id="integration-testing">
+                        <div class="category-header" onclick="toggleCategory('integration-testing')">
+                            <h3><span>🔗</span> Integration Testing</h3>
+                            <div class="category-info">
+                                <span class="llm-badge claude">Claude 3</span>
+                                <span class="expand-icon">▼</span>
+                            </div>
+                        </div>
+                        <div class="category-content">
+                            <div class="keywords-section">
+                                <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
+                                <div class="keywords-grid" id="integration-keywords">
+                                    <span class="keyword-tag">integration test <span class="remove">×</span></span>
+                                    <span class="keyword-tag">api test <span class="remove">×</span></span>
+                                    <span class="keyword-tag">database test <span class="remove">×</span></span>
+                                    <span class="keyword-tag">service test <span class="remove">×</span></span>
+                                    <span class="keyword-tag">contract test <span class="remove">×</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- E2E Testing Category -->
+                    <div class="category-card" id="e2e-testing">
+                        <div class="category-header" onclick="toggleCategory('e2e-testing')">
+                            <h3><span>🌐</span> End-to-End Testing</h3>
+                            <div class="category-info">
+                                <span class="llm-badge openai">OpenAI GPT-4</span>
+                                <span class="expand-icon">▼</span>
+                            </div>
+                        </div>
+                        <div class="category-content">
+                            <div class="keywords-section">
+                                <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
+                                <div class="keywords-grid" id="e2e-keywords">
+                                    <span class="keyword-tag">e2e <span class="remove">×</span></span>
+                                    <span class="keyword-tag">end to end <span class="remove">×</span></span>
+                                    <span class="keyword-tag">selenium <span class="remove">×</span></span>
+                                    <span class="keyword-tag">playwright <span class="remove">×</span></span>
+                                    <span class="keyword-tag">cypress <span class="remove">×</span></span>
+                                    <span class="keyword-tag">browser test <span class="remove">×</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Testing Category -->
+                    <div class="category-card" id="performance-testing">
+                        <div class="category-header" onclick="toggleCategory('performance-testing')">
+                            <h3><span>⚡</span> Performance Testing</h3>
+                            <div class="category-info">
+                                <span class="llm-badge openai">OpenAI GPT-4</span>
+                                <span class="expand-icon">▼</span>
+                            </div>
+                        </div>
+                        <div class="category-content">
+                            <div class="keywords-section">
+                                <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
+                                <div class="keywords-grid" id="performance-keywords">
+                                    <span class="keyword-tag">performance <span class="remove">×</span></span>
+                                    <span class="keyword-tag">load test <span class="remove">×</span></span>
+                                    <span class="keyword-tag">stress test <span class="remove">×</span></span>
+                                    <span class="keyword-tag">benchmark <span class="remove">×</span></span>
+                                    <span class="keyword-tag">jmeter <span class="remove">×</span></span>
+                                    <span class="keyword-tag">gatling <span class="remove">×</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Chart -->
+                <div class="performance-chart">
+                    <div class="chart-header">
+                        <h3>Model Performance Comparison</h3>
+                        <select style="background: #0a0e27; color: #e0e0e0; border: 1px solid #2a3050; padding: 0.5rem; border-radius: 5px;">
+                            <option>Last 7 days</option>
+                            <option>Last 30 days</option>
+                            <option>Last 90 days</option>
+                        </select>
+                    </div>
+                    <div id="performance-chart" style="height: 300px; background: #0a0e27; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #666;">
+                        Chart visualization would appear here
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button class="btn btn-secondary" onclick="exportConfig()">Export Config</button>
+                    <button class="btn btn-primary" onclick="saveAllChanges()">Save All Changes</button>
+                </div>
+            </div>
+
+            <!-- Other tabs (hidden by default) -->
+            <div id="dashboard-tab" class="tab-content">
+                <h1>Dashboard</h1>
+                <p>Main dashboard content...</p>
+            </div>
+
+            <div id="users-tab" class="tab-content">
+                <h1>User Management</h1>
+                <p>User management content...</p>
+            </div>
+
+            <div id="api-keys-tab" class="tab-content">
+                <h1>API Keys</h1>
+                <p>API key management content...</p>
+            </div>
+
+            <div id="analytics-tab" class="tab-content">
+                <h1>Analytics</h1>
+                <p>Analytics content...</p>
+            </div>
+
+            <div id="settings-tab" class="tab-content">
+                <h1>Settings</h1>
+                <p>Settings content...</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toast-message">Changes saved successfully!</span>
+    </div>
+
+    <script>
+        // State management
+        const routingConfig = {
+            'unit-testing': {
+                keywords: ['unit test', 'mock', 'stub', 'jest', 'pytest', 'mocha', 'jasmine', 'test suite'],
+                model: 'openai',
+                confidence: 80,
+                secondaryEnabled: true
+            },
+            'security-testing': {
+                keywords: ['security', 'vulnerability', 'penetration', 'owasp', 'sql injection', 'xss', 'authentication'],
+                model: 'claude',
+                confidence: 90,
+                secondaryEnabled: true
+            },
+            'integration-testing': {
+                keywords: ['integration test', 'api test', 'database test', 'service test', 'contract test'],
+                model: 'claude',
+                confidence: 75,
+                secondaryEnabled: true
+            },
+            'e2e-testing': {
+                keywords: ['e2e', 'end to end', 'selenium', 'playwright', 'cypress', 'browser test'],
+                model: 'openai',
+                confidence: 80,
+                secondaryEnabled: true
+            },
+            'performance-testing': {
+                keywords: ['performance', 'load test', 'stress test', 'benchmark', 'jmeter', 'gatling'],
+                model: 'openai',
+                confidence: 70,
+                secondaryEnabled: false
+            }
+        };
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Add active class to clicked nav item
+            event.target.closest('.nav-item').classList.add('active');
+        }
+
+        // Category expand/collapse
+        function toggleCategory(categoryId) {
+            const card = document.getElementById(categoryId);
+            card.classList.toggle('expanded');
+        }
+
+        // Keyword management
+        function removeKeyword(category, keyword) {
+            const index = routingConfig[category].keywords.indexOf(keyword);
+            if (index > -1) {
+                routingConfig[category].keywords.splice(index, 1);
+                updateKeywordsDisplay(category);
+                showToast(`Removed keyword: ${keyword}`, 'success');
             }
         }
-        
-        async function testAgents() {
-            const testMessage = prompt('Enter a test message for the AI agents:');
-            if (!testMessage) return;
+
+        function addKeyword(category) {
+            const input = document.getElementById(`${category.split('-')[0]}-keyword-input`);
+            const keyword = input.value.trim().toLowerCase();
             
-            showStatus('apiStatus', '🧪 Testing AI agents...', 'info');
+            if (keyword && !routingConfig[category].keywords.includes(keyword)) {
+                routingConfig[category].keywords.push(keyword);
+                updateKeywordsDisplay(category);
+                input.value = '';
+                showToast(`Added keyword: ${keyword}`, 'success');
+            }
+        }
+
+        function updateKeywordsDisplay(category) {
+            const container = document.getElementById(`${category.split('-')[0]}-keywords`);
+            container.innerHTML = routingConfig[category].keywords.map(keyword => 
+                `<span class="keyword-tag">${keyword} <span class="remove" onclick="removeKeyword('${category}', '${keyword}')">×</span></span>`
+            ).join('');
+        }
+
+        // Model selection
+        function selectModel(category, model) {
+            routingConfig[category].model = model;
             
+            // Update UI
+            const options = document.querySelectorAll(`#${category} .model-option`);
+            options.forEach(option => option.classList.remove('selected'));
+            event.target.closest('.model-option').classList.add('selected');
+            
+            // Update badge
+            const badge = document.querySelector(`#${category} .llm-badge`);
+            badge.className = `llm-badge ${model}`;
+            badge.textContent = model === 'openai' ? 'OpenAI GPT-4' : 'Claude 3';
+            
+            showToast(`${category.replace('-', ' ')} now using ${model.toUpperCase()}`, 'success');
+        }
+
+        // Save changes
+        async function saveAllChanges() {
             try {
-                const response = await fetch('/api/ai/multi-chat', {
+                // Show loading state
+                const btn = event.target;
+                btn.innerHTML = '<span class="loading"></span> Saving...';
+                btn.disabled = true;
+                
+                // Send to backend
+                const response = await fetch('/api/ai/routing-config', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: testMessage,
-                        agents: ['techExpert', 'creativeWriter']
-                    })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    },
+                    body: JSON.stringify(routingConfig)
                 });
                 
-                const data = await response.json();
+                if (response.ok) {
+                    showToast('All changes saved successfully!', 'success');
+                } else {
+                    throw new Error('Failed to save changes');
+                }
+            } catch (error) {
+                showToast('Error saving changes: ' + error.message, 'error');
+            } finally {
+                // Reset button
+                const btn = event.target;
+                btn.innerHTML = 'Save All Changes';
+                btn.disabled = false;
+            }
+        }
+
+        // Export configuration
+        function exportConfig() {
+            const dataStr = JSON.stringify(routingConfig, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `ai-routing-config-${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showToast('Configuration exported!', 'success');
+        }
+
+        // Toast notifications
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            toast.className = `toast ${type}`;
+            toastMessage.textContent = message;
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // Load initial data
+        async function loadRoutingData() {
+            try {
+                const response = await fetch('/api/ai/routing-config', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    }
+                });
                 
                 if (response.ok) {
-                    let message = '<strong>AI Agent Responses:</strong><br><br>';
+                    const data = await response.json();
+                    Object.assign(routingConfig, data);
                     
-                    data.responses.forEach(resp => {
-                        if (resp.error) {
-                            message += `${resp.agent.icon} <strong>${resp.agent.name}:</strong> ❌ ${resp.error}<br><br>`;
-                        } else {
-                            message += `${resp.agent.icon} <strong>${resp.agent.name}:</strong><br>${resp.message.substring(0, 200)}...<br><br>`;
-                        }
+                    // Update UI with loaded data
+                    Object.keys(routingConfig).forEach(category => {
+                        updateKeywordsDisplay(category);
                     });
-                    
-                    showStatus('apiStatus', message, 'info');
-                } else {
-                    showStatus('apiStatus', '❌ Test failed: ' + data.error, 'danger');
                 }
             } catch (error) {
-                showStatus('apiStatus', '❌ Test error: ' + error.message, 'danger');
+                console.error('Error loading routing config:', error);
             }
         }
-        
-        async function loadCurrentKeys() {
-            try {
-                const response = await fetch('/api/admin/api-keys');
-                const data = await response.json();
-                
-                // Show masked keys if they exist
-                if (data.apiKeys.openai) {
-                    document.getElementById('openaiKey').placeholder = data.apiKeys.openai;
-                }
-                if (data.apiKeys.anthropic) {
-                    document.getElementById('anthropicKey').placeholder = data.apiKeys.anthropic;
-                }
-                if (data.apiKeys.together) {
-                    document.getElementById('togetherKey').placeholder = data.apiKeys.together;
-                }
-            } catch (error) {
-                showError('errorMessage', 'Failed to load API keys');
-            }
-        }
-        
-        async function saveApiKeys() {
-            const openai = document.getElementById('openaiKey').value;
-            const anthropic = document.getElementById('anthropicKey').value;
-            const together = document.getElementById('togetherKey').value;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRoutingData();
             
-            try {
-                const response = await fetch('/api/admin/api-keys', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ openai, anthropic, together })
+            // Add enter key support for keyword inputs
+            document.querySelectorAll('input[id$="-keyword-input"]').forEach(input => {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const category = input.id.replace('-keyword-input', '-testing');
+                        addKeyword(category);
+                    }
                 });
-                
-                if (response.ok) {
-                    showSuccess('API keys saved successfully!');
-                    // Clear the input fields
-                    document.getElementById('openaiKey').value = '';
-                    document.getElementById('anthropicKey').value = '';
-                    document.getElementById('togetherKey').value = '';
-                    loadDashboard();
-                } else {
-                    showError('errorMessage', 'Failed to save API keys');
-                }
-            } catch (error) {
-                showError('errorMessage', 'Connection error');
-            }
-        }
-        
-        function toggleVisibility(inputId) {
-            const input = document.getElementById(inputId);
-            const button = input.nextElementSibling;
-            const isVisible = input.getAttribute('data-visible') === 'true';
-            
-            if (isVisible) {
-                input.type = 'password';
-                input.setAttribute('data-visible', 'false');
-                button.textContent = 'Show';
-            } else {
-                input.type = 'text';
-                input.setAttribute('data-visible', 'true');
-                button.textContent = 'Hide';
-            }
-        }
-        
-        function showError(elementId, message) {
-            const element = document.getElementById(elementId);
-            element.textContent = message;
-            element.style.display = 'block';
-            setTimeout(() => element.style.display = 'none', 5000);
-        }
-        
-        function showSuccess(message) {
-            const element = document.getElementById('successMessage');
-            element.textContent = message;
-            element.style.display = 'block';
-            setTimeout(() => element.style.display = 'none', 5000);
-        }
-        
-        // Handle Enter key in password field
-        document.getElementById('password').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') login();
+            });
         });
-        
-        // Initialize
-        checkSetup();
+
+        // Auto-save draft every 30 seconds
+        setInterval(() => {
+            localStorage.setItem('ai-routing-draft', JSON.stringify(routingConfig));
+        }, 30000);
     </script>
 </body>
 </html>
