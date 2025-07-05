@@ -1,5 +1,5 @@
 // FILE LOCATION: /simple-server.js (root directory)
-// Enhanced server with authentication and API key management
+// Enhanced server with real AI integration
 
 const express = require('express');
 const path = require('path');
@@ -42,7 +42,7 @@ if (fs.existsSync(CONFIG_FILE)) {
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -198,11 +198,11 @@ app.post('/api/admin/api-keys', requireAuth, (req, res) => {
     res.json({ success: true, message: 'API keys updated' });
 });
 
-// HTML validation endpoint
-app.post('/api/validate/html', requireAuth, (req, res) => {
+// HTML validation endpoint with AI enhancement
+app.post('/api/validate/html', requireAuth, async (req, res) => {
     const { html, url } = req.body;
     
-    // Basic HTML validation rules
+    // Basic HTML validation
     const issues = [];
     
     // Check for missing alt attributes on images
@@ -259,7 +259,7 @@ app.post('/api/validate/html', requireAuth, (req, res) => {
     });
 });
 
-// AI analysis endpoint (protected)
+// Real AI analysis endpoint (protected)
 app.post('/api/analyze/:service', requireAuth, async (req, res) => {
     const { service } = req.params;
     const { content, analysisType } = req.body;
@@ -272,24 +272,253 @@ app.post('/api/analyze/:service', requireAuth, async (req, res) => {
         });
     }
     
-    // Here you would integrate with actual AI services
-    // For now, return mock response
-    res.json({
-        service,
-        analysis: {
-            score: 85,
-            issues: [
-                {
-                    severity: 'medium',
-                    category: analysisType,
-                    description: 'Sample issue found by AI',
-                    suggestion: 'Here\'s how to fix it'
-                }
-            ],
-            summary: `Analysis completed by ${service}`
-        },
-        timestamp: new Date().toISOString()
+    try {
+        let analysis;
+        
+        switch (service) {
+            case 'openai':
+                analysis = await analyzeWithOpenAI(content, analysisType, apiKey);
+                break;
+            case 'anthropic':
+                analysis = await analyzeWithAnthropic(content, analysisType, apiKey);
+                break;
+            case 'together':
+                analysis = await analyzeWithTogether(content, analysisType, apiKey);
+                break;
+            default:
+                return res.status(400).json({ error: 'Invalid service' });
+        }
+        
+        res.json({
+            service,
+            analysis,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error(`AI analysis error (${service}):`, error.message);
+        res.status(500).json({ 
+            error: `AI analysis failed: ${error.message}`,
+            service 
+        });
+    }
+});
+
+// OpenAI Analysis Function
+async function analyzeWithOpenAI(content, analysisType, apiKey) {
+    const axios = require('axios');
+    
+    const prompt = `Analyze the following HTML code for ${analysisType} issues. 
+    Provide specific, actionable feedback with line numbers where possible.
+    Focus on: accessibility, SEO, performance, security, and best practices.
+    
+    HTML Code:
+    ${content}
+    
+    Format your response as JSON with this structure:
+    {
+        "score": 0-100,
+        "issues": [
+            {
+                "severity": "error|warning|info",
+                "category": "category name",
+                "description": "specific issue description",
+                "line": "affected code snippet",
+                "suggestion": "how to fix it"
+            }
+        ],
+        "summary": "brief overall assessment"
+    }`;
+    
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: 'gpt-4',
+        messages: [
+            {
+                role: 'system',
+                content: 'You are an expert web developer and HTML validator. Provide detailed, actionable feedback on code quality.'
+            },
+            {
+                role: 'user',
+                content: prompt
+            }
+        ],
+        temperature: 0.3,
+        max_tokens: 2000
+    }, {
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        }
     });
+    
+    try {
+        const aiResponse = response.data.choices[0].message.content;
+        return JSON.parse(aiResponse);
+    } catch (e) {
+        // If AI doesn't return valid JSON, create structured response
+        return {
+            score: 75,
+            issues: [{
+                severity: 'info',
+                category: 'analysis',
+                description: response.data.choices[0].message.content,
+                suggestion: 'Review the detailed analysis above'
+            }],
+            summary: 'Analysis completed by GPT-4'
+        };
+    }
+}
+
+// Anthropic (Claude) Analysis Function
+async function analyzeWithAnthropic(content, analysisType, apiKey) {
+    const axios = require('axios');
+    
+    const prompt = `Analyze this HTML code for ${analysisType} issues.
+    
+    HTML Code:
+    ${content}
+    
+    Provide a JSON response with:
+    - score (0-100)
+    - issues array with severity, category, description, line, and suggestion
+    - summary of findings
+    
+    Focus on accessibility, performance, SEO, and security issues.`;
+    
+    const response = await axios.post('https://api.anthropic.com/v1/messages', {
+        model: 'claude-3-opus-20240229',
+        max_tokens: 2000,
+        messages: [{
+            role: 'user',
+            content: prompt
+        }],
+        temperature: 0.3
+    }, {
+        headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    try {
+        const aiResponse = response.data.content[0].text;
+        return JSON.parse(aiResponse);
+    } catch (e) {
+        return {
+            score: 75,
+            issues: [{
+                severity: 'info',
+                category: 'analysis',
+                description: response.data.content[0].text,
+                suggestion: 'Review the detailed analysis above'
+            }],
+            summary: 'Analysis completed by Claude'
+        };
+    }
+}
+
+// Together AI (Llama) Analysis Function
+async function analyzeWithTogether(content, analysisType, apiKey) {
+    const axios = require('axios');
+    
+    const prompt = `<s>[INST] Analyze this HTML code for ${analysisType} issues and return a JSON response.
+
+HTML Code:
+${content}
+
+Return JSON with: score (0-100), issues array (severity, category, description, suggestion), and summary. [/INST]`;
+    
+    const response = await axios.post('https://api.together.xyz/v1/chat/completions', {
+        model: 'meta-llama/Llama-2-70b-chat-hf',
+        messages: [{
+            role: 'user',
+            content: prompt
+        }],
+        temperature: 0.3,
+        max_tokens: 2000
+    }, {
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    try {
+        const aiResponse = response.data.choices[0].message.content;
+        return JSON.parse(aiResponse);
+    } catch (e) {
+        return {
+            score: 75,
+            issues: [{
+                severity: 'info',
+                category: 'analysis',
+                description: response.data.choices[0].message.content,
+                suggestion: 'Review the detailed analysis above'
+            }],
+            summary: 'Analysis completed by Llama'
+        };
+    }
+}
+
+// Test API keys endpoint
+app.post('/api/admin/test-apis', requireAuth, async (req, res) => {
+    const results = {
+        openai: { success: false, error: null },
+        anthropic: { success: false, error: null },
+        together: { success: false, error: null }
+    };
+    
+    // Test OpenAI
+    if (config.apiKeys.openai) {
+        try {
+            const axios = require('axios');
+            await axios.post('https://api.openai.com/v1/chat/completions', {
+                model: 'gpt-3.5-turbo',
+                messages: [{ role: 'user', content: 'test' }],
+                max_tokens: 5
+            }, {
+                headers: { 'Authorization': `Bearer ${config.apiKeys.openai}` }
+            });
+            results.openai.success = true;
+        } catch (error) {
+            results.openai.error = error.response?.data?.error?.message || error.message;
+        }
+    }
+    
+    // Test Anthropic
+    if (config.apiKeys.anthropic) {
+        try {
+            const axios = require('axios');
+            await axios.post('https://api.anthropic.com/v1/messages', {
+                model: 'claude-3-haiku-20240307',
+                max_tokens: 5,
+                messages: [{ role: 'user', content: 'test' }]
+            }, {
+                headers: { 
+                    'x-api-key': config.apiKeys.anthropic,
+                    'anthropic-version': '2023-06-01'
+                }
+            });
+            results.anthropic.success = true;
+        } catch (error) {
+            results.anthropic.error = error.response?.data?.error?.message || error.message;
+        }
+    }
+    
+    // Test Together
+    if (config.apiKeys.together) {
+        try {
+            const axios = require('axios');
+            await axios.get('https://api.together.xyz/v1/models', {
+                headers: { 'Authorization': `Bearer ${config.apiKeys.together}` }
+            });
+            results.together.success = true;
+        } catch (error) {
+            results.together.error = error.response?.data?.error || error.message;
+        }
+    }
+    
+    res.json(results);
 });
 
 // Debug endpoint
@@ -350,14 +579,16 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`\n🚀 TestLab Server v2.0 (Enhanced)`);
+    console.log(`\n🚀 TestLab Server v2.0 (With AI Integration)`);
     console.log(`📍 Port: ${PORT}`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🔐 Setup Status: ${config.isSetup ? 'Complete' : 'Required'}`);
+    console.log(`🤖 AI Services: ${Object.entries(config.apiKeys).filter(([k,v]) => v).map(([k]) => k).join(', ') || 'None configured'}`);
     console.log(`\n📋 Available endpoints:`);
     console.log(`   • Main App: http://localhost:${PORT}/`);
     console.log(`   • Admin Panel: http://localhost:${PORT}/admin`);
-    console.log(`   • Setup Status: http://localhost:${PORT}/api/setup/status`);
+    console.log(`   • Test Page: http://localhost:${PORT}/test.html`);
+    console.log(`   • Setup: http://localhost:${PORT}/setup`);
     console.log(`   • API Health: http://localhost:${PORT}/api/health`);
     console.log(`   • Debug Info: http://localhost:${PORT}/api/debug`);
     console.log(`\n✅ Server is running!\n`);

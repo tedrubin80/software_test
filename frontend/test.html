@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TestLab - HTML Debug Testing</title>
+    <title>TestLab - AI-Powered HTML Analysis</title>
     <style>
         * {
             margin: 0;
@@ -78,6 +78,7 @@
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s;
+            margin-right: 0.5rem;
             margin-top: 1rem;
         }
         
@@ -92,11 +93,81 @@
             transform: none;
         }
         
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .ai-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .ai-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #1f2937;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .ai-btn:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .ai-btn.active {
+            border-color: #3b82f6;
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .ai-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
         .results {
             margin-top: 1rem;
             max-height: 400px;
             overflow-y: auto;
         }
+        
+        .ai-result {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .ai-result h3 {
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .score {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        
+        .score.good { color: #10b981; }
+        .score.medium { color: #f59e0b; }
+        .score.poor { color: #ef4444; }
         
         .issue {
             padding: 0.75rem;
@@ -133,16 +204,16 @@
             margin-top: 0.25rem;
         }
         
-        .issue-line {
-            font-family: monospace;
-            font-size: 0.85rem;
-            margin-top: 0.25rem;
-            color: #6b7280;
+        .issue-suggestion {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            font-style: italic;
         }
         
         .stats {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 1rem;
             margin-bottom: 2rem;
         }
@@ -166,6 +237,24 @@
             font-size: 0.875rem;
         }
         
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+        
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+        
         .login-prompt {
             background: #fef3c7;
             padding: 1rem;
@@ -178,10 +267,6 @@
             color: #3b82f6;
             text-decoration: none;
             font-weight: bold;
-        }
-        
-        .login-prompt a:hover {
-            text-decoration: underline;
         }
         
         .footer {
@@ -198,32 +283,13 @@
             margin: 0 1rem;
         }
         
-        .footer a:hover {
-            text-decoration: underline;
-        }
-        
-        .sample-issues {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #f9fafb;
-            border-radius: 6px;
-            font-size: 0.875rem;
-        }
-        
-        .sample-issues h3 {
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-            color: #4b5563;
-        }
-        
-        .sample-issues ul {
-            margin-left: 1.5rem;
-            color: #6b7280;
-        }
-        
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -231,7 +297,7 @@
 <body>
     <div class="header">
         <div class="container">
-            <h1>🔍 TestLab HTML Debugger</h1>
+            <h1>🤖 TestLab AI-Powered HTML Analyzer</h1>
         </div>
     </div>
     
@@ -253,6 +319,10 @@
                 <div class="stat-value" id="totalIssues">0</div>
                 <div class="stat-label">Total Issues</div>
             </div>
+            <div class="stat">
+                <div class="stat-value" id="avgScore">-</div>
+                <div class="stat-label">Avg Score</div>
+            </div>
         </div>
         
         <div class="main-content">
@@ -261,46 +331,65 @@
                 <textarea id="htmlInput" placeholder="Paste your HTML code here..."><!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Sample Page</title>
+    <title>Sample Page with Issues</title>
 </head>
 <body>
     <!-- Missing alt attribute -->
-    <img src="logo.png">
+    <img src="logo.png" width="200">
     
-    <!-- Form without labels -->
+    <!-- Form without proper labels -->
     <form>
         <input type="text" placeholder="Name">
         <input type="email" placeholder="Email">
-        <button>Submit</button>
+        <input type="password" placeholder="Password">
+        <button type="submit">Submit</button>
     </form>
     
     <!-- Accessibility issues -->
-    <div onclick="doSomething()">Click me</div>
+    <div onclick="doSomething()">Click me!</div>
     
     <!-- Invalid nesting -->
-    <p>This is <div>invalid</div> nesting</p>
+    <p>This paragraph contains <div>a div element</div> which is invalid.</p>
+    
+    <!-- Missing semantic HTML -->
+    <div class="header">
+        <div class="nav">Navigation here</div>
+    </div>
+    
+    <!-- Performance issue: inline styles -->
+    <div style="color: red; font-size: 20px; margin: 10px; padding: 20px;">
+        Inline styles affect performance
+    </div>
 </body>
 </html></textarea>
-                <button class="btn" onclick="validateHTML()">🔍 Validate HTML</button>
                 
-                <div class="sample-issues">
-                    <h3>Common Issues to Check:</h3>
-                    <ul>
-                        <li>Missing alt attributes on images</li>
-                        <li>Form inputs without labels</li>
-                        <li>Missing DOCTYPE declaration</li>
-                        <li>Invalid HTML nesting</li>
-                        <li>Missing page title</li>
-                        <li>Accessibility violations</li>
-                    </ul>
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-secondary" onclick="validateHTML()">🔍 Basic Validation</button>
                 </div>
+                
+                <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem;">🤖 AI Analysis</h3>
+                <div class="ai-buttons" id="aiButtons">
+                    <button class="ai-btn" data-service="openai" onclick="toggleAI('openai')">
+                        <span>🧠</span> GPT-4
+                    </button>
+                    <button class="ai-btn" data-service="anthropic" onclick="toggleAI('anthropic')">
+                        <span>🤖</span> Claude
+                    </button>
+                    <button class="ai-btn" data-service="together" onclick="toggleAI('together')">
+                        <span>🦙</span> Llama
+                    </button>
+                </div>
+                
+                <button class="btn" onclick="runAIAnalysis()" id="analyzeBtn">
+                    🚀 Run AI Analysis
+                </button>
             </div>
             
             <div class="section">
-                <h2>📊 Validation Results</h2>
+                <h2>📊 Analysis Results</h2>
                 <div id="results" class="results">
                     <p style="color: #6b7280; text-align: center; padding: 2rem;">
-                        Paste HTML code and click "Validate HTML" to see results
+                        Paste HTML code and run analysis to see results
                     </p>
                 </div>
             </div>
@@ -318,6 +407,8 @@
     
     <script>
         let isAuthenticated = false;
+        let selectedAIs = new Set();
+        let analysisResults = {};
         
         // Check authentication status
         async function checkAuth() {
@@ -328,48 +419,104 @@
                 
                 if (!isAuthenticated) {
                     document.getElementById('loginPrompt').style.display = 'block';
+                    document.querySelectorAll('.ai-btn').forEach(btn => {
+                        btn.disabled = true;
+                        btn.title = 'Login required';
+                    });
+                    document.getElementById('analyzeBtn').disabled = true;
                 }
             } catch (error) {
                 console.error('Auth check failed:', error);
             }
         }
         
+        function toggleAI(service) {
+            if (!isAuthenticated) return;
+            
+            const btn = document.querySelector(`[data-service="${service}"]`);
+            if (selectedAIs.has(service)) {
+                selectedAIs.delete(service);
+                btn.classList.remove('active');
+            } else {
+                selectedAIs.add(service);
+                btn.classList.add('active');
+            }
+            
+            document.getElementById('analyzeBtn').disabled = selectedAIs.size === 0;
+        }
+        
         async function validateHTML() {
             const html = document.getElementById('htmlInput').value;
-            
             if (!html.trim()) {
                 alert('Please enter HTML code to validate');
                 return;
             }
             
-            const resultsDiv = document.getElementById('results');
-            
+            const issues = performBasicValidation(html);
+            displayBasicResults(issues);
+        }
+        
+        async function runAIAnalysis() {
             if (!isAuthenticated) {
-                // Basic client-side validation only
-                const issues = performBasicValidation(html);
-                displayResults(issues);
-            } else {
-                // Full server-side validation
-                resultsDiv.innerHTML = '<p style="text-align: center;">Validating...</p>';
-                
+                alert('Please login to use AI analysis');
+                return;
+            }
+            
+            if (selectedAIs.size === 0) {
+                alert('Please select at least one AI service');
+                return;
+            }
+            
+            const html = document.getElementById('htmlInput').value;
+            if (!html.trim()) {
+                alert('Please enter HTML code to analyze');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">Running AI analysis</div>';
+            
+            analysisResults = {};
+            let completed = 0;
+            
+            for (const service of selectedAIs) {
                 try {
-                    const response = await fetch('/api/validate/html', {
+                    const response = await fetch(`/api/analyze/${service}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ html, url: 'test.html' })
+                        body: JSON.stringify({
+                            content: html,
+                            analysisType: 'comprehensive'
+                        })
                     });
                     
                     if (response.ok) {
                         const data = await response.json();
-                        displayResults(data.issues);
+                        analysisResults[service] = data.analysis;
                     } else {
-                        resultsDiv.innerHTML = '<p style="color: red;">Validation failed. Please try again.</p>';
+                        const error = await response.json();
+                        analysisResults[service] = {
+                            error: error.error || 'Analysis failed',
+                            score: 0,
+                            issues: [],
+                            summary: 'Failed to analyze'
+                        };
                     }
                 } catch (error) {
-                    console.error('Validation error:', error);
-                    resultsDiv.innerHTML = '<p style="color: red;">Connection error. Please try again.</p>';
+                    console.error(`${service} analysis error:`, error);
+                    analysisResults[service] = {
+                        error: error.message,
+                        score: 0,
+                        issues: [],
+                        summary: 'Connection error'
+                    };
                 }
+                
+                completed++;
+                resultsDiv.innerHTML = `<div class="loading">Analyzing with AI services (${completed}/${selectedAIs.size})</div>`;
             }
+            
+            displayAIResults();
         }
         
         function performBasicValidation(html) {
@@ -421,26 +568,17 @@
                 }
             });
             
-            // Check for invalid nesting (simplified)
-            if (html.match(/<p[^>]*>.*<div/i)) {
-                issues.push({
-                    type: 'error',
-                    message: 'Invalid nesting: block element inside paragraph',
-                    category: 'structure'
-                });
-            }
-            
             return issues;
         }
         
-        function displayResults(issues) {
+        function displayBasicResults(issues) {
             const resultsDiv = document.getElementById('results');
             
             if (issues.length === 0) {
                 resultsDiv.innerHTML = `
                     <div class="issue info">
                         <div class="issue-type">Success</div>
-                        <div class="issue-message">No issues found! Your HTML looks good.</div>
+                        <div class="issue-message">No basic issues found! Consider running AI analysis for deeper insights.</div>
                     </div>
                 `;
                 updateStats(0, 0, 0);
@@ -463,14 +601,83 @@
                 `;
             }).join('');
             
-            resultsDiv.innerHTML = issuesHTML;
+            resultsDiv.innerHTML = `
+                <h3>Basic Validation Results</h3>
+                ${issuesHTML}
+            `;
+            
             updateStats(errorCount, warningCount, issues.length);
         }
         
-        function updateStats(errors, warnings, total) {
+        function displayAIResults() {
+            const resultsDiv = document.getElementById('results');
+            let html = '';
+            let totalErrors = 0;
+            let totalWarnings = 0;
+            let totalIssues = 0;
+            let totalScore = 0;
+            let scoreCount = 0;
+            
+            const aiNames = {
+                openai: 'GPT-4',
+                anthropic: 'Claude',
+                together: 'Llama'
+            };
+            
+            for (const [service, result] of Object.entries(analysisResults)) {
+                html += `<div class="ai-result">`;
+                html += `<h3>🤖 ${aiNames[service]} Analysis</h3>`;
+                
+                if (result.error) {
+                    html += `<div class="issue error">
+                        <div class="issue-message">Error: ${result.error}</div>
+                    </div>`;
+                } else {
+                    const scoreClass = result.score >= 80 ? 'good' : result.score >= 60 ? 'medium' : 'poor';
+                    html += `<div class="score ${scoreClass}">Score: ${result.score}/100</div>`;
+                    html += `<p><strong>Summary:</strong> ${result.summary}</p>`;
+                    
+                    if (result.score) {
+                        totalScore += result.score;
+                        scoreCount++;
+                    }
+                    
+                    if (result.issues && result.issues.length > 0) {
+                        html += '<div style="margin-top: 1rem;">';
+                        result.issues.forEach(issue => {
+                            if (issue.severity === 'error') totalErrors++;
+                            else if (issue.severity === 'warning') totalWarnings++;
+                            totalIssues++;
+                            
+                            html += `
+                                <div class="issue ${issue.severity}">
+                                    <div class="issue-type">${issue.severity} - ${issue.category}</div>
+                                    <div class="issue-message">${issue.description}</div>
+                                    ${issue.line ? `<div class="issue-line">${escapeHtml(issue.line)}</div>` : ''}
+                                    ${issue.suggestion ? `<div class="issue-suggestion">💡 ${issue.suggestion}</div>` : ''}
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                    }
+                }
+                
+                html += '</div>';
+            }
+            
+            resultsDiv.innerHTML = html;
+            
+            const avgScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : 0;
+            updateStats(totalErrors, totalWarnings, totalIssues, avgScore);
+        }
+        
+        function updateStats(errors, warnings, total, avgScore = null) {
             document.getElementById('errorCount').textContent = errors;
             document.getElementById('warningCount').textContent = warnings;
             document.getElementById('totalIssues').textContent = total;
+            if (avgScore !== null) {
+                document.getElementById('avgScore').textContent = avgScore;
+            }
         }
         
         function escapeHtml(text) {
