@@ -1,23 +1,26 @@
-# FILE LOCATION: /Dockerfile (root directory - NO extension, just "Dockerfile")
+# Use Node.js 18 Alpine for smaller image size
 FROM node:18-alpine
 
+# Set working directory
 WORKDIR /app
 
-# Copy and install dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm install
 
-# Copy all files
+# Install production dependencies
+RUN npm ci --only=production
+
+# Copy all application files
 COPY . .
 
 # Remove any conflicting server files
-RUN rm -f railway-server.js combined-server.js || true
+RUN rm -f railway-server.js combined-server.js app.js server.js || true
 
-# Show what we have for debugging
-RUN echo "Files in /app:" && ls -la
+# Create necessary directories
+RUN mkdir -p frontend logs
 
 # The port Railway provides
 EXPOSE ${PORT}
 
-# Start the simple server
+# Start the application
 CMD ["node", "simple-server.js"]

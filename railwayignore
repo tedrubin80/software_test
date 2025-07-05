@@ -1,0 +1,40 @@
+# FILE LOCATION: /.railwayignore (root directory)
+# Ignore files that might cause conflicts
+
+# Remove old/conflicting server files
+railway-server.js
+combined-server.js
+app.js
+server.js
+debug-server.js
+
+# Dependencies (will be installed via npm)
+node_modules/
+
+# Version control
+.git/
+.gitignore
+
+# Logs and temporary files
+*.log
+logs/
+temp/
+tmp/
+
+# Development files
+.env.local
+.env.development
+*.test.js
+
+# Documentation (optional - remove if you want docs deployed)
+docs/
+README.md
+*.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/

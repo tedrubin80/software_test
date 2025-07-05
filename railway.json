@@ -8,6 +8,12 @@
     "numReplicas": 1,
     "sleepApplication": false,
     "restartPolicyType": "ON_FAILURE",
-    "startCommand": "node simple-server.js"
+    "restartPolicyMaxRetries": 10,
+    "startCommand": "node simple-server.js",
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 30
+  },
+  "environment": {
+    "NODE_ENV": "production"
   }
 }

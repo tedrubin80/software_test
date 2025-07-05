@@ -1,11 +1,29 @@
 {
   "name": "testlab-v2",
   "version": "2.0.0",
-  "main": "app.js",
+  "description": "TestLab - Software Testing Training Platform",
+  "main": "simple-server.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node simple-server.js",
+    "start:railway": "node simple-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "express": "^4.18.2"
-  }
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "cookie-parser": "^1.4.6",
+    "bcryptjs": "^2.4.3",
+    "uuid": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "testing",
+    "education",
+    "software-testing"
+  ],
+  "author": "TestLab",
+  "license": "MIT"
 }

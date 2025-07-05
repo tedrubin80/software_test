@@ -1,16 +1,21 @@
 // FILE LOCATION: /simple-server.js (root directory)
-// Minimal server for testing Railway deployment
+// Main server for Railway deployment
 
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Basic middleware
+// Middleware
+app.use(cors());
 app.use(express.json());
-app.use(express.static('frontend'));
+app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from frontend directory
+app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Logging middleware
 app.use((req, res, next) => {
@@ -18,7 +23,16 @@ app.use((req, res, next) => {
     next();
 });
 
-// Test endpoint
+// API Routes
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'healthy',
+        service: 'TestLab',
+        timestamp: new Date().toISOString(),
+        version: '2.0.0'
+    });
+});
+
 app.get('/api/test', (req, res) => {
     res.json({ 
         message: 'API is working!',
@@ -26,19 +40,17 @@ app.get('/api/test', (req, res) => {
     });
 });
 
-// Setup status
 app.get('/api/setup/status', (req, res) => {
     const setupComplete = fs.existsSync(path.join(__dirname, '.setup-complete'));
     res.json({ isSetup: setupComplete });
 });
 
-// Setup complete endpoint
 app.post('/api/setup/complete', (req, res) => {
     console.log('Setup complete endpoint hit!');
     console.log('Request body:', JSON.stringify(req.body, null, 2));
     
     try {
-        // Just save a simple file to mark setup as complete
+        // Create setup marker file
         fs.writeFileSync(path.join(__dirname, '.setup-complete'), new Date().toISOString());
         
         // Save config
@@ -53,13 +65,12 @@ app.post('/api/setup/complete', (req, res) => {
         console.error('Setup error:', error);
         res.status(500).json({ 
             success: false, 
-            error: error.message,
-            stack: error.stack 
+            error: error.message
         });
     }
 });
 
-// Auth endpoints (simplified)
+// Auth endpoints (simplified for testing)
 app.post('/api/auth/login', (req, res) => {
     const { username, password } = req.body;
     console.log('Login attempt:', username);
@@ -68,7 +79,7 @@ app.post('/api/auth/login', (req, res) => {
     if (fs.existsSync(path.join(__dirname, '.setup-complete'))) {
         res.json({ 
             success: true, 
-            sessionToken: 'test-token',
+            sessionToken: 'test-token-' + Date.now(),
             message: 'Login successful' 
         });
     } else {
@@ -84,43 +95,14 @@ app.post('/api/auth/logout', (req, res) => {
     res.json({ success: true });
 });
 
-// Health check
-app.get('/api/health', (req, res) => {
-    res.json({ 
-        status: 'healthy',
-        timestamp: new Date().toISOString()
-    });
-});
-
-// Frontend routes
-app.get('/', (req, res) => {
-    const setupComplete = fs.existsSync(path.join(__dirname, '.setup-complete'));
-    if (!setupComplete) {
-        return res.redirect('/setup.html');
-    }
-    res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
-});
-
-app.get('/setup', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend', 'setup.html'));
-});
-
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend', 'admin.html'));
-});
-
-app.get('/admin-login.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend', 'admin-login.html'));
-});
-
 // Debug endpoint
 app.get('/api/debug', (req, res) => {
     const info = {
         cwd: process.cwd(),
         dirname: __dirname,
-        files: fs.readdirSync(__dirname),
+        files: fs.readdirSync(__dirname).slice(0, 20), // Limit to 20 files
         frontend: fs.existsSync(path.join(__dirname, 'frontend')) 
-            ? fs.readdirSync(path.join(__dirname, 'frontend'))
+            ? fs.readdirSync(path.join(__dirname, 'frontend')).slice(0, 10)
             : 'Frontend directory not found',
         env: {
             NODE_ENV: process.env.NODE_ENV,
@@ -130,13 +112,89 @@ app.get('/api/debug', (req, res) => {
     res.json(info);
 });
 
+// Serve HTML files explicitly for specific routes
+app.get('/', (req, res) => {
+    const indexPath = path.join(__dirname, 'frontend', 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).send(`
+            <h1>Welcome to TestLab</h1>
+            <p>Frontend files not found. Please ensure frontend/index.html exists.</p>
+            <a href="/api/debug">View Debug Info</a>
+        `);
+    }
+});
+
+app.get('/test.html', (req, res) => {
+    const testPath = path.join(__dirname, 'frontend', 'test.html');
+    if (fs.existsSync(testPath)) {
+        res.sendFile(testPath);
+    } else {
+        res.status(404).send(`
+            <h1>Test Page</h1>
+            <p>test.html not found in frontend directory.</p>
+            <a href="/api/debug">View Debug Info</a>
+        `);
+    }
+});
+
+app.get('/setup', (req, res) => {
+    const setupPath = path.join(__dirname, 'frontend', 'setup.html');
+    if (fs.existsSync(setupPath)) {
+        res.sendFile(setupPath);
+    } else {
+        // Fallback inline setup page
+        res.send(`
+            <html>
+            <head><title>TestLab Setup</title></head>
+            <body>
+                <h1>TestLab Setup</h1>
+                <button onclick="completeSetup()">Complete Setup</button>
+                <div id="result"></div>
+                <script>
+                    async function completeSetup() {
+                        try {
+                            const response = await fetch('/api/setup/complete', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({
+                                    setupTime: new Date().toISOString(),
+                                    version: '2.0.0'
+                                })
+                            });
+                            const data = await response.json();
+                            document.getElementById('result').innerHTML = 
+                                '<p>Setup ' + (data.success ? 'completed!' : 'failed: ' + data.error) + '</p>';
+                        } catch (error) {
+                            document.getElementById('result').innerHTML = 
+                                '<p>Error: ' + error.message + '</p>';
+                        }
+                    }
+                </script>
+            </body>
+            </html>
+        `);
+    }
+});
+
+app.get('/admin', (req, res) => {
+    const adminPath = path.join(__dirname, 'frontend', 'admin.html');
+    if (fs.existsSync(adminPath)) {
+        res.sendFile(adminPath);
+    } else {
+        res.redirect('/');
+    }
+});
+
 // 404 handler
 app.use((req, res) => {
     console.log('404 Not Found:', req.path);
     res.status(404).json({ 
         error: 'Not found', 
         path: req.path,
-        method: req.method 
+        method: req.method,
+        suggestion: 'Try /api/debug for debugging info'
     });
 });
 
@@ -152,13 +210,16 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`\n🚀 Simple TestLab Server`);
+    console.log(`\n🚀 TestLab Server v2.0`);
     console.log(`📍 Port: ${PORT}`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`\n📋 Test these URLs:`);
+    console.log(`\n📋 Available endpoints:`);
+    console.log(`   • Main App: http://localhost:${PORT}/`);
+    console.log(`   • Test Page: http://localhost:${PORT}/test.html`);
+    console.log(`   • Setup: http://localhost:${PORT}/setup`);
+    console.log(`   • Admin: http://localhost:${PORT}/admin`);
+    console.log(`   • API Health: http://localhost:${PORT}/api/health`);
     console.log(`   • API Test: http://localhost:${PORT}/api/test`);
     console.log(`   • Debug Info: http://localhost:${PORT}/api/debug`);
-    console.log(`   • Setup: http://localhost:${PORT}/setup`);
-    console.log(`   • Main: http://localhost:${PORT}/`);
     console.log(`\n✅ Server is running!\n`);
 });
