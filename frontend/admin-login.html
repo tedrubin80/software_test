@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TestLab Admin - Login</title>
+    <title>TestLab Admin Login</title>
     <style>
         * {
             margin: 0;
@@ -12,33 +12,22 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e27;
+            color: #e0e0e0;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
         .login-container {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            background: #151a35;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             width: 100%;
             max-width: 400px;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .login-header {
@@ -47,156 +36,86 @@
         }
 
         .login-header h1 {
-            color: #333;
+            color: #00d4ff;
             margin-bottom: 0.5rem;
-        }
-
-        .login-header p {
-            color: #666;
-            font-size: 0.9rem;
         }
 
         .form-group {
             margin-bottom: 1.5rem;
         }
 
-        label {
+        .form-group label {
             display: block;
             margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #333;
+            color: #00d4ff;
         }
 
-        input {
+        .form-group input {
             width: 100%;
             padding: 0.75rem;
-            border: 2px solid #e1e4e8;
+            background: #0a0e27;
+            border: 1px solid #2a3050;
             border-radius: 5px;
+            color: #e0e0e0;
             font-size: 1rem;
-            transition: border-color 0.3s;
         }
 
-        input:focus {
+        .form-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #00d4ff;
         }
 
         .btn {
             width: 100%;
-            background: #667eea;
-            color: white;
             padding: 0.75rem;
+            background: #00d4ff;
+            color: #0a0e27;
             border: none;
             border-radius: 5px;
-            cursor: pointer;
             font-size: 1rem;
             font-weight: 600;
-            transition: all 0.3s;
-            margin-top: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
         .btn:hover {
-            background: #5a60d8;
+            background: #00b8e6;
             transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
         }
 
         .alert {
-            padding: 1rem;
+            padding: 0.75rem;
             border-radius: 5px;
             margin-bottom: 1rem;
             display: none;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .alert-danger {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
         }
 
         .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: #10b981;
+            color: white;
         }
 
-        .alert-info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+        .alert-danger {
+            background: #ff6b6b;
+            color: white;
         }
 
-        .back-link {
+        .setup-notice {
             text-align: center;
-            margin-top: 2rem;
+            margin-top: 1rem;
+            color: #888;
         }
 
-        .back-link a {
-            color: #667eea;
+        .setup-notice a {
+            color: #00d4ff;
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s;
-        }
-
-        .back-link a:hover {
-            color: #5a60d8;
-            text-decoration: underline;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 0.8s ease-in-out infinite;
-            margin-right: 0.5rem;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .security-notice {
-            background: #f6f8fa;
-            padding: 1rem;
-            border-radius: 5px;
-            margin-top: 1.5rem;
-            font-size: 0.85rem;
-            color: #586069;
-            text-align: center;
-            border: 1px solid #e1e4e8;
-        }
-
-        .security-notice strong {
-            color: #333;
-        }
-
-        @media (max-width: 480px) {
-            .login-container {
-                margin: 1rem;
-                padding: 2rem;
-            }
         }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h1>🔐 Admin Login</h1>
+            <h1>🔐 Admin Access</h1>
             <p>TestLab Administration Panel</p>
         </div>
 
@@ -204,98 +123,69 @@
 
         <form id="loginForm" onsubmit="handleLogin(event)">
             <div class="form-group">
-                <label for="username">Username</label>
-                <input 
-                    type="text" 
-                    id="username" 
-                    name="username" 
-                    required 
-                    autocomplete="username"
-                    placeholder="Enter admin username"
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">Admin Password</label>
                 <input 
                     type="password" 
                     id="password" 
                     name="password" 
                     required 
-                    autocomplete="current-password"
                     placeholder="Enter admin password"
+                    autofocus
                 >
             </div>
 
             <button type="submit" class="btn" id="loginBtn">
-                Login to Admin Panel
+                Access Admin Panel
             </button>
         </form>
 
-        <div class="back-link">
-            <a href="/">← Back to TestLab</a>
-        </div>
-
-        <div class="security-notice">
-            <strong>🔒 Secure Connection</strong><br>
-            This login is protected with encryption and session management.
+        <div class="setup-notice">
+            <p>Not set up yet? <a href="/setup">Complete Setup</a></p>
         </div>
     </div>
 
     <script>
-        // Check if already logged in
-        window.addEventListener('DOMContentLoaded', async () => {
+        // Check setup status on load
+        async function checkSetup() {
             try {
-                const response = await fetch('/api/auth/check', {
-                    credentials: 'include'
-                });
+                const response = await fetch('/api/setup/status');
+                const data = await response.json();
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.authenticated) {
-                        // Already logged in, redirect to admin
-                        window.location.href = '/admin';
-                    }
+                if (!data.isSetup) {
+                    window.location.href = '/setup';
                 }
             } catch (error) {
-                console.error('Auth check failed:', error);
+                console.error('Setup check failed:', error);
             }
-        });
+        }
 
         async function handleLogin(event) {
             event.preventDefault();
             
-            const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const loginBtn = document.getElementById('loginBtn');
-            const alertBox = document.getElementById('alertBox');
             
             // Show loading state
             loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="spinner"></span>Logging in...';
-            
-            // Hide any previous alerts
-            alertBox.style.display = 'none';
+            loginBtn.textContent = 'Authenticating...';
             
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch('/api/admin/login', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    credentials: 'include',
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ password })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok && data.success) {
-                    // Show success message
                     showAlert('Login successful! Redirecting...', 'success');
                     
-                    // Store session token if needed
-                    if (data.sessionToken) {
-                        localStorage.setItem('adminSessionToken', data.sessionToken);
+                    // Store session
+                    if (data.sessionId) {
+                        localStorage.setItem('adminSessionId', data.sessionId);
                     }
                     
                     // Redirect to admin panel
@@ -303,46 +193,35 @@
                         window.location.href = '/admin';
                     }, 1000);
                 } else {
-                    // Show error message
-                    showAlert(data.error || 'Login failed. Please check your credentials.', 'danger');
-                    
-                    // Reset button
+                    showAlert(data.error || 'Invalid password', 'danger');
                     loginBtn.disabled = false;
-                    loginBtn.innerHTML = 'Login to Admin Panel';
-                    
-                    // Clear password field for security
+                    loginBtn.textContent = 'Access Admin Panel';
                     document.getElementById('password').value = '';
+                    document.getElementById('password').focus();
                 }
             } catch (error) {
                 console.error('Login error:', error);
                 showAlert('Connection error. Please try again.', 'danger');
-                
-                // Reset button
                 loginBtn.disabled = false;
-                loginBtn.innerHTML = 'Login to Admin Panel';
+                loginBtn.textContent = 'Access Admin Panel';
             }
         }
-        
+
         function showAlert(message, type) {
             const alertBox = document.getElementById('alertBox');
             alertBox.className = `alert alert-${type}`;
             alertBox.textContent = message;
             alertBox.style.display = 'block';
             
-            // Auto-hide success messages
             if (type === 'success') {
                 setTimeout(() => {
                     alertBox.style.display = 'none';
                 }, 5000);
             }
         }
-        
-        // Handle Enter key in form fields
-        document.getElementById('username').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('password').focus();
-            }
-        });
+
+        // Check setup status on page load
+        document.addEventListener('DOMContentLoaded', checkSetup);
     </script>
 </body>
 </html>
