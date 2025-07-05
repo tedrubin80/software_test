@@ -521,6 +521,247 @@ app.post('/api/admin/test-apis', requireAuth, async (req, res) => {
     res.json(results);
 });
 
+// Define AI agents with their personalities and keyword triggers
+const AI_AGENTS = {
+    techExpert: {
+        name: "TechBot",
+        personality: "You are a technical expert who helps with coding and debugging. You're precise, helpful, and always provide code examples.",
+        keywords: ["code", "debug", "error", "programming", "javascript", "html", "css", "api", "function", "bug"],
+        icon: "🤖",
+        model: "openai",
+        temperature: 0.3
+    },
+    creativeWriter: {
+        name: "CreativeBot",
+        personality: "You are a creative writing assistant who helps with content, storytelling, and marketing copy. You're imaginative, engaging, and love wordplay.",
+        keywords: ["write", "story", "creative", "blog", "content", "marketing", "copy", "headline", "article", "design"],
+        icon: "✨",
+        model: "anthropic",
+        temperature: 0.8
+    }
+};
+
+// Function to determine which agent should respond
+function selectAgent(input) {
+    const lowercaseInput = input.toLowerCase();
+    let bestMatch = null;
+    let maxMatches = 0;
+    
+    for (const [agentId, agent] of Object.entries(AI_AGENTS)) {
+        const matches = agent.keywords.filter(keyword => 
+            lowercaseInput.includes(keyword)
+        ).length;
+        
+        if (matches > maxMatches) {
+            maxMatches = matches;
+            bestMatch = { id: agentId, ...agent };
+        }
+    }
+    
+    return bestMatch || { id: 'techExpert', ...AI_AGENTS.techExpert };
+}
+
+// AI Chat Endpoint
+app.post('/api/ai/chat', requireAuth, async (req, res) => {
+    const { message, preferredAgent } = req.body;
+    
+    if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+    }
+    
+    try {
+        const agent = preferredAgent 
+            ? { id: preferredAgent, ...AI_AGENTS[preferredAgent] }
+            : selectAgent(message);
+        
+        const apiKey = config.apiKeys[agent.model];
+        if (!apiKey) {
+            return res.status(400).json({ 
+                error: `No API key configured for ${agent.model}` 
+            });
+        }
+        
+        const systemPrompt = `${agent.personality}\n\nIMPORTANT: Always stay in character and respond according to your personality.`;
+        
+        let response;
+        switch (agent.model) {
+            case 'openai':
+                response = await callOpenAI(systemPrompt, message, apiKey, agent.temperature);
+                break;
+            case 'anthropic':
+                response = await callAnthropic(systemPrompt, message, apiKey, agent.temperature);
+                break;
+            case 'together':
+                response = await callTogether(systemPrompt, message, apiKey, agent.temperature);
+                break;
+        }
+        
+        res.json({
+            agent: {
+                id: agent.id,
+                name: agent.name,
+                icon: agent.icon
+            },
+            message: response,
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('AI chat error:', error);
+        res.status(500).json({ 
+            error: 'Failed to get AI response',
+            details: error.message 
+        });
+    }
+});
+
+// Multi-Agent Chat Endpoint
+app.post('/api/ai/multi-chat', requireAuth, async (req, res) => {
+    const { message, agents = ['techExpert', 'creativeWriter'] } = req.body;
+    
+    if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+    }
+    
+    try {
+        const responses = [];
+        
+        for (const agentId of agents) {
+            const agent = AI_AGENTS[agentId];
+            if (!agent) continue;
+            
+            const apiKey = config.apiKeys[agent.model];
+            if (!apiKey) {
+                responses.push({
+                    agent: { id: agentId, name: agent.name, icon: agent.icon },
+                    error: `No API key for ${agent.model}`
+                });
+                continue;
+            }
+            
+            try {
+                const systemPrompt = `${agent.personality}\n\nYou are having a conversation. Respond naturally and stay in character.`;
+                
+                let response;
+                switch (agent.model) {
+                    case 'openai':
+                        response = await callOpenAI(systemPrompt, message, apiKey, agent.temperature);
+                        break;
+                    case 'anthropic':
+                        response = await callAnthropic(systemPrompt, message, apiKey, agent.temperature);
+                        break;
+                    case 'together':
+                        response = await callTogether(systemPrompt, message, apiKey, agent.temperature);
+                        break;
+                }
+                
+                responses.push({
+                    agent: { id: agentId, name: agent.name, icon: agent.icon },
+                    message: response
+                });
+                
+            } catch (error) {
+                responses.push({
+                    agent: { id: agentId, name: agent.name, icon: agent.icon },
+                    error: error.message
+                });
+            }
+        }
+        
+        res.json({
+            originalMessage: message,
+            responses,
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('Multi-agent chat error:', error);
+        res.status(500).json({ 
+            error: 'Failed to get AI responses',
+            details: error.message 
+        });
+    }
+});
+
+// Get available agents
+app.get('/api/ai/agents', requireAuth, (req, res) => {
+    const agentList = Object.entries(AI_AGENTS).map(([id, agent]) => ({
+        id,
+        name: agent.name,
+        icon: agent.icon,
+        keywords: agent.keywords,
+        model: agent.model
+    }));
+    
+    res.json({ agents: agentList });
+});
+
+// Helper functions for AI calls with personality
+async function callOpenAI(systemPrompt, userMessage, apiKey, temperature = 0.7) {
+    const axios = require('axios');
+    
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: 'gpt-4',
+        messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userMessage }
+        ],
+        temperature: temperature,
+        max_tokens: 1000
+    }, {
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    return response.data.choices[0].message.content;
+}
+
+async function callAnthropic(systemPrompt, userMessage, apiKey, temperature = 0.7) {
+    const axios = require('axios');
+    
+    const response = await axios.post('https://api.anthropic.com/v1/messages', {
+        model: 'claude-3-opus-20240229',
+        max_tokens: 1000,
+        temperature: temperature,
+        system: systemPrompt,
+        messages: [{
+            role: 'user',
+            content: userMessage
+        }]
+    }, {
+        headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    return response.data.content[0].text;
+}
+
+async function callTogether(systemPrompt, userMessage, apiKey, temperature = 0.7) {
+    const axios = require('axios');
+    
+    const response = await axios.post('https://api.together.xyz/v1/chat/completions', {
+        model: 'meta-llama/Llama-2-70b-chat-hf',
+        messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userMessage }
+        ],
+        temperature: temperature,
+        max_tokens: 1000
+    }, {
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    return response.data.choices[0].message.content;
+}
+
 // Debug endpoint
 app.get('/api/debug', (req, res) => {
     const info = {

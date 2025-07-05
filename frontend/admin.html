@@ -176,6 +176,19 @@
             font-size: 0.9rem;
         }
         
+        .agent-card {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 2px solid #334155;
+            transition: all 0.3s;
+        }
+        
+        .agent-card:hover {
+            border-color: #60a5fa;
+            transform: translateY(-2px);
+        }
+        
         .hidden {
             display: none;
         }
@@ -272,8 +285,24 @@
                 </div>
             </div>
             
+            <!-- AI Agents Section -->
+            <div class="api-section" style="margin-top: 2rem;">
+                <h2>🤖 AI Agents</h2>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">Configure AI agents that respond to specific keywords in conversations.</p>
+                
+                <div id="agentsList" style="display: grid; gap: 1rem; margin-bottom: 1rem;">
+                    <!-- Agents will be loaded here -->
+                </div>
+                
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <button class="btn btn-secondary" onclick="testAgents()">🧪 Test Agents</button>
+                    <button class="btn" onclick="window.open('/ai-chat.html', '_blank')">💬 Open AI Chat</button>
+                </div>
+            </div>
+            
             <!-- Actions -->
             <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn btn-secondary" onclick="window.location.href='/ai-chat.html'">💬 AI Chat</button>
                 <button class="btn btn-danger" onclick="logout()">Logout</button>
             </div>
             
@@ -389,8 +418,83 @@
                 document.getElementById('apiKeyCount').textContent = `${apiCount}/3`;
                 
                 loadCurrentKeys();
+                loadAgents();
             } catch (error) {
                 console.error('Dashboard load error:', error);
+            }
+        }
+        
+        async function loadAgents() {
+            try {
+                const response = await fetch('/api/ai/agents');
+                const data = await response.json();
+                
+                const agentsList = document.getElementById('agentsList');
+                agentsList.innerHTML = '';
+                
+                data.agents.forEach(agent => {
+                    const agentCard = document.createElement('div');
+                    agentCard.style.cssText = 'background: #0f172a; padding: 1rem; border-radius: 8px; border: 2px solid #334155;';
+                    
+                    const keywords = agent.keywords.map(k => 
+                        `<span style="background: #334155; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin: 0.25rem;">${k}</span>`
+                    ).join('');
+                    
+                    agentCard.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                            <span style="font-size: 2rem;">${agent.icon}</span>
+                            <div>
+                                <h4 style="color: #60a5fa; margin: 0;">${agent.name}</h4>
+                                <small style="color: #94a3b8;">Uses ${agent.model}</small>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                            ${keywords}
+                        </div>
+                    `;
+                    
+                    agentsList.appendChild(agentCard);
+                });
+            } catch (error) {
+                console.error('Failed to load agents:', error);
+            }
+        }
+        
+        async function testAgents() {
+            const testMessage = prompt('Enter a test message for the AI agents:');
+            if (!testMessage) return;
+            
+            showStatus('apiStatus', '🧪 Testing AI agents...', 'info');
+            
+            try {
+                const response = await fetch('/api/ai/multi-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: testMessage,
+                        agents: ['techExpert', 'creativeWriter']
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    let message = '<strong>AI Agent Responses:</strong><br><br>';
+                    
+                    data.responses.forEach(resp => {
+                        if (resp.error) {
+                            message += `${resp.agent.icon} <strong>${resp.agent.name}:</strong> ❌ ${resp.error}<br><br>`;
+                        } else {
+                            message += `${resp.agent.icon} <strong>${resp.agent.name}:</strong><br>${resp.message.substring(0, 200)}...<br><br>`;
+                        }
+                    });
+                    
+                    showStatus('apiStatus', message, 'info');
+                } else {
+                    showStatus('apiStatus', '❌ Test failed: ' + data.error, 'danger');
+                }
+            } catch (error) {
+                showStatus('apiStatus', '❌ Test error: ' + error.message, 'danger');
             }
         }
         

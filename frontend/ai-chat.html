@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agents Chat - TestLab</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .chat-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            height: calc(100vh - 250px);
+        }
+        
+        .agents-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .agent-card {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .agent-card:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .agent-card.active {
+            border-color: #3b82f6;
+            background: #dbeafe;
+        }
+        
+        .agent-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .agent-name {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+        
+        .keyword {
+            background: #e5e7eb;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+        
+        .keyword.matched {
+            background: #fbbf24;
+            color: #78350f;
+        }
+        
+        .chat-area {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .messages {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        .message {
+            margin-bottom: 1.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .message-icon {
+            font-size: 1.5rem;
+        }
+        
+        .message-agent {
+            font-weight: bold;
+            color: #1e293b;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-left: auto;
+        }
+        
+        .message-content {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-left: 2rem;
+        }
+        
+        .message.user .message-content {
+            background: #3b82f6;
+            color: white;
+            margin-left: 4rem;
+            margin-right: 0;
+        }
+        
+        .input-area {
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .input-wrapper {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        textarea {
+            flex: 1;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            resize: none;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        .send-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .send-btn:hover {
+            background: #2563eb;
+        }
+        
+        .send-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .mode-selector {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .mode-btn {
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .mode-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .detected-agent {
+            background: #fef3c7;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+        
+        .multi-response {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        .multi-response-agent {
+            background: #f3f4f6;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: bold;
+        }
+        
+        .multi-response-content {
+            padding: 1rem;
+        }
+        
+        .login-prompt {
+            background: #fef3c7;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .login-prompt a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .chat-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .agents-panel {
+                order: 2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AI Agents Chat</h1>
+            <p>Chat with specialized AI agents that respond based on your keywords</p>
+            
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="setMode('auto')">🔄 Auto Select Agent</button>
+                <button class="mode-btn" onclick="setMode('manual')">👆 Manual Select</button>
+                <button class="mode-btn" onclick="setMode('multi')">👥 Multi-Agent</button>
+            </div>
+            
+            <div style="margin-top: 1rem;">
+                <a href="/admin" style="color: #3b82f6; text-decoration: none;">← Back to Admin Panel</a>
+            </div>
+        </header>
+        
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            ⚠️ Please <a href="/admin">login to admin panel</a> to use AI chat features.
+        </div>
+        
+        <div class="chat-container">
+            <div class="agents-panel">
+                <h3>Available Agents</h3>
+                <div id="agentsList"></div>
+            </div>
+            
+            <div class="chat-area">
+                <div class="detected-agent" id="detectedAgent"></div>
+                <div class="messages" id="messages"></div>
+                
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="Type your message... (Keywords will automatically select the best agent)"
+                            rows="3"
+                            onkeydown="handleKeyPress(event)"
+                        ></textarea>
+                        <button class="send-btn" onclick="sendMessage()" id="sendBtn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let isAuthenticated = false;
+        let currentMode = 'auto'; // auto, manual, multi
+        let selectedAgent = null;
+        let agents = {};
+        
+        // Define agents (this should match server-side configuration)
+        const AGENTS_CONFIG = {
+            techExpert: {
+                name: "TechBot",
+                icon: "🤖",
+                keywords: ["code", "debug", "error", "programming", "javascript", "html", "css", "api", "function", "bug"]
+            },
+            creativeWriter: {
+                name: "CreativeBot",
+                icon: "✨",
+                keywords: ["write", "story", "creative", "blog", "content", "marketing", "copy", "headline", "article", "design"]
+            }
+        };
+        
+        // Check authentication
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/admin/check');
+                const data = await response.json();
+                isAuthenticated = data.authenticated;
+                
+                if (!isAuthenticated) {
+                    document.getElementById('loginPrompt').style.display = 'block';
+                    document.getElementById('sendBtn').disabled = true;
+                    document.getElementById('messageInput').placeholder = 'Login required to send messages';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
+        }
+        
+        // Initialize agents display
+        function initializeAgents() {
+            const agentsList = document.getElementById('agentsList');
+            
+            for (const [id, agent] of Object.entries(AGENTS_CONFIG)) {
+                const agentCard = document.createElement('div');
+                agentCard.className = 'agent-card';
+                agentCard.dataset.agentId = id;
+                agentCard.onclick = () => selectAgentManually(id);
+                
+                const keywordsHtml = agent.keywords.map(k => 
+                    `<span class="keyword" data-keyword="${k}">${k}</span>`
+                ).join('');
+                
+                agentCard.innerHTML = `
+                    <div class="agent-icon">${agent.icon}</div>
+                    <div class="agent-name">${agent.name}</div>
+                    <div class="keywords">${keywordsHtml}</div>
+                `;
+                
+                agentsList.appendChild(agentCard);
+            }
+        }
+        
+        // Set chat mode
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Clear selection in manual mode
+            if (mode !== 'manual') {
+                selectedAgent = null;
+                document.querySelectorAll('.agent-card').forEach(card => {
+                    card.classList.remove('active');
+                });
+            }
+            
+            updatePlaceholder();
+        }
+        
+        // Update input placeholder based on mode
+        function updatePlaceholder() {
+            const input = document.getElementById('messageInput');
+            if (!isAuthenticated) return;
+            
+            switch (currentMode) {
+                case 'auto':
+                    input.placeholder = 'Type your message... (Keywords will automatically select the best agent)';
+                    break;
+                case 'manual':
+                    input.placeholder = selectedAgent 
+                        ? `Chatting with ${AGENTS_CONFIG[selectedAgent].name}...`
+                        : 'Select an agent from the left panel first';
+                    break;
+                case 'multi':
+                    input.placeholder = 'Type your message... (All agents will respond)';
+                    break;
+            }
+        }
+        
+        // Select agent manually
+        function selectAgentManually(agentId) {
+            if (currentMode !== 'manual') {
+                setMode('manual');
+            }
+            
+            selectedAgent = agentId;
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.querySelector(`[data-agent-id="${agentId}"]`).classList.add('active');
+            updatePlaceholder();
+        }
+        
+        // Detect keywords and highlight
+        function detectKeywords(message) {
+            const lowercaseMessage = message.toLowerCase();
+            let bestMatch = null;
+            let maxMatches = 0;
+            
+            // Reset all keyword highlights
+            document.querySelectorAll('.keyword').forEach(k => k.classList.remove('matched'));
+            
+            for (const [agentId, agent] of Object.entries(AGENTS_CONFIG)) {
+                const matches = agent.keywords.filter(keyword => 
+                    lowercaseMessage.includes(keyword)
+                );
+                
+                if (matches.length > maxMatches) {
+                    maxMatches = matches.length;
+                    bestMatch = { id: agentId, agent, matches };
+                }
+                
+                // Highlight matched keywords
+                matches.forEach(keyword => {
+                    document.querySelectorAll(`[data-keyword="${keyword}"]`).forEach(el => {
+                        el.classList.add('matched');
+                    });
+                });
+            }
+            
+            // Show detected agent in auto mode
+            if (currentMode === 'auto' && bestMatch) {
+                const detectedDiv = document.getElementById('detectedAgent');
+                detectedDiv.innerHTML = `🎯 Detected: ${bestMatch.agent.icon} ${bestMatch.agent.name} will respond (matched: ${bestMatch.matches.join(', ')})`;
+                detectedDiv.style.display = 'block';
+            } else {
+                document.getElementById('detectedAgent').style.display = 'none';
+            }
+            
+            return bestMatch;
+        }
+        
+        // Handle input key press
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            } else {
+                // Detect keywords as user types
+                setTimeout(() => detectKeywords(event.target.value), 100);
+            }
+        }
+        
+        // Send message
+        async function sendMessage() {
+            if (!isAuthenticated) {
+                alert('Please login to use AI chat');
+                return;
+            }
+            
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            if (currentMode === 'manual' && !selectedAgent) {
+                alert('Please select an agent first');
+                return;
+            }
+            
+            // Add user message to chat
+            addMessage('user', 'You', message, '👤');
+            
+            input.value = '';
+            input.disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('detectedAgent').style.display = 'none';
+            
+            try {
+                if (currentMode === 'multi') {
+                    // Multi-agent mode
+                    const response = await fetch('/api/ai/multi-chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message,
+                            agents: Object.keys(AGENTS_CONFIG)
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        displayMultiResponse(data.responses);
+                    } else {
+                        addMessage('error', 'System', data.error || 'Failed to get responses', '❌');
+                    }
+                } else {
+                    // Single agent mode (auto or manual)
+                    const response = await fetch('/api/ai/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message,
+                            preferredAgent: currentMode === 'manual' ? selectedAgent : null
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        addMessage('agent', data.agent.name, data.message, data.agent.icon);
+                    } else {
+                        addMessage('error', 'System', data.error || 'Failed to get response', '❌');
+                    }
+                }
+            } catch (error) {
+                addMessage('error', 'System', 'Connection error: ' + error.message, '❌');
+            }
+            
+            input.disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+            input.focus();
+        }
+        
+        // Add message to chat
+        function addMessage(type, sender, content, icon) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const time = new Date().toLocaleTimeString();
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <span class="message-icon">${icon}</span>
+                    <span class="message-agent">${sender}</span>
+                    <span class="message-time">${time}</span>
+                </div>
+                <div class="message-content">${content}</div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Display multi-agent response
+        function displayMultiResponse(responses) {
+            const messagesDiv = document.getElementById('messages');
+            const containerDiv = document.createElement('div');
+            containerDiv.className = 'message';
+            
+            let html = '<div class="multi-responses">';
+            
+            responses.forEach(response => {
+                if (response.error) {
+                    html += `
+                        <div class="multi-response">
+                            <div class="multi-response-agent">
+                                ${response.agent.icon} ${response.agent.name}
+                            </div>
+                            <div class="multi-response-content" style="color: #ef4444;">
+                                Error: ${response.error}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="multi-response">
+                            <div class="multi-response-agent">
+                                ${response.agent.icon} ${response.agent.name}
+                            </div>
+                            <div class="multi-response-content">
+                                ${response.message}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += '</div>';
+            containerDiv.innerHTML = html;
+            
+            messagesDiv.appendChild(containerDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Initialize
+        checkAuth();
+        initializeAgents();
+        updatePlaceholder();
+    </script>
+</body>
+</html>
