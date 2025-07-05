@@ -3,225 +3,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TestLab Admin Login</title>
+    <title>Admin Panel - TestLab</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0e27;
-            color: #e0e0e0;
+            background: #f3f4f6;
+            color: #111827;
+        }
+        
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1rem 2rem;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            min-height: 100vh;
         }
-
-        .login-container {
-            background: #151a35;
+        
+        .header h1 {
+            font-size: 1.5rem;
+            color: #3b82f6;
+        }
+        
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .logout-btn:hover {
+            background: #dc2626;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .welcome-card {
+            background: white;
             padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .login-header {
-            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
         }
-
-        .login-header h1 {
-            color: #00d4ff;
-            margin-bottom: 0.5rem;
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
-
-        .form-group {
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+        
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .section h2 {
             margin-bottom: 1.5rem;
+            color: #1f2937;
         }
-
+        
+        .api-keys-form {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .form-group {
+            display: grid;
+            gap: 0.5rem;
+        }
+        
         .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #00d4ff;
+            font-weight: 500;
+            color: #374151;
         }
-
+        
         .form-group input {
-            width: 100%;
             padding: 0.75rem;
-            background: #0a0e27;
-            border: 1px solid #2a3050;
-            border-radius: 5px;
-            color: #e0e0e0;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
             font-size: 1rem;
         }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #00d4ff;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 0.75rem;
-            background: #00d4ff;
-            color: #0a0e27;
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            background: #00b8e6;
-            transform: translateY(-1px);
-        }
-
-        .alert {
-            padding: 0.75rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            display: none;
-        }
-
-        .alert-success {
-            background: #10b981;
-            color: white;
-        }
-
-        .alert-danger {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .setup-notice {
-            text-align: center;
+            font-size: 1rem;
             margin-top: 1rem;
-            color: #888;
         }
-
-        .setup-notice a {
-            color: #00d4ff;
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .links a {
+            color: #3b82f6;
             text-decoration: none;
+        }
+        
+        .links a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-header">
-            <h1>🔐 Admin Access</h1>
-            <p>TestLab Administration Panel</p>
-        </div>
-
-        <div id="alertBox" class="alert"></div>
-
-        <form id="loginForm" onsubmit="handleLogin(event)">
-            <div class="form-group">
-                <label for="password">Admin Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    required 
-                    placeholder="Enter admin password"
-                    autofocus
-                >
+    <div class="header">
+        <h1>🛠️ TestLab Admin Panel</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    
+    <div class="container">
+        <div class="welcome-card">
+            <h2>Welcome to the Admin Panel</h2>
+            <p>Manage your TestLab instance, configure API keys, and monitor system status.</p>
+            <div class="links">
+                <a href="/">← Back to TestLab</a>
+                <a href="/test.html">Test Page</a>
+                <a href="/ai-chat.html">AI Chat</a>
+                <a href="/setup-debug.html">Debug Panel</a>
             </div>
-
-            <button type="submit" class="btn" id="loginBtn">
-                Access Admin Panel
-            </button>
-        </form>
-
-        <div class="setup-notice">
-            <p>Not set up yet? <a href="/setup">Complete Setup</a></p>
+        </div>
+        
+        <div id="alerts"></div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="setupStatus">✓</div>
+                <div class="stat-label">Setup Complete</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="apiStatus">0</div>
+                <div class="stat-label">API Keys Configured</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="dataDir">-</div>
+                <div class="stat-label">Data Directory</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>API Key Configuration</h2>
+            <form class="api-keys-form" onsubmit="saveApiKeys(event)">
+                <div class="form-group">
+                    <label for="openai">OpenAI API Key</label>
+                    <input type="password" id="openai" placeholder="sk-..." autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="anthropic">Anthropic API Key</label>
+                    <input type="password" id="anthropic" placeholder="sk-ant-..." autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="together">Together AI API Key</label>
+                    <input type="password" id="together" placeholder="..." autocomplete="off">
+                </div>
+                <button type="submit" class="btn-primary">Save API Keys</button>
+            </form>
         </div>
     </div>
-
+    
     <script>
-        // Check setup status on load
-        async function checkSetup() {
+        // Check authentication on load
+        async function checkAuth() {
             try {
-                const response = await fetch('/api/setup/status');
+                const response = await fetch('/api/admin/check', {
+                    credentials: 'include'
+                });
+                
                 const data = await response.json();
                 
-                if (!data.isSetup) {
-                    window.location.href = '/setup';
+                if (!data.authenticated) {
+                    window.location.href = '/admin-login.html';
+                    return;
                 }
+                
+                // Load current status
+                loadStatus();
+                loadApiKeys();
+                
             } catch (error) {
-                console.error('Setup check failed:', error);
+                console.error('Auth check failed:', error);
+                window.location.href = '/admin-login.html';
             }
         }
-
-        async function handleLogin(event) {
+        
+        async function loadStatus() {
+            try {
+                const response = await fetch('/api/debug');
+                const data = await response.json();
+                
+                document.getElementById('dataDir').textContent = data.dataDir || 'Unknown';
+                
+            } catch (error) {
+                console.error('Failed to load status:', error);
+            }
+        }
+        
+        async function loadApiKeys() {
+            try {
+                const response = await fetch('/api/admin/api-keys', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update API status count
+                    let count = 0;
+                    if (data.apiKeys.openai) count++;
+                    if (data.apiKeys.anthropic) count++;
+                    if (data.apiKeys.together) count++;
+                    document.getElementById('apiStatus').textContent = count;
+                    
+                    // Show masked values in inputs
+                    if (data.apiKeys.openai) {
+                        document.getElementById('openai').placeholder = data.apiKeys.openai;
+                    }
+                    if (data.apiKeys.anthropic) {
+                        document.getElementById('anthropic').placeholder = data.apiKeys.anthropic;
+                    }
+                    if (data.apiKeys.together) {
+                        document.getElementById('together').placeholder = data.apiKeys.together;
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load API keys:', error);
+            }
+        }
+        
+        async function saveApiKeys(event) {
             event.preventDefault();
             
-            const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
+            const apiKeys = {
+                openai: document.getElementById('openai').value,
+                anthropic: document.getElementById('anthropic').value,
+                together: document.getElementById('together').value
+            };
             
-            // Show loading state
-            loginBtn.disabled = true;
-            loginBtn.textContent = 'Authenticating...';
+            // Only send non-empty values
+            const updates = {};
+            if (apiKeys.openai) updates.openai = apiKeys.openai;
+            if (apiKeys.anthropic) updates.anthropic = apiKeys.anthropic;
+            if (apiKeys.together) updates.together = apiKeys.together;
+            
+            if (Object.keys(updates).length === 0) {
+                showAlert('No changes to save', 'error');
+                return;
+            }
             
             try {
-                const response = await fetch('/api/admin/login', {
+                const response = await fetch('/api/admin/api-keys', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ password })
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ apiKeys: updates })
                 });
-
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    showAlert('Login successful! Redirecting...', 'success');
-                    
-                    // Store session
-                    if (data.sessionId) {
-                        localStorage.setItem('adminSessionId', data.sessionId);
-                    }
-                    
-                    // Redirect to admin panel
-                    setTimeout(() => {
-                        window.location.href = '/admin';
-                    }, 1000);
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('API keys saved successfully!', 'success');
+                    // Clear inputs
+                    document.getElementById('openai').value = '';
+                    document.getElementById('anthropic').value = '';
+                    document.getElementById('together').value = '';
+                    // Reload to show updated status
+                    loadApiKeys();
                 } else {
-                    showAlert(data.error || 'Invalid password', 'danger');
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = 'Access Admin Panel';
-                    document.getElementById('password').value = '';
-                    document.getElementById('password').focus();
+                    showAlert(result.error || 'Failed to save API keys', 'error');
                 }
+                
             } catch (error) {
-                console.error('Login error:', error);
-                showAlert('Connection error. Please try again.', 'danger');
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Access Admin Panel';
+                showAlert('Error saving API keys: ' + error.message, 'error');
             }
         }
-
+        
         function showAlert(message, type) {
-            const alertBox = document.getElementById('alertBox');
-            alertBox.className = `alert alert-${type}`;
-            alertBox.textContent = message;
-            alertBox.style.display = 'block';
+            const alertsDiv = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertsDiv.appendChild(alert);
             
-            if (type === 'success') {
-                setTimeout(() => {
-                    alertBox.style.display = 'none';
-                }, 5000);
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+        
+        async function logout() {
+            try {
+                await fetch('/api/admin/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                window.location.href = '/admin-login.html';
+                
+            } catch (error) {
+                console.error('Logout failed:', error);
+                // Force redirect anyway
+                window.location.href = '/admin-login.html';
             }
         }
-
-        // Check setup status on page load
-        document.addEventListener('DOMContentLoaded', checkSetup);
+        
+        // Check auth on load
+        window.addEventListener('DOMContentLoaded', checkAuth);
     </script>
 </body>
 </html>
