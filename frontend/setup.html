@@ -1,0 +1,886 @@
+<!-- FILE LOCATION: /frontend/setup.html -->
+<!-- Save this file in the frontend directory -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TestLab - Initial Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .setup-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .setup-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .setup-header h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .setup-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .setup-steps {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            padding: 0 2rem;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: -1;
+        }
+
+        .step.active::after {
+            background: #667eea;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .step.active .step-number {
+            background: #667eea;
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: #27ae60;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .setup-form {
+            display: none;
+        }
+
+        .setup-form.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .form-section h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e4e8;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 0.5rem;
+        }
+
+        .btn:hover {
+            background: #5a60d8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-test {
+            background: #17a2b8;
+        }
+
+        .btn-test:hover {
+            background: #138496;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .test-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .test-status.success {
+            color: #28a745;
+        }
+
+        .test-status.error {
+            color: #dc3545;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0,0,0,.1);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .config-preview {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            overflow-x: auto;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        .optional-badge {
+            background: #6c757d;
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            margin-left: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .setup-steps {
+                padding: 0;
+            }
+
+            .step-label {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-header">
+            <h1>🚀 Welcome to TestLab Setup</h1>
+            <p>Let's configure your TestLab installation</p>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="setup-steps">
+            <div class="step active" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-label">Database</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-label">Admin Account</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-label">AI Services</div>
+            </div>
+            <div class="step" id="step4">
+                <div class="step-number">4</div>
+                <div class="step-label">Complete</div>
+            </div>
+        </div>
+
+        <!-- Step 1: Database Configuration -->
+        <div class="setup-form active" id="form-step1">
+            <div id="alerts-step1"></div>
+
+            <div class="form-section">
+                <h3>🗄️ Database Configuration</h3>
+                <p style="margin-bottom: 1rem; color: #666;">Choose your database setup. MySQL is recommended for production.</p>
+
+                <div class="form-group">
+                    <label>Database Type</label>
+                    <select id="dbType" onchange="toggleDatabaseFields()">
+                        <option value="mysql">MySQL (Recommended)</option>
+                        <option value="sqlite">SQLite (Simple, file-based)</option>
+                        <option value="none">No Database (In-memory only)</option>
+                    </select>
+                </div>
+
+                <div id="mysqlFields">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="mysqlHost">MySQL Host</label>
+                            <input type="text" id="mysqlHost" placeholder="localhost or your-mysql-host.railway.app" value="localhost">
+                        </div>
+                        <div class="form-group">
+                            <label for="mysqlPort">MySQL Port</label>
+                            <input type="number" id="mysqlPort" placeholder="3306" value="3306">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="mysqlUser">MySQL Username</label>
+                            <input type="text" id="mysqlUser" placeholder="root" value="root">
+                        </div>
+                        <div class="form-group">
+                            <label for="mysqlPassword">MySQL Password</label>
+                            <input type="password" id="mysqlPassword" placeholder="Your MySQL password">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mysqlDatabase">Database Name</label>
+                        <input type="text" id="mysqlDatabase" placeholder="testlab" value="testlab">
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="mysqlSSL">
+                        <label for="mysqlSSL">Use SSL Connection (required for Railway MySQL)</label>
+                    </div>
+
+                    <button type="button" class="btn btn-test" onclick="testMySQLConnection()">
+                        🧪 Test MySQL Connection
+                    </button>
+                    <span class="test-status" id="mysqlTestStatus"></span>
+                </div>
+
+                <div id="sqliteFields" style="display: none;">
+                    <div class="alert alert-info">
+                        SQLite will create a local database file. Perfect for development or small deployments.
+                    </div>
+                </div>
+
+                <div id="noDatabaseWarning" style="display: none;">
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Warning:</strong> Without a database, all data will be lost when the server restarts. Not recommended for production.
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>💾 Cache Configuration <span class="optional-badge">Optional</span></h3>
+                <p style="margin-bottom: 1rem; color: #666;">Redis provides fast caching for better performance.</p>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="useRedis" onchange="toggleRedisFields()">
+                    <label for="useRedis">Enable Redis Cache</label>
+                </div>
+
+                <div id="redisFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="redisUrl">Redis URL</label>
+                        <input type="text" id="redisUrl" placeholder="redis://localhost:6379 or your Redis URL">
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="redisTLS">
+                        <label for="redisTLS">Use TLS (for Railway Redis)</label>
+                    </div>
+
+                    <button type="button" class="btn btn-test" onclick="testRedisConnection()">
+                        🧪 Test Redis Connection
+                    </button>
+                    <span class="test-status" id="redisTestStatus"></span>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <div></div>
+                <button class="btn" onclick="nextStep(1)">Next: Admin Account →</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Admin Account -->
+        <div class="setup-form" id="form-step2">
+            <div id="alerts-step2"></div>
+
+            <div class="form-section">
+                <h3>👤 Admin Account Setup</h3>
+                <p style="margin-bottom: 1rem; color: #666;">Create your administrator account for the TestLab dashboard.</p>
+
+                <div class="form-group">
+                    <label for="adminUsername">Admin Username</label>
+                    <input type="text" id="adminUsername" placeholder="admin" value="admin">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adminPassword">Admin Password</label>
+                        <input type="password" id="adminPassword" placeholder="Strong password required">
+                        <small style="color: #666;">Minimum 8 characters</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminPasswordConfirm">Confirm Password</label>
+                        <input type="password" id="adminPasswordConfirm" placeholder="Confirm your password">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adminEmail">Admin Email <span class="optional-badge">Optional</span></label>
+                    <input type="email" id="adminEmail" placeholder="admin@example.com">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>🔐 Security Settings</h3>
+
+                <div class="form-group">
+                    <label for="sessionSecret">Session Secret</label>
+                    <input type="text" id="sessionSecret" placeholder="Auto-generated" readonly>
+                    <button type="button" class="btn btn-secondary" onclick="generateSessionSecret()" style="margin-top: 0.5rem;">
+                        🔄 Generate New Secret
+                    </button>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enable2FA">
+                    <label for="enable2FA">Enable Two-Factor Authentication (Coming Soon)</label>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="previousStep(2)">← Back</button>
+                <button class="btn" onclick="nextStep(2)">Next: AI Services →</button>
+            </div>
+        </div>
+
+        <!-- Step 3: AI Services (Optional) -->
+        <div class="setup-form" id="form-step3">
+            <div id="alerts-step3"></div>
+
+            <div class="form-section">
+                <h3>🤖 AI Service Configuration <span class="optional-badge">Optional</span></h3>
+                <p style="margin-bottom: 1rem; color: #666;">Configure AI services for advanced code analysis. You can add these later from the admin panel.</p>
+
+                <div class="alert alert-info">
+                    <strong>ℹ️ Note:</strong> TestLab includes built-in code analysis tools (ESLint, HTMLHint, Lighthouse) that work without AI services.
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <h4>🧠 Claude (Anthropic)</h4>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enableClaude" onchange="toggleClaudeField()">
+                        <label for="enableClaude">Enable Claude AI Analysis</label>
+                    </div>
+                    
+                    <div id="claudeField" style="display: none; margin-top: 1rem;">
+                        <div class="form-group">
+                            <label for="claudeApiKey">Claude API Key</label>
+                            <input type="password" id="claudeApiKey" placeholder="sk-ant-api03-...">
+                            <small style="color: #666;">Get your API key from <a href="https://console.anthropic.com" target="_blank">Anthropic Console</a></small>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <h4>🤖 ChatGPT (OpenAI)</h4>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enableChatGPT" onchange="toggleChatGPTField()">
+                        <label for="enableChatGPT">Enable ChatGPT Analysis</label>
+                    </div>
+                    
+                    <div id="chatgptField" style="display: none; margin-top: 1rem;">
+                        <div class="form-group">
+                            <label for="openaiApiKey">OpenAI API Key</label>
+                            <input type="password" id="openaiApiKey" placeholder="sk-...">
+                            <small style="color: #666;">Get your API key from <a href="https://platform.openai.com" target="_blank">OpenAI Platform</a></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="previousStep(3)">← Back</button>
+                <button class="btn btn-success" onclick="completeSetup()">Complete Setup 🎉</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Complete -->
+        <div class="setup-form" id="form-step4">
+            <div id="alerts-step4"></div>
+
+            <div class="form-section" style="text-align: center;">
+                <h3>✅ Setup Complete!</h3>
+                <p style="margin: 1.5rem 0; color: #666;">Your TestLab installation is ready to use.</p>
+
+                <div class="config-preview" id="configPreview" style="text-align: left;">
+                    Configuration will appear here...
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <button class="btn btn-success" onclick="goToLogin()">
+                        🚀 Go to TestLab
+                    </button>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <small style="color: #666;">Save the configuration above for your records.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const setupData = {};
+
+        // Generate session secret on load
+        window.addEventListener('DOMContentLoaded', () => {
+            generateSessionSecret();
+        });
+
+        function generateSessionSecret() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let secret = '';
+            for (let i = 0; i < 32; i++) {
+                secret += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('sessionSecret').value = secret;
+        }
+
+        function toggleDatabaseFields() {
+            const dbType = document.getElementById('dbType').value;
+            document.getElementById('mysqlFields').style.display = dbType === 'mysql' ? 'block' : 'none';
+            document.getElementById('sqliteFields').style.display = dbType === 'sqlite' ? 'block' : 'none';
+            document.getElementById('noDatabaseWarning').style.display = dbType === 'none' ? 'block' : 'none';
+        }
+
+        function toggleRedisFields() {
+            const useRedis = document.getElementById('useRedis').checked;
+            document.getElementById('redisFields').style.display = useRedis ? 'block' : 'none';
+        }
+
+        function toggleClaudeField() {
+            const enabled = document.getElementById('enableClaude').checked;
+            document.getElementById('claudeField').style.display = enabled ? 'block' : 'none';
+        }
+
+        function toggleChatGPTField() {
+            const enabled = document.getElementById('enableChatGPT').checked;
+            document.getElementById('chatgptField').style.display = enabled ? 'block' : 'none';
+        }
+
+        async function testMySQLConnection() {
+            const statusEl = document.getElementById('mysqlTestStatus');
+            statusEl.innerHTML = '<span class="spinner"></span> Testing...';
+            statusEl.className = 'test-status';
+
+            const data = {
+                host: document.getElementById('mysqlHost').value,
+                port: document.getElementById('mysqlPort').value,
+                user: document.getElementById('mysqlUser').value,
+                password: document.getElementById('mysqlPassword').value,
+                database: document.getElementById('mysqlDatabase').value,
+                ssl: document.getElementById('mysqlSSL').checked
+            };
+
+            try {
+                const response = await fetch('./api/setup/test-mysql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusEl.innerHTML = '✅ Connection successful!';
+                    statusEl.className = 'test-status success';
+                } else {
+                    statusEl.innerHTML = `❌ ${result.error}`;
+                    statusEl.className = 'test-status error';
+                }
+            } catch (error) {
+                statusEl.innerHTML = '❌ Connection failed';
+                statusEl.className = 'test-status error';
+            }
+        }
+
+        async function testRedisConnection() {
+            const statusEl = document.getElementById('redisTestStatus');
+            statusEl.innerHTML = '<span class="spinner"></span> Testing...';
+            statusEl.className = 'test-status';
+
+            const data = {
+                url: document.getElementById('redisUrl').value,
+                tls: document.getElementById('redisTLS').checked
+            };
+
+            try {
+                const response = await fetch('./api/setup/test-redis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusEl.innerHTML = '✅ Connection successful!';
+                    statusEl.className = 'test-status success';
+                } else {
+                    statusEl.innerHTML = `❌ ${result.error}`;
+                    statusEl.className = 'test-status error';
+                }
+            } catch (error) {
+                statusEl.innerHTML = '❌ Connection failed';
+                statusEl.className = 'test-status error';
+            }
+        }
+
+        function showAlert(step, message, type = 'danger') {
+            const alertsDiv = document.getElementById(`alerts-step${step}`);
+            alertsDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                alertsDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function validateStep1() {
+            const dbType = document.getElementById('dbType').value;
+            
+            if (dbType === 'mysql') {
+                const required = ['mysqlHost', 'mysqlPort', 'mysqlUser', 'mysqlDatabase'];
+                for (const field of required) {
+                    if (!document.getElementById(field).value) {
+                        showAlert(1, 'Please fill in all MySQL connection fields');
+                        return false;
+                    }
+                }
+            }
+            
+            setupData.database = {
+                type: dbType,
+                mysql: dbType === 'mysql' ? {
+                    host: document.getElementById('mysqlHost').value,
+                    port: document.getElementById('mysqlPort').value,
+                    user: document.getElementById('mysqlUser').value,
+                    password: document.getElementById('mysqlPassword').value,
+                    database: document.getElementById('mysqlDatabase').value,
+                    ssl: document.getElementById('mysqlSSL').checked
+                } : null,
+                redis: document.getElementById('useRedis').checked ? {
+                    url: document.getElementById('redisUrl').value,
+                    tls: document.getElementById('redisTLS').checked
+                } : null
+            };
+            
+            return true;
+        }
+
+        function validateStep2() {
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            const confirmPassword = document.getElementById('adminPasswordConfirm').value;
+            
+            if (!username || !password) {
+                showAlert(2, 'Please fill in username and password');
+                return false;
+            }
+            
+            if (password.length < 8) {
+                showAlert(2, 'Password must be at least 8 characters long');
+                return false;
+            }
+            
+            if (password !== confirmPassword) {
+                showAlert(2, 'Passwords do not match');
+                return false;
+            }
+            
+            setupData.admin = {
+                username,
+                password,
+                email: document.getElementById('adminEmail').value,
+                sessionSecret: document.getElementById('sessionSecret').value,
+                enable2FA: document.getElementById('enable2FA').checked
+            };
+            
+            return true;
+        }
+
+        function validateStep3() {
+            setupData.ai = {
+                claude: document.getElementById('enableClaude').checked ? {
+                    apiKey: document.getElementById('claudeApiKey').value
+                } : null,
+                chatgpt: document.getElementById('enableChatGPT').checked ? {
+                    apiKey: document.getElementById('openaiApiKey').value
+                } : null
+            };
+            
+            return true;
+        }
+
+        function nextStep(step) {
+            // Validate current step
+            if (step === 1 && !validateStep1()) return;
+            if (step === 2 && !validateStep2()) return;
+            if (step === 3 && !validateStep3()) return;
+            
+            // Update UI
+            document.getElementById(`form-step${step}`).classList.remove('active');
+            document.getElementById(`step${step}`).classList.add('completed');
+            document.getElementById(`step${step}`).classList.remove('active');
+            
+            currentStep = step + 1;
+            document.getElementById(`form-step${currentStep}`).classList.add('active');
+            document.getElementById(`step${currentStep}`).classList.add('active');
+        }
+
+        function previousStep(step) {
+            document.getElementById(`form-step${step}`).classList.remove('active');
+            document.getElementById(`step${step}`).classList.remove('active');
+            
+            currentStep = step - 1;
+            document.getElementById(`form-step${currentStep}`).classList.add('active');
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            document.getElementById(`step${currentStep}`).classList.remove('completed');
+        }
+
+        async function completeSetup() {
+            if (!validateStep3()) return;
+            
+            showAlert(3, 'Setting up TestLab...', 'info');
+            
+            try {
+                console.log('Sending setup data:', setupData);
+                
+                const response = await fetch('./api/setup/complete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(setupData)
+                });
+                
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response data:', result);
+                
+                if (result.success) {
+                    // Show completion screen
+                    nextStep(3);
+                    
+                    // Display configuration
+                    const config = `# TestLab Configuration
+
+## Database
+Type: ${setupData.database.type}
+${setupData.database.mysql ? `
+MySQL Host: ${setupData.database.mysql.host}:${setupData.database.mysql.port}
+MySQL Database: ${setupData.database.mysql.database}
+MySQL SSL: ${setupData.database.mysql.ssl ? 'Enabled' : 'Disabled'}` : ''}
+${setupData.database.redis ? `
+Redis: Enabled
+Redis URL: ${setupData.database.redis.url}` : ''}
+
+## Admin Account
+Username: ${setupData.admin.username}
+Email: ${setupData.admin.email || 'Not provided'}
+
+## AI Services
+Claude: ${setupData.ai.claude ? 'Enabled' : 'Disabled'}
+ChatGPT: ${setupData.ai.chatgpt ? 'Enabled' : 'Disabled'}
+
+## Security
+Session Secret: ${setupData.admin.sessionSecret.substring(0, 10)}...
+
+Setup completed at: ${new Date().toLocaleString()}`;
+                    
+                    document.getElementById('configPreview').textContent = config;
+                } else {
+                    showAlert(3, `Setup failed: ${result.error || 'Unknown error'}`, 'danger');
+                    console.error('Setup failed:', result);
+                }
+            } catch (error) {
+                console.error('Setup error:', error);
+                showAlert(3, `Setup error: ${error.message}. Check browser console for details.`, 'danger');
+                
+                // Show more details in console
+                console.log('Current URL:', window.location.href);
+                console.log('API URL:', './api/setup/complete');
+                console.log('Full error:', error);
+            }
+        }
+
+        function goToLogin() {
+            window.location.href = './admin-login.html';
+        }
+    </script>
+</body>
+</html>
