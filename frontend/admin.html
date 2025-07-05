@@ -55,6 +55,7 @@
             gap: 1rem;
             margin-bottom: 2rem;
             border-bottom: 2px solid #e5e7eb;
+            flex-wrap: wrap;
         }
         
         .tab {
@@ -130,12 +131,13 @@
             margin-bottom: 0.5rem;
         }
         
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid #d1d5db;
             border-radius: 6px;
             font-size: 1rem;
+            background: white;
         }
         
         .btn-primary {
@@ -150,6 +152,21 @@
         
         .btn-primary:hover {
             background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-left: 0.5rem;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
         }
         
         .alert {
@@ -168,6 +185,12 @@
             background: #fee2e2;
             color: #991b1b;
             border: 1px solid #fca5a5;
+        }
+        
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
         }
         
         /* AI Routing Styles */
@@ -258,6 +281,61 @@
             border-color: #3b82f6;
             background: #eff6ff;
         }
+        
+        /* Database Configuration Styles */
+        .db-option {
+            padding: 1.5rem;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .db-option:hover {
+            border-color: #3b82f6;
+        }
+        
+        .db-option.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .db-option h4 {
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }
+        
+        .db-config-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .db-config-section.active {
+            display: block;
+        }
+        
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .connection-status.connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .connection-status.disconnected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
     </style>
 </head>
 <body>
@@ -271,6 +349,7 @@
             <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
             <div class="tab" onclick="switchTab('api-keys')">API Keys</div>
             <div class="tab" onclick="switchTab('ai-routing')">AI Routing</div>
+            <div class="tab" onclick="switchTab('database')">Database</div>
         </div>
         
         <div id="alerts"></div>
@@ -289,6 +368,20 @@
                 <div class="stat-card">
                     <div class="stat-value" id="dataDir">-</div>
                     <div class="stat-label">Data Directory</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="dbType">SQLite</div>
+                    <div class="stat-label">Database Type</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Quick Links</h2>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <a href="/" class="btn-primary" style="text-decoration: none;">← Back to TestLab</a>
+                    <a href="/test.html" class="btn-secondary" style="text-decoration: none;">Test Page</a>
+                    <a href="/ai-chat.html" class="btn-secondary" style="text-decoration: none;">AI Chat</a>
+                    <a href="/setup-debug.html" class="btn-secondary" style="text-decoration: none;">Debug Panel</a>
                 </div>
             </div>
         </div>
@@ -365,14 +458,176 @@
                     </div>
                 </div>
                 
+                <!-- E2E Testing Category -->
+                <div class="category-card" id="e2e-testing">
+                    <div class="category-header" onclick="toggleCategory('e2e-testing')">
+                        <h3>End-to-End Testing</h3>
+                        <span>▼</span>
+                    </div>
+                    <div class="category-content">
+                        <h4>Keywords</h4>
+                        <div class="keywords-grid" id="e2e-keywords"></div>
+                        <div class="add-keyword">
+                            <input type="text" placeholder="Add keyword..." id="e2e-keyword-input">
+                            <button onclick="addKeyword('e2e-testing')">Add</button>
+                        </div>
+                        
+                        <h4 style="margin-top: 1.5rem;">Primary Model</h4>
+                        <div class="model-options">
+                            <div class="model-option" onclick="selectModel('e2e-testing', 'openai')">OpenAI</div>
+                            <div class="model-option" onclick="selectModel('e2e-testing', 'claude')">Claude</div>
+                        </div>
+                    </div>
+                </div>
+                
                 <button class="btn-primary" style="margin-top: 2rem;" onclick="saveRoutingConfig()">Save Routing Configuration</button>
+            </div>
+        </div>
+        
+        <!-- Database Tab -->
+        <div id="database" class="tab-content">
+            <div class="section">
+                <h2>Database Configuration</h2>
+                <p style="margin-bottom: 2rem;">Configure and manage your database connection settings.</p>
+                
+                <!-- Current Status -->
+                <div class="stat-card" style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div class="stat-label">Current Database</div>
+                            <div class="stat-value" id="current-db-type">SQLite</div>
+                        </div>
+                        <div>
+                            <div class="stat-label">Status</div>
+                            <div class="connection-status connected" id="db-status">
+                                <span style="font-size: 1.2rem;">●</span> Connected
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Database Type Selection -->
+                <div class="form-group">
+                    <label>Select Database Type</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div class="db-option" id="db-sqlite" onclick="selectDatabase('sqlite')">
+                            <h4>🗄️ SQLite</h4>
+                            <p style="font-size: 0.875rem; color: #6b7280;">Lightweight, file-based database. Perfect for development and small deployments.</p>
+                        </div>
+                        <div class="db-option" id="db-mysql" onclick="selectDatabase('mysql')">
+                            <h4>🐬 MySQL</h4>
+                            <p style="font-size: 0.875rem; color: #6b7280;">Popular open-source database. Great for web applications.</p>
+                        </div>
+                        <div class="db-option" id="db-postgresql" onclick="selectDatabase('postgresql')">
+                            <h4>🐘 PostgreSQL</h4>
+                            <p style="font-size: 0.875rem; color: #6b7280;">Advanced open-source database with full SQL compliance.</p>
+                        </div>
+                        <div class="db-option" id="db-mongodb" onclick="selectDatabase('mongodb')">
+                            <h4>🍃 MongoDB</h4>
+                            <p style="font-size: 0.875rem; color: #6b7280;">NoSQL document database for flexible data models.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SQLite Configuration -->
+                <div class="db-config-section" id="config-sqlite">
+                    <h3>SQLite Configuration</h3>
+                    <div class="form-group">
+                        <label for="sqlite-filename">Database File Path</label>
+                        <input type="text" id="sqlite-filename" placeholder="/data/testlab.db">
+                    </div>
+                </div>
+                
+                <!-- MySQL Configuration -->
+                <div class="db-config-section" id="config-mysql">
+                    <h3>MySQL Configuration</h3>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="mysql-host">Host</label>
+                            <input type="text" id="mysql-host" placeholder="localhost">
+                        </div>
+                        <div class="form-group">
+                            <label for="mysql-port">Port</label>
+                            <input type="number" id="mysql-port" placeholder="3306">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="mysql-database">Database Name</label>
+                        <input type="text" id="mysql-database" placeholder="testlab">
+                    </div>
+                    <div class="form-group">
+                        <label for="mysql-username">Username</label>
+                        <input type="text" id="mysql-username" placeholder="root">
+                    </div>
+                    <div class="form-group">
+                        <label for="mysql-password">Password</label>
+                        <input type="password" id="mysql-password" placeholder="********">
+                    </div>
+                </div>
+                
+                <!-- PostgreSQL Configuration -->
+                <div class="db-config-section" id="config-postgresql">
+                    <h3>PostgreSQL Configuration</h3>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="postgresql-host">Host</label>
+                            <input type="text" id="postgresql-host" placeholder="localhost">
+                        </div>
+                        <div class="form-group">
+                            <label for="postgresql-port">Port</label>
+                            <input type="number" id="postgresql-port" placeholder="5432">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="postgresql-database">Database Name</label>
+                        <input type="text" id="postgresql-database" placeholder="testlab">
+                    </div>
+                    <div class="form-group">
+                        <label for="postgresql-username">Username</label>
+                        <input type="text" id="postgresql-username" placeholder="postgres">
+                    </div>
+                    <div class="form-group">
+                        <label for="postgresql-password">Password</label>
+                        <input type="password" id="postgresql-password" placeholder="********">
+                    </div>
+                </div>
+                
+                <!-- MongoDB Configuration -->
+                <div class="db-config-section" id="config-mongodb">
+                    <h3>MongoDB Configuration</h3>
+                    <div class="form-group">
+                        <label for="mongodb-url">Connection URL</label>
+                        <input type="text" id="mongodb-url" placeholder="mongodb://localhost:27017">
+                    </div>
+                    <div class="form-group">
+                        <label for="mongodb-database">Database Name</label>
+                        <input type="text" id="mongodb-database" placeholder="testlab">
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                    <button class="btn-primary" onclick="testDatabaseConnection()">Test Connection</button>
+                    <button class="btn-primary" onclick="saveDatabaseConfig()">Save Configuration</button>
+                    <button class="btn-secondary" onclick="exportDatabaseConfig()">Export Config</button>
+                </div>
+            </div>
+            
+            <!-- Database Statistics -->
+            <div class="section">
+                <h2>Database Statistics</h2>
+                <div id="db-stats" class="stats-grid">
+                    <!-- Stats will be loaded here -->
+                </div>
             </div>
         </div>
     </div>
     
     <script>
-        // Global routing config
+        // Global variables
         let routingConfig = {};
+        let currentDbType = 'sqlite';
+        let dbConfig = {};
         
         // Tab switching
         function switchTab(tabName) {
@@ -388,6 +643,8 @@
             
             if (tabName === 'ai-routing') {
                 loadRoutingConfig();
+            } else if (tabName === 'database') {
+                loadDatabaseConfig();
             }
         }
         
@@ -397,7 +654,7 @@
             card.classList.toggle('expanded');
         }
         
-        // Load routing configuration
+        // AI Routing Functions
         async function loadRoutingConfig() {
             try {
                 const response = await fetch('/api/ai/routing-config', {
@@ -413,7 +670,6 @@
             }
         }
         
-        // Update routing UI
         function updateRoutingUI() {
             Object.keys(routingConfig).forEach(category => {
                 const config = routingConfig[category];
@@ -437,7 +693,6 @@
             });
         }
         
-        // Add keyword
         function addKeyword(category) {
             const input = document.getElementById(`${category.split('-')[0]}-keyword-input`);
             const keyword = input.value.trim().toLowerCase();
@@ -449,7 +704,6 @@
             }
         }
         
-        // Remove keyword
         function removeKeyword(category, keyword) {
             const index = routingConfig[category].keywords.indexOf(keyword);
             if (index > -1) {
@@ -458,13 +712,11 @@
             }
         }
         
-        // Select model
         function selectModel(category, model) {
             routingConfig[category].model = model;
             updateRoutingUI();
         }
         
-        // Save routing configuration
         async function saveRoutingConfig() {
             try {
                 const response = await fetch('/api/ai/routing-config', {
@@ -484,7 +736,235 @@
             }
         }
         
-        // Check authentication on load
+        // Database Configuration Functions
+        async function loadDatabaseConfig() {
+            try {
+                const response = await fetch('/api/admin/database/config', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    dbConfig = data.config;
+                    currentDbType = data.current;
+                    
+                    // Update UI
+                    document.getElementById('current-db-type').textContent = 
+                        currentDbType.charAt(0).toUpperCase() + currentDbType.slice(1);
+                    document.getElementById('dbType').textContent = 
+                        currentDbType.charAt(0).toUpperCase() + currentDbType.slice(1);
+                    
+                    // Select current database
+                    selectDatabase(currentDbType);
+                    
+                    // Load database stats
+                    loadDatabaseStats();
+                }
+            } catch (error) {
+                console.error('Failed to load database config:', error);
+            }
+        }
+        
+        function selectDatabase(type) {
+            currentDbType = type;
+            
+            // Update selection UI
+            document.querySelectorAll('.db-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.getElementById(`db-${type}`).classList.add('selected');
+            
+            // Show corresponding config section
+            document.querySelectorAll('.db-config-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`config-${type}`).classList.add('active');
+            
+            // Load existing config values
+            if (dbConfig && dbConfig.connection && dbConfig.connection[type]) {
+                const config = dbConfig.connection[type];
+                
+                switch(type) {
+                    case 'sqlite':
+                        document.getElementById('sqlite-filename').value = config.filename || '';
+                        break;
+                    case 'mysql':
+                        document.getElementById('mysql-host').value = config.host || '';
+                        document.getElementById('mysql-port').value = config.port || '';
+                        document.getElementById('mysql-database').value = config.database || '';
+                        document.getElementById('mysql-username').value = config.username || '';
+                        if (config.password) {
+                            document.getElementById('mysql-password').placeholder = config.password;
+                        }
+                        break;
+                    case 'postgresql':
+                        document.getElementById('postgresql-host').value = config.host || '';
+                        document.getElementById('postgresql-port').value = config.port || '';
+                        document.getElementById('postgresql-database').value = config.database || '';
+                        document.getElementById('postgresql-username').value = config.username || '';
+                        if (config.password) {
+                            document.getElementById('postgresql-password').placeholder = config.password;
+                        }
+                        break;
+                    case 'mongodb':
+                        document.getElementById('mongodb-url').value = config.url || '';
+                        document.getElementById('mongodb-database').value = config.database || '';
+                        break;
+                }
+            }
+        }
+        
+        async function testDatabaseConnection() {
+            const config = getDatabaseConfigFromForm();
+            
+            try {
+                const response = await fetch('/api/admin/database/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        type: currentDbType,
+                        connection: config
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Connection successful!', 'success');
+                    document.getElementById('db-status').className = 'connection-status connected';
+                    document.getElementById('db-status').innerHTML = '<span style="font-size: 1.2rem;">●</span> Connected';
+                } else {
+                    showAlert('Connection failed: ' + result.message, 'error');
+                    if (result.instructions) {
+                        showAlert(result.instructions, 'warning');
+                    }
+                    document.getElementById('db-status').className = 'connection-status disconnected';
+                    document.getElementById('db-status').innerHTML = '<span style="font-size: 1.2rem;">●</span> Disconnected';
+                }
+            } catch (error) {
+                showAlert('Test failed: ' + error.message, 'error');
+            }
+        }
+        
+        async function saveDatabaseConfig() {
+            const config = getDatabaseConfigFromForm();
+            
+            try {
+                const response = await fetch('/api/admin/database/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        type: currentDbType,
+                        connection: { [currentDbType]: config }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(result.message, 'success');
+                    if (result.requiresRestart) {
+                        showAlert('Please restart the server for changes to take effect.', 'warning');
+                    }
+                } else {
+                    showAlert(result.error || 'Failed to save configuration', 'error');
+                }
+            } catch (error) {
+                showAlert('Error saving configuration: ' + error.message, 'error');
+            }
+        }
+        
+        function getDatabaseConfigFromForm() {
+            const config = {};
+            
+            switch(currentDbType) {
+                case 'sqlite':
+                    config.filename = document.getElementById('sqlite-filename').value;
+                    break;
+                case 'mysql':
+                    config.host = document.getElementById('mysql-host').value;
+                    config.port = document.getElementById('mysql-port').value;
+                    config.database = document.getElementById('mysql-database').value;
+                    config.username = document.getElementById('mysql-username').value;
+                    const mysqlPass = document.getElementById('mysql-password').value;
+                    if (mysqlPass) config.password = mysqlPass;
+                    break;
+                case 'postgresql':
+                    config.host = document.getElementById('postgresql-host').value;
+                    config.port = document.getElementById('postgresql-port').value;
+                    config.database = document.getElementById('postgresql-database').value;
+                    config.username = document.getElementById('postgresql-username').value;
+                    const pgPass = document.getElementById('postgresql-password').value;
+                    if (pgPass) config.password = pgPass;
+                    break;
+                case 'mongodb':
+                    config.url = document.getElementById('mongodb-url').value;
+                    config.database = document.getElementById('mongodb-database').value;
+                    break;
+            }
+            
+            return config;
+        }
+        
+        async function exportDatabaseConfig() {
+            try {
+                const response = await fetch('/api/admin/database/export', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'database-config-export.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showAlert('Configuration exported successfully', 'success');
+                }
+            } catch (error) {
+                showAlert('Export failed: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadDatabaseStats() {
+            try {
+                const response = await fetch('/api/admin/database/stats', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const statsHtml = `
+                        <div class="stat-card">
+                            <div class="stat-value">${data.stats.tables || data.stats.collections}</div>
+                            <div class="stat-label">${data.type === 'mongodb' ? 'Collections' : 'Tables'}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${data.stats.size}</div>
+                            <div class="stat-label">Database Size</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${data.stats.connections.active}/${data.stats.connections.total}</div>
+                            <div class="stat-label">Active Connections</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${data.stats.uptime}</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                    `;
+                    document.getElementById('db-stats').innerHTML = statsHtml;
+                }
+            } catch (error) {
+                console.error('Failed to load database stats:', error);
+            }
+        }
+        
+        // Common Functions
         async function checkAuth() {
             try {
                 const response = await fetch('/api/admin/check', {
@@ -513,6 +993,16 @@
                 const data = await response.json();
                 
                 document.getElementById('dataDir').textContent = data.dataDir || 'Unknown';
+                
+                // Also load database type
+                const dbResponse = await fetch('/api/admin/database/config', {
+                    credentials: 'include'
+                });
+                if (dbResponse.ok) {
+                    const dbData = await dbResponse.json();
+                    document.getElementById('dbType').textContent = 
+                        dbData.current.charAt(0).toUpperCase() + dbData.current.slice(1);
+                }
                 
             } catch (error) {
                 console.error('Failed to load status:', error);
