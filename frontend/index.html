@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TestLab - Software Testing Practice</title>
+    <title>TestLab - Interactive Software Testing Practice</title>
     <style>
         * {
             margin: 0;
@@ -12,211 +12,228 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            color: #333;
         }
 
         .main-content {
-            flex: 1;
+            display: flex;
+            min-height: 100vh;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            flex: 1;
+            padding: 2rem;
+            margin-right: 400px;
         }
 
         header {
             background: rgba(255, 255, 255, 0.95);
             padding: 2rem;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 2rem;
             text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
-            color: #333;
+            color: #667eea;
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
         }
 
         .subtitle {
             color: #666;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
 
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: white;
             padding: 1.5rem;
             border-radius: 10px;
             text-align: center;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
 
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
-            color: #e74c3c;
+            color: #667eea;
         }
 
         .stat-label {
             color: #666;
+            font-size: 0.9rem;
             margin-top: 0.5rem;
         }
 
-        .testing-sections {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-        }
-
         .section {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
+            background: white;
             padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .section h2 {
+        h2 {
             color: #333;
             margin-bottom: 1rem;
-            border-bottom: 3px solid #3498db;
-            padding-bottom: 0.5rem;
-        }
-
-        .broken-form {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin: 1rem 0;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-
-        .btn {
-            background: #3498db;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            background: #e74c3c;
-        }
-
-        .btn-danger:hover {
-            background: #c0392b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .issue-list {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 5px;
-            padding: 1rem;
             margin: 1rem 0;
         }
 
         .issue {
-            padding: 0.5rem;
-            margin: 0.25rem 0;
-            background: #fff;
-            border-left: 4px solid #f39c12;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: #f8f9fa;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
+            border: 2px solid transparent;
         }
 
         .issue:hover {
-            background: #f8f9fa;
-            transform: translateX(5px);
+            background: #e9ecef;
+            border-color: #667eea;
         }
 
         .issue.found {
-            border-left-color: #27ae60;
             background: #d4edda;
+            border-color: #28a745;
+            opacity: 0.7;
         }
 
-        .performance-demo {
-            text-align: center;
+        .issue strong {
+            color: #495057;
         }
 
-        .slow-loading {
-            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkZha2UgSW1hZ2UgKDEwMEtCKTwvdGV4dD48L3N2Zz4=') no-repeat center;
-            height: 200px;
-            border: 2px dashed #ccc;
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            margin-right: 0.5rem;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-group {
             margin: 1rem 0;
-            animation: slowLoad 3s ease-in-out infinite;
         }
 
-        @keyframes slowLoad {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #495057;
+            font-weight: 500;
         }
 
-        .accessibility-test {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 5px;
-            margin: 1rem 0;
-        }
-
-        .low-contrast {
-            color: #ccc;
-            background: #ddd;
+        .form-group input {
+            width: 100%;
             padding: 0.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 1rem;
         }
 
         .tools-panel {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 400px;
+            height: 100vh;
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
             padding: 2rem;
-            margin-top: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.5s;
         }
 
         .tool-results {
             background: #f8f9fa;
             padding: 1rem;
-            border-radius: 5px;
+            border-radius: 8px;
             margin-top: 1rem;
-            font-family: monospace;
             white-space: pre-wrap;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        footer {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            margin-top: 3rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .footer-links {
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 1rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .admin-link {
+            font-weight: bold;
         }
 
         .modal {
@@ -226,7 +243,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
         }
 
@@ -237,153 +254,157 @@
             transform: translate(-50%, -50%);
             background: white;
             padding: 2rem;
-            border-radius: 10px;
+            border-radius: 15px;
             max-width: 600px;
-            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .close-modal {
-            float: right;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
             font-size: 2rem;
             cursor: pointer;
-            color: #999;
+            color: #666;
         }
 
-        .progress-bar {
-            background: #eee;
-            border-radius: 10px;
-            height: 20px;
+        /* AI Analysis Section Styles */
+        .ai-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 2px solid #667eea;
+        }
+
+        .code-input {
+            width: 100%;
+            min-height: 200px;
+            padding: 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .ai-controls {
+            display: flex;
+            gap: 1rem;
             margin: 1rem 0;
-            overflow: hidden;
+            flex-wrap: wrap;
         }
 
-        .progress-fill {
-            background: linear-gradient(90deg, #3498db, #2ecc71);
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s ease;
+        .ai-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .ai-btn:hover {
+            border-color: #667eea;
+            background: #f8f9fa;
+        }
+
+        .ai-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .ai-btn.loading {
+            background: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+            cursor: wait;
+        }
+
+        .ai-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin: 1rem 0;
         }
 
         .ai-results {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            border-left: 4px solid #3498db;
-        }
-
-        .ai-results.claude {
-            border-left-color: #e74c3c;
-        }
-
-        .ai-results.chatgpt {
-            border-left-color: #27ae60;
-        }
-
-        .ai-comparison {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-
-        .issue-item {
-            background: white;
-            padding: 1rem;
-            border-radius: 5px;
-            margin: 0.5rem 0;
-            border-left: 3px solid #f39c12;
-        }
-
-        .issue-item.high {
-            border-left-color: #e74c3c;
-        }
-
-        .issue-item.medium {
-            border-left-color: #f39c12;
-        }
-
-        .issue-item.low {
-            border-left-color: #27ae60;
-        }
-
-        .ai-score {
-            display: inline-block;
-            background: #3498db;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 15px;
-            font-weight: bold;
-            margin-left: 1rem;
-        }
-
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        .loading::after {
-            content: ' 🤖';
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Footer Styles */
-        footer {
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            text-align: center;
-            padding: 2rem 0;
-            margin-top: 3rem;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        .footer-links {
-            margin-bottom: 1rem;
-        }
-
-        .footer-links a {
-            color: #ccc;
-            text-decoration: none;
-            margin: 0 1rem;
-            font-size: 0.9rem;
-            transition: color 0.3s;
-        }
-
-        .footer-links a:hover {
-            color: #fff;
-            text-decoration: underline;
-        }
-
-        .footer-copyright {
-            font-size: 0.85rem;
-            color: #999;
             margin-top: 1rem;
         }
 
-        .admin-link {
-            font-size: 0.85rem;
-            opacity: 0.7;
+        .ai-result-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .admin-link:hover {
-            opacity: 1;
+        .ai-result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .ai-score {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .score-good { color: #28a745; }
+        .score-medium { color: #ffc107; }
+        .score-poor { color: #dc3545; }
+
+        .ai-issue {
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-radius: 6px;
+            border-left: 4px solid;
+        }
+
+        .ai-issue.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .ai-issue.warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .ai-issue.info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                margin-right: 0;
+            }
+
+            .tools-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                margin-top: 2rem;
+            }
+
+            .main-content {
+                flex-direction: column;
+            }
         }
 
         @media (max-width: 768px) {
-            .testing-sections {
-                grid-template-columns: 1fr;
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
             }
-            
+
             h1 {
                 font-size: 2rem;
             }
@@ -530,131 +551,90 @@
                             <label>Password:</label>
                             <input type="text" id="password" placeholder="Stored as plain text!">
                         </div>
-                        <div class="form-group">
-                            <label>Comments:</label>
-                            <textarea id="comments" placeholder="Try: '; DROP TABLE users; --"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-danger">Submit (Unsafe)</button>
+                        <button type="submit" class="btn">Submit Form</button>
                     </form>
-                </div>
-
-                <!-- Security Testing Section -->
-                <div class="section">
-                    <h2>🔒 Security Testing</h2>
-                    <p>Identify security vulnerabilities:</p>
-
-                    <div class="issue-list">
-                        <div class="issue" data-issue="xss-vulnerable" onclick="markIssueFound(this)">
-                            <strong>XSS Vulnerability:</strong> Unescaped user content
-                        </div>
-                        <div class="issue" data-issue="weak-passwords" onclick="markIssueFound(this)">
-                            <strong>Weak Password Policy:</strong> No password requirements
-                        </div>
-                        <div class="issue" data-issue="exposed-data" onclick="markIssueFound(this)">
-                            <strong>Data Exposure:</strong> Sensitive info in client-side code
-                        </div>
-                    </div>
-
-                    <div style="background: #fff3cd; padding: 1rem; border-radius: 5px; margin: 1rem 0;">
-                        <p><strong>Debug Info (Should be hidden in production):</strong></p>
-                        <pre>API_KEY: abc123secretkey
-DATABASE_PASSWORD: admin123
-SESSION_TOKEN: user_12345_token</pre>
-                    </div>
 
                     <button class="btn" onclick="runSecurityTest()">🔒 Run Security Test</button>
                 </div>
 
-                <!-- Responsive Testing Section -->
-                <div class="section">
-                    <h2>📱 Responsive Design Testing</h2>
-                    <p>Check mobile compatibility issues:</p>
+                <!-- AI-Powered Code Analysis Section -->
+                <div class="section ai-section">
+                    <h2>🤖 AI-Powered Code Analysis</h2>
+                    <p>Get comprehensive code analysis from multiple AI models:</p>
 
-                    <div class="issue-list">
-                        <div class="issue" data-issue="viewport-missing" onclick="markIssueFound(this)">
-                            <strong>Missing Viewport:</strong> No mobile viewport meta tag
+                    <div style="margin: 1rem 0;">
+                        <label for="codeInput" style="font-weight: bold; margin-bottom: 0.5rem; display: block;">
+                            Paste your HTML/CSS/JavaScript code:
+                        </label>
+                        <textarea id="codeInput" class="code-input" placeholder="Paste your code here for AI analysis..."><!DOCTYPE html>
+<html>
+<head>
+    <title>Sample Page</title>
+</head>
+<body>
+    <img src="logo.jpg">
+    <div onclick="doSomething()">Click me</div>
+    <form>
+        <input type="email" placeholder="Email">
+        <button>Submit</button>
+    </form>
+</body>
+</html></textarea>
+                    </div>
+
+                    <div class="ai-controls">
+                        <div class="ai-btn" id="gptBtn" onclick="toggleAI('openai')">
+                            <strong>🧠 GPT-4</strong><br>
+                            <small>OpenAI Analysis</small>
                         </div>
-                        <div class="issue" data-issue="fixed-width" onclick="markIssueFound(this)">
-                            <strong>Fixed Width Elements:</strong> Elements don't scale
+                        <div class="ai-btn" id="claudeBtn" onclick="toggleAI('anthropic')">
+                            <strong>🤖 Claude</strong><br>
+                            <small>Anthropic Analysis</small>
                         </div>
-                        <div class="issue" data-issue="tiny-touch" onclick="markIssueFound(this)">
-                            <strong>Tiny Touch Targets:</strong> Buttons too small for mobile
+                        <div class="ai-btn" id="llamaBtn" onclick="toggleAI('together')">
+                            <strong>🦙 Llama</strong><br>
+                            <small>Meta AI Analysis</small>
                         </div>
                     </div>
 
-                    <div style="background: #f8f9fa; padding: 1rem; margin: 1rem 0;">
-                        <div style="width: 800px; background: #ddd; padding: 10px; margin: 5px 0;">Fixed 800px width (breaks mobile)</div>
-                        <button style="padding: 2px 5px; font-size: 10px;">Tiny Button</button>
+                    <div class="ai-options">
+                        <label>
+                            <input type="checkbox" id="includeAccessibility" checked>
+                            Check Accessibility Issues
+                        </label>
+                        <label>
+                            <input type="checkbox" id="includePerformance" checked>
+                            Check Performance Issues
+                        </label>
+                        <label>
+                            <input type="checkbox" id="includeSecurity" checked>
+                            Check Security Issues
+                        </label>
+                        <label>
+                            <input type="checkbox" id="includeSEO" checked>
+                            Check SEO Issues
+                        </label>
                     </div>
 
-                    <button class="btn" onclick="runResponsiveTest()">📱 Run Responsive Test</button>
-                </div>
-
-                <!-- AI Code Review Section -->
-                <div class="section" style="grid-column: 1 / -1;">
-                    <h2>🤖 AI-Powered Code Review</h2>
-                    <p>Submit your code for intelligent analysis by Claude and ChatGPT:</p>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0;">
-                        <div>
-                            <h3>📝 Submit Code for Review</h3>
-                            <textarea id="codeInput" placeholder="Paste your HTML, CSS, or JavaScript code here for AI analysis..." 
-                                    style="width: 100%; height: 200px; font-family: monospace; font-size: 14px; border: 2px solid #ddd; border-radius: 5px; padding: 1rem;"></textarea>
-                            
-                            <div style="margin: 1rem 0;">
-                                <label>
-                                    <input type="checkbox" id="includeAccessibility" checked> Accessibility Analysis
-                                </label>
-                                <label style="margin-left: 1rem;">
-                                    <input type="checkbox" id="includePerformance" checked> Performance Review
-                                </label>
-                                <label style="margin-left: 1rem;">
-                                    <input type="checkbox" id="includeSecurity" checked> Security Audit
-                                </label>
-                            </div>
-
-                            <div style="display: flex; gap: 1rem;">
-                                <button class="btn" onclick="analyzeWithClaude()" id="claudeBtn">
-                                    🧠 Analyze with Claude
-                                </button>
-                                <button class="btn" onclick="analyzeWithChatGPT()" id="chatgptBtn">
-                                    🤖 Analyze with ChatGPT
-                                </button>
-                                <button class="btn" onclick="compareAnalysis()" id="compareBtn">
-                                    ⚖️ Compare Both
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3>⚙️ AI Service Status</h3>
-                            <div style="background: #f8f9fa; padding: 1rem; border-radius: 5px;">
-                                <div class="alert warning">
-                                    <strong>⚠️ Checking Services...</strong><br>
-                                    <small>Loading AI service availability...</small>
-                                </div>
-                            </div>
-
-                            <div style="margin: 1rem 0;">
-                                <label for="reviewDepth">Analysis Depth:</label>
-                                <select id="reviewDepth" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
-                                    <option value="quick">Quick Scan (Basic Issues)</option>
-                                    <option value="thorough" selected>Thorough Review (Detailed)</option>
-                                    <option value="comprehensive">Comprehensive Audit (Everything)</option>
-                                </select>
-                            </div>
-
-                            <div style="margin: 1rem 0; padding: 1rem; background: #e8f5e8; border-radius: 5px;">
-                                <strong>🔧 For Administrators</strong><br>
-                                <small>
-                                    Configure API credentials in the admin dashboard<br>
-                                    <a href="/admin" target="_blank">Open Admin Dashboard</a>
-                                </small>
-                            </div>
-                        </div>
+                    <div style="text-align: center; margin: 1rem 0;">
+                        <button class="btn" onclick="runAIAnalysis()" id="analyzeBtn" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                            🚀 Run AI Analysis
+                        </button>
                     </div>
 
-                    <div id="aiAnalysisResults" style="margin-top: 2rem;"></div>
+                    <div id="aiStatus" style="text-align: center; margin: 1rem 0; display: none;">
+                        <p style="color: #666;">🔄 Analyzing code with AI models...</p>
+                    </div>
+
+                    <div id="aiAnalysisResults" class="ai-results"></div>
+
+                    <div style="margin-top: 1rem; padding: 1rem; background: #e8f5e8; border-radius: 5px;">
+                        <strong>🔧 Not Logged In?</strong><br>
+                        <small>
+                            AI analysis requires authentication. 
+                            <a href="/admin" style="color: #667eea;">Login to Admin Panel</a> to configure API keys.
+                        </small>
+                    </div>
                 </div>
             </div>
 
@@ -692,8 +672,8 @@ Tips for testers:
         <div class="footer-content">
             <div class="footer-links">
                 <a href="#top">Back to Top</a>
-                <a href="/diagnostics">Diagnostics Tool</a>
-                <a href="https://github.com/yourusername/testlab" target="_blank">GitHub</a>
+                <a href="/test.html">Advanced Testing</a>
+                <a href="/setup">Setup</a>
                 <a href="#" onclick="showAbout()">About TestLab</a>
                 <a href="/admin" class="admin-link">Admin</a>
             </div>
@@ -714,6 +694,26 @@ Tips for testers:
     <script>
         let foundIssues = new Set();
         const totalIssues = 15;
+        let selectedAIs = new Set();
+        let isAuthenticated = false;
+
+        // Check authentication on load
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/admin/check');
+                const data = await response.json();
+                isAuthenticated = data.authenticated;
+                
+                if (!isAuthenticated) {
+                    document.querySelectorAll('.ai-btn').forEach(btn => {
+                        btn.style.opacity = '0.6';
+                        btn.title = 'Login required for AI analysis';
+                    });
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
+        }
 
         function markIssueFound(element) {
             const issueId = element.dataset.issue;
@@ -749,22 +749,14 @@ Tips for testers:
                 'no-focus': 'All interactive elements need visible focus indicators for keyboard navigation.',
                 'weak-validation': 'Email validation should check for proper format using regex or HTML5 input types.',
                 'no-required': 'Mark required fields clearly both visually and programmatically with the required attribute.',
-                'sql-injection': 'Always sanitize user input to prevent SQL injection attacks. Use parameterized queries.',
-                'xss-vulnerable': 'Escape user content before displaying it to prevent cross-site scripting attacks.',
-                'weak-passwords': 'Implement strong password requirements: minimum length, mixed case, numbers, symbols.',
-                'exposed-data': 'Never expose API keys, passwords, or tokens in client-side code. Keep them server-side.',
-                'viewport-missing': 'Add <meta name="viewport" content="width=device-width, initial-scale=1"> for mobile compatibility.',
-                'fixed-width': 'Use relative units (%, em, rem) instead of fixed pixels for responsive design.',
-                'tiny-touch': 'Touch targets should be at least 44px × 44px for easy mobile interaction.'
+                'sql-injection': 'Always sanitize user input to prevent SQL injection attacks. Use parameterized queries.'
             };
 
-            const content = `
-                <h3>Issue Found: ${issueId.replace('-', ' ').toUpperCase()}</h3>
+            document.getElementById('modalContent').innerHTML = `
+                <h3>💡 Learning Point</h3>
                 <p>${explanations[issueId]}</p>
-                <p><strong>Great job finding this issue! +10 points</strong></p>
+                <button class="btn" onclick="closeModal()">Got it!</button>
             `;
-            
-            document.getElementById('modalContent').innerHTML = content;
             document.getElementById('explanationModal').style.display = 'block';
         }
 
@@ -777,13 +769,11 @@ Tips for testers:
 🔍 HTML VALIDATION RESULTS:
 ════════════════════════════
 
-❌ Error: Missing alt attribute on image (line 87)
-❌ Error: Invalid nesting of block element in inline element (line 89)  
-❌ Error: Form input missing associated label (line 90)
-✅ Document structure is valid
-✅ Character encoding properly set
+Found 3 critical issues:
+❌ Missing alt attribute on <img> tag
+❌ Invalid nesting: <div> inside <span>
+❌ Form input missing label association
 
-Found 3 HTML validation errors.
 Recommendation: Fix alt attributes and form labels for better accessibility.
             `);
         }
@@ -868,6 +858,11 @@ This form has security issues:
 
 In a real application, this could compromise user data!
             `);
+            return false;
+        }
+
+        function updateToolResults(content) {
+            document.getElementById('toolResults').textContent = content;
         }
 
         function validateHTML() {
@@ -884,10 +879,6 @@ In a real application, this could compromise user data!
 
         function checkSecurity() {
             runSecurityTest();
-        }
-
-        function updateToolResults(content) {
-            document.getElementById('toolResults').textContent = content;
         }
 
         function showAbout() {
@@ -909,464 +900,142 @@ In a real application, this could compromise user data!
             document.getElementById('explanationModal').style.display = 'block';
         }
 
-        // Simulate some performance issues
-        setTimeout(() => {
-            console.log('Slow script execution simulation');
-        }, 100);
-
         // AI Analysis Functions
-        const API_BASE = 'http://localhost:3001/api';
-
-        async function analyzeWithClaude() {
-            const code = document.getElementById('codeInput').value.trim();
-            if (!code) {
-                alert('Please enter some code to analyze');
+        function toggleAI(service) {
+            if (!isAuthenticated) {
+                alert('Please login to the admin panel to use AI analysis features.');
+                window.location.href = '/admin';
                 return;
             }
 
-            const btn = document.getElementById('claudeBtn');
-            btn.classList.add('loading');
-            btn.textContent = 'Analyzing...';
-
-            try {
-                const analysisTypes = [];
-                if (document.getElementById('includeAccessibility').checked) analysisTypes.push('accessibility');
-                if (document.getElementById('includePerformance').checked) analysisTypes.push('performance');
-                if (document.getElementById('includeSecurity').checked) analysisTypes.push('security');
-                
-                const depth = document.getElementById('reviewDepth').value;
-                
-                const response = await fetch(`${API_BASE}/analyze/claude`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        code,
-                        analysisTypes,
-                        depth
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Analysis failed');
-                }
-
-                const analysis = await response.json();
-                displayClaudeResults(analysis);
-
-            } catch (error) {
-                console.error('Claude analysis error:', error);
-                document.getElementById('aiAnalysisResults').innerHTML = `
-                    <div class="ai-results">
-                        <h3>❌ Analysis Error</h3>
-                        <p>${error.message}</p>
-                        ${error.message.includes('not configured') ? 
-                            '<p><strong>Admin:</strong> Please configure Claude API credentials in the admin dashboard.</p>' : 
-                            '<p>Please try again or contact the administrator if the problem persists.</p>'
-                        }
-                    </div>
-                `;
-            } finally {
-                btn.classList.remove('loading');
-                btn.textContent = '🧠 Analyze with Claude';
-            }
-        }
-
-        async function analyzeWithChatGPT() {
-            const code = document.getElementById('codeInput').value.trim();
+            const btn = document.getElementById(service === 'openai' ? 'gptBtn' : 
+                                               service === 'anthropic' ? 'claudeBtn' : 'llamaBtn');
             
-            if (!code) {
-                alert('Please enter some code to analyze');
-                return;
-            }
-
-            const btn = document.getElementById('chatgptBtn');
-            btn.classList.add('loading');
-            btn.textContent = 'Analyzing...';
-
-            try {
-                const analysisTypes = [];
-                if (document.getElementById('includeAccessibility').checked) analysisTypes.push('accessibility');
-                if (document.getElementById('includePerformance').checked) analysisTypes.push('performance');
-                if (document.getElementById('includeSecurity').checked) analysisTypes.push('security');
-                
-                const depth = document.getElementById('reviewDepth').value;
-
-                const response = await fetch(`${API_BASE}/analyze/chatgpt`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        code,
-                        analysisTypes,
-                        depth
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Analysis failed');
-                }
-
-                const analysis = await response.json();
-                displayChatGPTResults(analysis);
-
-            } catch (error) {
-                console.error('ChatGPT analysis error:', error);
-                document.getElementById('aiAnalysisResults').innerHTML = `
-                    <div class="ai-results">
-                        <h3>❌ ChatGPT Analysis Error</h3>
-                        <p>${error.message}</p>
-                        ${error.message.includes('not configured') ? 
-                            '<p><strong>Admin:</strong> Please configure ChatGPT API credentials in the admin dashboard.</p>' : 
-                            '<p>Please check the service status or try again later.</p>'
-                        }
-                    </div>
-                `;
-            } finally {
-                btn.classList.remove('loading');
-                btn.textContent = '🤖 Analyze with ChatGPT';
+            if (selectedAIs.has(service)) {
+                selectedAIs.delete(service);
+                btn.classList.remove('active');
+            } else {
+                selectedAIs.add(service);
+                btn.classList.add('active');
             }
         }
 
-        async function compareAnalysis() {
+        async function runAIAnalysis() {
+            if (!isAuthenticated) {
+                alert('Please login to the admin panel to use AI analysis features.');
+                window.location.href = '/admin';
+                return;
+            }
+
+            if (selectedAIs.size === 0) {
+                alert('Please select at least one AI service');
+                return;
+            }
+
             const code = document.getElementById('codeInput').value.trim();
             if (!code) {
                 alert('Please enter some code to analyze');
                 return;
             }
 
-            const btn = document.getElementById('compareBtn');
-            btn.classList.add('loading');
-            btn.textContent = 'Comparing...';
+            const analysisTypes = [];
+            if (document.getElementById('includeAccessibility').checked) analysisTypes.push('accessibility');
+            if (document.getElementById('includePerformance').checked) analysisTypes.push('performance');
+            if (document.getElementById('includeSecurity').checked) analysisTypes.push('security');
+            if (document.getElementById('includeSEO').checked) analysisTypes.push('seo');
 
-            try {
-                const analysisTypes = [];
-                if (document.getElementById('includeAccessibility').checked) analysisTypes.push('accessibility');
-                if (document.getElementById('includePerformance').checked) analysisTypes.push('performance');
-                if (document.getElementById('includeSecurity').checked) analysisTypes.push('security');
-                
-                const depth = document.getElementById('reviewDepth').value;
+            document.getElementById('aiStatus').style.display = 'block';
+            document.getElementById('aiAnalysisResults').innerHTML = '';
+            document.getElementById('analyzeBtn').disabled = true;
 
-                // Run both analyses in parallel
-                const promises = [
-                    fetch(`${API_BASE}/analyze/claude`, {
+            let completedAnalyses = 0;
+            const totalAnalyses = selectedAIs.size;
+
+            for (const service of selectedAIs) {
+                try {
+                    const response = await fetch(`/api/analyze/${service}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code, analysisTypes, depth })
-                    }),
-                    fetch(`${API_BASE}/analyze/chatgpt`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code, analysisTypes, depth })
-                    })
-                ];
+                        body: JSON.stringify({
+                            content: code,
+                            analysisType: analysisTypes.join(',')
+                        })
+                    });
 
-                const results = await Promise.allSettled(promises);
-                
-                // Process results
-                const processedResults = await Promise.allSettled(
-                    results.map(async (result, index) => {
-                        if (result.status === 'fulfilled' && result.value.ok) {
-                            return await result.value.json();
-                        } else if (result.status === 'fulfilled') {
-                            const errorData = await result.value.json();
-                            throw new Error(errorData.error || 'Analysis failed');
-                        } else {
-                            throw result.reason;
-                        }
-                    })
-                );
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        displayAIResult(service, data.analysis);
+                    } else {
+                        displayAIError(service, data.error);
+                    }
+                } catch (error) {
+                    displayAIError(service, error.message);
+                }
 
-                displayComparisonResults(processedResults, ['Claude', 'ChatGPT']);
-
-            } catch (error) {
-                console.error('Comparison error:', error);
-                document.getElementById('aiAnalysisResults').innerHTML = `
-                    <div class="ai-results">
-                        <h3>❌ Comparison Error</h3>
-                        <p>Failed to run comparison analysis: ${error.message}</p>
-                    </div>
-                `;
-            } finally {
-                btn.classList.remove('loading');
-                btn.textContent = '⚖️ Compare Both';
+                completedAnalyses++;
+                document.getElementById('aiStatus').innerHTML = 
+                    `<p style="color: #666;">🔄 Analyzing code with AI models... (${completedAnalyses}/${totalAnalyses})</p>`;
             }
+
+            document.getElementById('aiStatus').style.display = 'none';
+            document.getElementById('analyzeBtn').disabled = false;
         }
 
-        // Check service status on page load
-        async function checkServiceAvailability() {
-            try {
-                const response = await fetch(`${API_BASE}/status`);
-                const status = await response.json();
-                
-                // Update UI based on service availability
-                const claudeBtn = document.getElementById('claudeBtn');
-                const chatgptBtn = document.getElementById('chatgptBtn');
-                const compareBtn = document.getElementById('compareBtn');
-                
-                if (!status.services.claude) {
-                    claudeBtn.disabled = true;
-                    claudeBtn.textContent = '🧠 Claude (Unavailable)';
-                    claudeBtn.title = 'Claude service not configured';
-                }
-                
-                if (!status.services.chatgpt) {
-                    chatgptBtn.disabled = true;
-                    chatgptBtn.textContent = '🤖 ChatGPT (Unavailable)';
-                    chatgptBtn.title = 'ChatGPT service not configured';
-                }
-                
-                if (!status.services.claude && !status.services.chatgpt) {
-                    compareBtn.disabled = true;
-                    compareBtn.textContent = '⚖️ Compare (Unavailable)';
-                    compareBtn.title = 'No AI services configured';
-                }
-
-                // Show status in the config section
-                updateServiceStatusDisplay(status.services);
-                
-            } catch (error) {
-                console.error('Failed to check service status:', error);
-                // Show backend connection error
-                document.getElementById('aiAnalysisResults').innerHTML = `
-                    <div class="ai-results">
-                        <h3>⚠️ Backend Connection Error</h3>
-                        <p>Unable to connect to the TestLab backend server.</p>
-                        <p>Make sure the backend server is running on ${API_BASE}</p>
-                        <p><strong>For Admins:</strong> Start the backend with <code>node server.js</code></p>
-                    </div>
-                `;
-            }
-        }
-
-        function updateServiceStatusDisplay(services) {
-            const configDiv = document.querySelector('#aiAnalysisResults').previousElementSibling.querySelector('div:nth-child(2)');
+        function displayAIResult(service, analysis) {
+            const serviceName = service === 'openai' ? 'GPT-4' : 
+                               service === 'anthropic' ? 'Claude' : 'Llama';
             
-            // Update Claude status
-            const claudeStatus = configDiv.querySelector('.alert');
-            if (services.claude) {
-                claudeStatus.className = 'alert success';
-                claudeStatus.innerHTML = '<strong>✅ Claude Service Active</strong><br><small>Ready for code analysis</small>';
-            } else {
-                claudeStatus.className = 'alert warning';
-                claudeStatus.innerHTML = '<strong>⚠️ Claude Service Unavailable</strong><br><small>Admin needs to configure API credentials</small>';
+            const scoreClass = analysis.score >= 80 ? 'score-good' : 
+                              analysis.score >= 60 ? 'score-medium' : 'score-poor';
+
+            let issuesHTML = '';
+            if (analysis.issues && analysis.issues.length > 0) {
+                issuesHTML = analysis.issues.map(issue => `
+                    <div class="ai-issue ${issue.severity}">
+                        <strong>${issue.severity.toUpperCase()} - ${issue.category}</strong><br>
+                        ${issue.description}<br>
+                        ${issue.suggestion ? `<em>💡 ${issue.suggestion}</em>` : ''}
+                    </div>
+                `).join('');
             }
 
-            // Add ChatGPT status if not exists
-            let chatgptStatus = configDiv.querySelector('.chatgpt-status');
-            if (!chatgptStatus) {
-                chatgptStatus = document.createElement('div');
-                chatgptStatus.className = 'chatgpt-status alert';
-                chatgptStatus.style.marginTop = '1rem';
-                configDiv.appendChild(chatgptStatus);
-            }
-
-            if (services.chatgpt) {
-                chatgptStatus.className = 'chatgpt-status alert success';
-                chatgptStatus.innerHTML = '<strong>✅ ChatGPT Service Active</strong><br><small>Ready for code analysis</small>';
-            } else {
-                chatgptStatus.className = 'chatgpt-status alert warning';
-                chatgptStatus.innerHTML = '<strong>⚠️ ChatGPT Service Unavailable</strong><br><small>Admin needs to configure API credentials</small>';
-            }
-        }
-
-        function displayClaudeResults(analysis) {
-            const html = `
-                <div class="ai-results claude">
-                    <h3>🧠 Claude Analysis Results <span class="ai-score">Score: ${analysis.score}/100</span></h3>
+            const resultHTML = `
+                <div class="ai-result-card">
+                    <div class="ai-result-header">
+                        <h3>🤖 ${serviceName} Analysis</h3>
+                        <div class="ai-score ${scoreClass}">Score: ${analysis.score}/100</div>
+                    </div>
                     <p><strong>Summary:</strong> ${analysis.summary}</p>
-                    
-                    <h4>Issues Found (${analysis.issues.length}):</h4>
-                    ${analysis.issues.map(issue => `
-                        <div class="issue-item ${issue.severity}">
-                            <strong>${issue.type.toUpperCase()} - ${issue.severity.toUpperCase()}</strong><br>
-                            ${issue.description}<br>
-                            <em>Fix: ${issue.fix}</em>
-                        </div>
-                    `).join('')}
-                    
-                    ${analysis.recommendations ? `
-                        <h4>Recommendations:</h4>
-                        <ul>
-                            ${analysis.recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                        </ul>
-                    ` : ''}
-                    
-                    ${analysis.testingTips ? `
-                        <h4>Testing Tips:</h4>
-                        <ul>
-                            ${analysis.testingTips.map(tip => `<li>${tip}</li>`).join('')}
-                        </ul>
-                    ` : ''}
+                    ${issuesHTML}
                 </div>
             `;
-            document.getElementById('aiAnalysisResults').innerHTML = html;
+
+            document.getElementById('aiAnalysisResults').innerHTML += resultHTML;
         }
 
-        function displayChatGPTResults(analysis) {
-            const html = `
-                <div class="ai-results chatgpt">
-                    <h3>🤖 ChatGPT Analysis Results <span class="ai-score">Score: ${analysis.score}/100</span></h3>
-                    <p><strong>Summary:</strong> ${analysis.summary}</p>
-                    
-                    <h4>Issues Found (${analysis.issues.length}):</h4>
-                    ${analysis.issues.map(issue => `
-                        <div class="issue-item ${issue.severity}">
-                            <strong>${issue.type.toUpperCase()} - ${issue.severity.toUpperCase()}</strong><br>
-                            ${issue.description}<br>
-                            <em>Fix: ${issue.fix}</em>
-                        </div>
-                    `).join('')}
-                    
-                    ${analysis.recommendations ? `
-                        <h4>Recommendations:</h4>
-                        <ul>
-                            ${analysis.recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                        </ul>
-                    ` : ''}
-                    
-                    ${analysis.testingTips ? `
-                        <h4>Testing Tips:</h4>
-                        <ul>
-                            ${analysis.testingTips.map(tip => `<li>${tip}</li>`).join('')}
-                        </ul>
-                    ` : ''}
+        function displayAIError(service, error) {
+            const serviceName = service === 'openai' ? 'GPT-4' : 
+                               service === 'anthropic' ? 'Claude' : 'Llama';
+
+            const errorHTML = `
+                <div class="ai-result-card">
+                    <div class="ai-result-header">
+                        <h3>🤖 ${serviceName} Analysis</h3>
+                        <div class="ai-score score-poor">Error</div>
+                    </div>
+                    <div class="ai-issue error">
+                        <strong>Analysis Failed</strong><br>
+                        ${error}
+                    </div>
                 </div>
             `;
-            document.getElementById('aiAnalysisResults').innerHTML = html;
+
+            document.getElementById('aiAnalysisResults').innerHTML += errorHTML;
         }
 
-        function displayComparisonResults(results, models) {
-            let html = '<div class="ai-comparison">';
-            
-            results.forEach((result, index) => {
-                const model = models[index];
-                if (result.status === 'fulfilled') {
-                    const analysis = result.value;
-                    html += `
-                        <div class="ai-results ${model.toLowerCase()}">
-                            <h3>${model === 'Claude' ? '🧠' : '🤖'} ${model} Analysis</h3>
-                            <p><strong>Score:</strong> ${analysis.score}/100</p>
-                            <p><strong>Issues:</strong> ${analysis.issues.length}</p>
-                            <p><strong>Summary:</strong> ${analysis.summary}</p>
-                            
-                            <h4>Top Issues:</h4>
-                            ${analysis.issues.slice(0, 3).map(issue => `
-                                <div class="issue-item ${issue.severity}">
-                                    <strong>${issue.type} (${issue.severity})</strong><br>
-                                    ${issue.description}
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                } else {
-                    html += `
-                        <div class="ai-results">
-                            <h3>❌ ${model} Analysis Failed</h3>
-                            <p>${result.reason.message}</p>
-                        </div>
-                    `;
-                }
-            });
-            
-            html += '</div>';
-            
-            // Add comparison summary if both succeeded
-            if (results.length === 2 && results.every(r => r.status === 'fulfilled')) {
-                const claudeScore = results[0].value.score;
-                const chatgptScore = results[1].value.score;
-                html += `
-                    <div class="ai-results">
-                        <h3>📊 Comparison Summary</h3>
-                        <p><strong>Score Difference:</strong> ${Math.abs(claudeScore - chatgptScore)} points</p>
-                        <p><strong>Agreement Level:</strong> ${Math.max(0, 100 - Math.abs(claudeScore - chatgptScore))}%</p>
-                        <p>Both AI assistants provide valuable insights. Consider issues flagged by both for highest priority fixes.</p>
-                    </div>
-                `;
-            }
-            
-            document.getElementById('aiAnalysisResults').innerHTML = html;
-        }
-
-        // Sample code examples
-        function loadSampleCode(type) {
-            const samples = {
-                broken: `<div class="user-profile">
-    <img src="avatar.jpg" width="50">
-    <input type="text" placeholder="Enter email">
-    <button onclick="submitForm()">Submit</button>
-    <script>
-        function submitForm() {
-            var email = document.querySelector('input').value;
-            document.innerHTML = "Hello " + email; // XSS vulnerability
-        }
-    </script>
-</div>`,
-                security: `<!-- Security issues example -->
-<form action="/login" method="get">
-    <input type="text" name="username">
-    <input type="password" name="password">
-    <input type="hidden" name="api_key" value="sk-1234567890abcdef">
-    <button type="submit">Login</button>
-</form>
-<script>
-    // Debug info (remove in production)
-    console.log("Database password: admin123");
-    localStorage.setItem("session", "user_token_12345");
-</script>`,
-                performance: `<head>
-    <script src="https://cdn.example.com/huge-library.js"></script>
-    <script>
-        // Blocking script
-        for(let i = 0; i < 1000000; i++) {
-            console.log("Processing...");
-        }
-    </script>
-    <style>
-        .container { width: 1200px; }
-        .large-bg { background: url('4k-image.jpg'); }
-    </style>
-</head>
-<body>
-    <img src="unoptimized-photo.jpg" width="100" height="100">
-    <div class="large-bg">Content</div>
-</body>`
-            };
-            
-            document.getElementById('codeInput').value = samples[type] || samples.broken;
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('explanationModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        }
-
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add sample code buttons
-            const codeInput = document.getElementById('codeInput');
-            if (codeInput) {
-                const buttonsDiv = document.createElement('div');
-                buttonsDiv.style.margin = '0.5rem 0';
-                buttonsDiv.innerHTML = `
-                    <small>Sample code: </small>
-                    <button onclick="loadSampleCode('broken')" style="margin: 0 0.25rem; padding: 0.25rem 0.5rem; font-size: 12px;">Broken HTML</button>
-                    <button onclick="loadSampleCode('security')" style="margin: 0 0.25rem; padding: 0.25rem 0.5rem; font-size: 12px;">Security Issues</button>
-                    <button onclick="loadSampleCode('performance')" style="margin: 0 0.25rem; padding: 0.25rem 0.5rem; font-size: 12px;">Performance Problems</button>
-                `;
-                codeInput.parentNode.insertBefore(buttonsDiv, codeInput.nextSibling);
-            }
-
-            // Check service availability on page load
-            checkServiceAvailability();
-        });
+        // Initialize
+        checkAuth();
     </script>
 </body>
 </html>
