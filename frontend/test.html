@@ -1,77 +1,486 @@
-<!-- FILE LOCATION: /frontend/test.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>TestLab Debug</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TestLab - HTML Debug Testing</title>
     <style>
-        body { 
-            font-family: monospace; 
-            max-width: 800px; 
-            margin: 50px auto; 
-            padding: 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        button { 
-            padding: 10px 20px; 
-            margin: 5px; 
-            cursor: pointer; 
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+            color: #1f2937;
+            line-height: 1.6;
         }
-        pre { 
-            background: #f5f5f5; 
-            padding: 15px; 
-            border-radius: 5px; 
-            overflow: auto; 
+        
+        .header {
+            background: #1e293b;
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .success { background: #d4edda; }
-        .error { background: #f8d7da; }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            color: #1e293b;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results {
+            margin-top: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .issue {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 6px;
+            border-left: 4px solid;
+        }
+        
+        .issue.error {
+            background: #fee2e2;
+            border-color: #dc2626;
+            color: #991b1b;
+        }
+        
+        .issue.warning {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            color: #92400e;
+        }
+        
+        .issue.info {
+            background: #dbeafe;
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+        
+        .issue-type {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+        
+        .issue-message {
+            margin-top: 0.25rem;
+        }
+        
+        .issue-line {
+            font-family: monospace;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            color: #6b7280;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .login-prompt {
+            background: #fef3c7;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .login-prompt a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .login-prompt a:hover {
+            text-decoration: underline;
+        }
+        
+        .footer {
+            background: #1e293b;
+            color: #94a3b8;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            text-align: center;
+        }
+        
+        .footer a {
+            color: #60a5fa;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .sample-issues {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .sample-issues h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #4b5563;
+        }
+        
+        .sample-issues ul {
+            margin-left: 1.5rem;
+            color: #6b7280;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>🧪 TestLab Test Page</h1>
+    <div class="header">
+        <div class="container">
+            <h1>🔍 TestLab HTML Debugger</h1>
+        </div>
+    </div>
     
-    <h2>Quick Tests:</h2>
-    <button onclick="testAPI()">Test API Health</button>
-    <button onclick="testSetup()">Test Setup Status</button>
-    <button onclick="testDebug()">Show Debug Info</button>
+    <div class="container">
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            ⚠️ Please <a href="/admin">login to admin panel</a> to use AI-powered analysis features.
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="errorCount">0</div>
+                <div class="stat-label">Errors</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="warningCount">0</div>
+                <div class="stat-label">Warnings</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="totalIssues">0</div>
+                <div class="stat-label">Total Issues</div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="section">
+                <h2>📝 HTML Input</h2>
+                <textarea id="htmlInput" placeholder="Paste your HTML code here..."><!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Sample Page</title>
+</head>
+<body>
+    <!-- Missing alt attribute -->
+    <img src="logo.png">
     
-    <h2>Results:</h2>
-    <pre id="results">Click a button to test...</pre>
-
+    <!-- Form without labels -->
+    <form>
+        <input type="text" placeholder="Name">
+        <input type="email" placeholder="Email">
+        <button>Submit</button>
+    </form>
+    
+    <!-- Accessibility issues -->
+    <div onclick="doSomething()">Click me</div>
+    
+    <!-- Invalid nesting -->
+    <p>This is <div>invalid</div> nesting</p>
+</body>
+</html></textarea>
+                <button class="btn" onclick="validateHTML()">🔍 Validate HTML</button>
+                
+                <div class="sample-issues">
+                    <h3>Common Issues to Check:</h3>
+                    <ul>
+                        <li>Missing alt attributes on images</li>
+                        <li>Form inputs without labels</li>
+                        <li>Missing DOCTYPE declaration</li>
+                        <li>Invalid HTML nesting</li>
+                        <li>Missing page title</li>
+                        <li>Accessibility violations</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📊 Validation Results</h2>
+                <div id="results" class="results">
+                    <p style="color: #6b7280; text-align: center; padding: 2rem;">
+                        Paste HTML code and click "Validate HTML" to see results
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div class="container">
+            <a href="/">Home</a>
+            <a href="/admin">Admin Panel</a>
+            <a href="/api/health">API Status</a>
+            <a href="/api/debug">Debug Info</a>
+        </div>
+    </footer>
+    
     <script>
-        async function testAPI() {
+        let isAuthenticated = false;
+        
+        // Check authentication status
+        async function checkAuth() {
             try {
-                const res = await fetch('/api/health');
-                const data = await res.json();
-                showResult('API Health', data, true);
-            } catch (err) {
-                showResult('API Health', err.message, false);
+                const response = await fetch('/api/admin/check');
+                const data = await response.json();
+                isAuthenticated = data.authenticated;
+                
+                if (!isAuthenticated) {
+                    document.getElementById('loginPrompt').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
             }
         }
-
-        async function testSetup() {
-            try {
-                const res = await fetch('/api/setup/status');
-                const data = await res.json();
-                showResult('Setup Status', data, true);
-            } catch (err) {
-                showResult('Setup Status', err.message, false);
+        
+        async function validateHTML() {
+            const html = document.getElementById('htmlInput').value;
+            
+            if (!html.trim()) {
+                alert('Please enter HTML code to validate');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('results');
+            
+            if (!isAuthenticated) {
+                // Basic client-side validation only
+                const issues = performBasicValidation(html);
+                displayResults(issues);
+            } else {
+                // Full server-side validation
+                resultsDiv.innerHTML = '<p style="text-align: center;">Validating...</p>';
+                
+                try {
+                    const response = await fetch('/api/validate/html', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ html, url: 'test.html' })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        displayResults(data.issues);
+                    } else {
+                        resultsDiv.innerHTML = '<p style="color: red;">Validation failed. Please try again.</p>';
+                    }
+                } catch (error) {
+                    console.error('Validation error:', error);
+                    resultsDiv.innerHTML = '<p style="color: red;">Connection error. Please try again.</p>';
+                }
             }
         }
-
-        async function testDebug() {
-            try {
-                const res = await fetch('/debug');
-                const data = await res.json();
-                showResult('Debug Info', data, true);
-            } catch (err) {
-                showResult('Debug Info', err.message, false);
+        
+        function performBasicValidation(html) {
+            const issues = [];
+            
+            // Check for DOCTYPE
+            if (!html.toLowerCase().includes('<!doctype html>')) {
+                issues.push({
+                    type: 'error',
+                    message: 'Missing HTML5 DOCTYPE declaration',
+                    category: 'structure'
+                });
             }
+            
+            // Check for title
+            if (!html.match(/<title[^>]*>.*<\/title>/i)) {
+                issues.push({
+                    type: 'error',
+                    message: 'Missing page title',
+                    category: 'seo'
+                });
+            }
+            
+            // Check for missing alt attributes
+            const imgRegex = /<img[^>]*>/gi;
+            const imgMatches = html.match(imgRegex) || [];
+            imgMatches.forEach(img => {
+                if (!img.includes('alt=')) {
+                    issues.push({
+                        type: 'error',
+                        message: 'Image missing alt attribute',
+                        line: img.substring(0, 50) + '...',
+                        category: 'accessibility'
+                    });
+                }
+            });
+            
+            // Check for form inputs without labels
+            const inputRegex = /<input[^>]*type=["'](text|email|password|tel|number)["'][^>]*>/gi;
+            const inputMatches = html.match(inputRegex) || [];
+            inputMatches.forEach(input => {
+                if (!input.includes('aria-label') && !html.includes('<label')) {
+                    issues.push({
+                        type: 'warning',
+                        message: 'Form input may be missing associated label',
+                        line: input.substring(0, 50) + '...',
+                        category: 'accessibility'
+                    });
+                }
+            });
+            
+            // Check for invalid nesting (simplified)
+            if (html.match(/<p[^>]*>.*<div/i)) {
+                issues.push({
+                    type: 'error',
+                    message: 'Invalid nesting: block element inside paragraph',
+                    category: 'structure'
+                });
+            }
+            
+            return issues;
         }
-
-        function showResult(title, data, success) {
-            const results = document.getElementById('results');
-            results.className = success ? 'success' : 'error';
-            results.textContent = `${title}:\n${JSON.stringify(data, null, 2)}`;
+        
+        function displayResults(issues) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (issues.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="issue info">
+                        <div class="issue-type">Success</div>
+                        <div class="issue-message">No issues found! Your HTML looks good.</div>
+                    </div>
+                `;
+                updateStats(0, 0, 0);
+                return;
+            }
+            
+            let errorCount = 0;
+            let warningCount = 0;
+            
+            const issuesHTML = issues.map(issue => {
+                if (issue.type === 'error') errorCount++;
+                if (issue.type === 'warning') warningCount++;
+                
+                return `
+                    <div class="issue ${issue.type}">
+                        <div class="issue-type">${issue.type} - ${issue.category}</div>
+                        <div class="issue-message">${issue.message}</div>
+                        ${issue.line ? `<div class="issue-line">${escapeHtml(issue.line)}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            resultsDiv.innerHTML = issuesHTML;
+            updateStats(errorCount, warningCount, issues.length);
         }
+        
+        function updateStats(errors, warnings, total) {
+            document.getElementById('errorCount').textContent = errors;
+            document.getElementById('warningCount').textContent = warnings;
+            document.getElementById('totalIssues').textContent = total;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Initialize
+        checkAuth();
     </script>
 </body>
 </html>
