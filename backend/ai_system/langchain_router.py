@@ -88,67 +88,67 @@ class KeywordRouter:
         default_config = {
             'routing_rules': {
                 'unit_testing': {
-                    'keywords': ['unit test', 'mock', 'stub', 'jest', 'pytest', 'mocha', 'jasmine'],
+                    'keywords': [],
                     'primary_llm': 'openai_gpt4',
                     'secondary_llms': ['claude_3'],
                     'weight': 1.0,
-                    'context_keywords': ['function', 'method', 'class'],
+                    'context_keywords': [],
                     'min_confidence': 0.8
                 },
                 'integration_testing': {
-                    'keywords': ['integration test', 'api test', 'database test', 'service test'],
+                    'keywords': [],
                     'primary_llm': 'claude_3',
                     'secondary_llms': ['openai_gpt4'],
                     'weight': 0.9,
-                    'context_keywords': ['endpoint', 'service', 'database'],
+                    'context_keywords': [],
                     'min_confidence': 0.75
                 },
                 'e2e_testing': {
-                    'keywords': ['e2e', 'end to end', 'selenium', 'playwright', 'cypress', 'ui test'],
+                    'keywords': [],
                     'primary_llm': 'openai_gpt4',
                     'secondary_llms': ['claude_2'],
                     'weight': 0.95,
-                    'context_keywords': ['browser', 'user flow', 'scenario'],
+                    'context_keywords': [],
                     'min_confidence': 0.8
                 },
                 'performance_testing': {
-                    'keywords': ['performance', 'load test', 'stress test', 'benchmark', 'jmeter', 'gatling'],
-                    'primary_llm': 'llama_70b',
-                    'secondary_llms': ['openai_gpt35'],
+                    'keywords': [],
+                    'primary_llm': 'openai_gpt4',
+                    'secondary_llms': ['llama_70b'],
                     'weight': 0.85,
-                    'context_keywords': ['latency', 'throughput', 'response time'],
+                    'context_keywords': [],
                     'min_confidence': 0.7
                 },
                 'security_testing': {
-                    'keywords': ['security', 'penetration', 'vulnerability', 'owasp', 'sql injection', 'xss'],
+                    'keywords': [],
                     'primary_llm': 'claude_3',
                     'secondary_llms': ['openai_gpt4'],
                     'weight': 1.0,
-                    'context_keywords': ['exploit', 'attack', 'vulnerability'],
+                    'context_keywords': [],
                     'min_confidence': 0.9
                 },
                 'accessibility_testing': {
-                    'keywords': ['accessibility', 'a11y', 'wcag', 'screen reader', 'aria', 'lighthouse'],
+                    'keywords': [],
                     'primary_llm': 'claude_2',
                     'secondary_llms': ['openai_gpt35'],
                     'weight': 0.8,
-                    'context_keywords': ['disability', 'contrast', 'keyboard'],
+                    'context_keywords': [],
                     'min_confidence': 0.75
                 },
                 'code_review': {
-                    'keywords': ['code review', 'review code', 'best practices', 'clean code', 'refactor'],
+                    'keywords': [],
                     'primary_llm': 'openai_gpt4',
                     'secondary_llms': ['claude_3'],
                     'weight': 0.9,
-                    'context_keywords': ['quality', 'maintainability', 'readability'],
+                    'context_keywords': [],
                     'min_confidence': 0.8
                 },
                 'debugging': {
-                    'keywords': ['debug', 'error', 'bug', 'fix', 'issue', 'problem', 'stack trace'],
+                    'keywords': [],
                     'primary_llm': 'claude_3',
                     'secondary_llms': ['openai_gpt4'],
                     'weight': 0.95,
-                    'context_keywords': ['exception', 'crash', 'failure'],
+                    'context_keywords': [],
                     'min_confidence': 0.85
                 }
             },
@@ -210,7 +210,7 @@ class KeywordRouter:
         # Get best match
         if scores:
             best_category = max(scores, key=scores.get)
-            confidence = scores[best_category] / (len(self.routing_rules[best_category].keywords) * self.routing_rules[best_category].weight)
+            confidence = scores[best_category] / (len(self.routing_rules[best_category].keywords) * self.routing_rules[best_category].weight) if self.routing_rules[best_category].keywords else 0.5
             
             if confidence >= self.routing_rules[best_category].min_confidence:
                 return best_category, self.routing_rules[best_category], confidence

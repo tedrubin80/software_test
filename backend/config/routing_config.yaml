@@ -1,0 +1,102 @@
+# File Location: testlab/backend/config/routing_config.yaml
+# AI Model Routing Configuration
+# Add your keywords for each testing category
+
+routing_rules:
+  unit_testing:
+    keywords: []  # Add keywords like: ['unit test', 'mock', 'jest', 'pytest']
+    primary_llm: openai_gpt4
+    secondary_llms:
+      - claude_3
+    weight: 1.0
+    context_keywords: []  # Add context hints like: ['function', 'method', 'class']
+    min_confidence: 0.8
+
+  integration_testing:
+    keywords: []  # Add your integration testing keywords
+    primary_llm: claude_3
+    secondary_llms:
+      - openai_gpt4
+    weight: 0.9
+    context_keywords: []
+    min_confidence: 0.75
+
+  e2e_testing:
+    keywords: []  # Add your E2E testing keywords
+    primary_llm: openai_gpt4
+    secondary_llms:
+      - claude_2
+    weight: 0.95
+    context_keywords: []
+    min_confidence: 0.8
+
+  performance_testing:
+    keywords: []  # Add your performance testing keywords
+    primary_llm: openai_gpt4
+    secondary_llms:
+      - llama_70b
+    weight: 0.85
+    context_keywords: []
+    min_confidence: 0.7
+
+  security_testing:
+    keywords: []  # Add your security testing keywords
+    primary_llm: claude_3
+    secondary_llms:
+      - openai_gpt4
+    weight: 1.0
+    context_keywords: []
+    min_confidence: 0.9
+
+  accessibility_testing:
+    keywords: []  # Add your accessibility testing keywords
+    primary_llm: claude_2
+    secondary_llms:
+      - openai_gpt35
+    weight: 0.8
+    context_keywords: []
+    min_confidence: 0.75
+
+  code_review:
+    keywords: []  # Add your code review keywords
+    primary_llm: openai_gpt4
+    secondary_llms:
+      - claude_3
+    weight: 0.9
+    context_keywords: []
+    min_confidence: 0.8
+
+  debugging:
+    keywords: []  # Add your debugging keywords
+    primary_llm: claude_3
+    secondary_llms:
+      - openai_gpt4
+    weight: 0.95
+    context_keywords: []
+    min_confidence: 0.85
+
+llm_configurations:
+  openai_gpt4:
+    model: gpt-4
+    temperature: 0.2
+    max_tokens: 2000
+    
+  openai_gpt35:
+    model: gpt-3.5-turbo
+    temperature: 0.3
+    max_tokens: 1500
+    
+  claude_3:
+    model: claude-3-opus-20240229
+    temperature: 0.2
+    max_tokens: 2000
+    
+  claude_2:
+    model: claude-2.1
+    temperature: 0.3
+    max_tokens: 1500
+    
+  llama_70b:
+    model: meta-llama/Llama-2-70b-chat-hf
+    temperature: 0.2
+    max_tokens: 1500

@@ -1,5 +1,5 @@
 # File Location: testlab/docker-compose.yml
-# Add this service to your existing docker-compose.yml
+# Optional Docker Compose configuration
 
 version: '3.8'
 

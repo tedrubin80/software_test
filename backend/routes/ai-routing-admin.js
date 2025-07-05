@@ -5,15 +5,28 @@ const router = express.Router();
 const fs = require('fs').promises;
 const path = require('path');
 const yaml = require('js-yaml');
+const { verifyAdminToken, verifyAdminSession } = require('./auth-helpers');
 
 // Middleware for admin authentication
 const requireAdmin = (req, res, next) => {
-    // Check if user is admin (implement your auth logic)
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token || !verifyAdminToken(token)) {
-        return res.status(401).json({ error: 'Unauthorized' });
+    // Check for JWT token first
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+        const token = authHeader.split(' ')[1];
+        if (verifyAdminToken(token)) {
+            return next();
+        }
     }
-    next();
+    
+    // Check for session-based auth (for simple-server.js compatibility)
+    const sessionId = req.cookies?.sessionId;
+    if (sessionId && req.app.locals.sessions) {
+        if (verifyAdminSession(sessionId, req.app.locals.sessions)) {
+            return next();
+        }
+    }
+    
+    return res.status(401).json({ error: 'Unauthorized - Admin access required' });
 };
 
 // Load API keys from existing TestLab storage

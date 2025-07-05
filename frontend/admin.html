@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TestLab Admin - AI Routing Management</title>
+    <title>TestLab Admin Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -79,19 +79,14 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* AI Routing Tab Styles */
-        .ai-routing-header {
+        /* Dashboard styles */
+        .dashboard-header {
             margin-bottom: 2rem;
         }
 
-        .ai-routing-header h1 {
+        .dashboard-header h1 {
             color: #00d4ff;
             margin-bottom: 0.5rem;
-        }
-
-        .ai-routing-header p {
-            color: #888;
-            font-size: 1.1rem;
         }
 
         .stats-grid {
@@ -127,127 +122,27 @@
             font-weight: bold;
         }
 
-        .stat-card .sub-value {
-            color: #666;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
-
-        /* Routing Categories */
-        .routing-categories {
+        /* Form styles */
+        .form-section {
+            background: #1e2543;
+            padding: 2rem;
+            border-radius: 10px;
             margin-bottom: 2rem;
         }
 
-        .category-card {
-            background: #1e2543;
-            border: 1px solid #2a3050;
-            border-radius: 10px;
+        .form-group {
             margin-bottom: 1.5rem;
-            overflow: hidden;
         }
 
-        .category-header {
-            background: #151a35;
-            padding: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .category-header:hover {
-            background: #1a1f3a;
-        }
-
-        .category-header h3 {
-            color: #00d4ff;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .category-info {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .llm-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .llm-badge.claude {
-            background: #8b5cf6;
-            color: white;
-        }
-
-        .llm-badge.openai {
-            background: #10b981;
-            color: white;
-        }
-
-        .expand-icon {
-            transition: transform 0.3s ease;
-        }
-
-        .category-card.expanded .expand-icon {
-            transform: rotate(180deg);
-        }
-
-        .category-content {
-            padding: 1.5rem;
-            display: none;
-        }
-
-        .category-card.expanded .category-content {
+        .form-group label {
             display: block;
+            margin-bottom: 0.5rem;
+            color: #00d4ff;
         }
 
-        /* Keywords Section */
-        .keywords-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .keywords-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .keyword-tag {
-            background: #2a3050;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .keyword-tag:hover {
-            background: #3a4060;
-        }
-
-        .keyword-tag .remove {
-            cursor: pointer;
-            color: #ff6b6b;
-            font-weight: bold;
-        }
-
-        .add-keyword {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .add-keyword input {
-            flex: 1;
+        .form-group input,
+        .form-group select {
+            width: 100%;
             padding: 0.75rem;
             background: #0a0e27;
             border: 1px solid #2a3050;
@@ -256,79 +151,13 @@
             font-size: 1rem;
         }
 
-        .add-keyword input:focus {
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #00d4ff;
         }
 
-        /* Model Selection */
-        .model-selection {
-            margin-bottom: 1.5rem;
-        }
-
-        .model-options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 0.5rem;
-        }
-
-        .model-option {
-            padding: 1rem;
-            background: #0a0e27;
-            border: 2px solid #2a3050;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .model-option:hover {
-            border-color: #00d4ff;
-        }
-
-        .model-option.selected {
-            border-color: #00d4ff;
-            background: #1a1f3a;
-        }
-
-        .model-option h4 {
-            color: #00d4ff;
-            margin-bottom: 0.5rem;
-        }
-
-        .model-option p {
-            color: #888;
-            font-size: 0.9rem;
-        }
-
-        /* Settings */
-        .settings-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid #2a3050;
-        }
-
-        .setting-item:last-child {
-            border-bottom: none;
-        }
-
-        .setting-label {
-            color: #e0e0e0;
-        }
-
-        .setting-control {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Buttons */
+        /* Button styles */
         .btn {
             padding: 0.75rem 1.5rem;
             border: none;
@@ -372,114 +201,38 @@
             font-size: 0.9rem;
         }
 
-        /* Toggle Switch */
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #2a3050;
-            transition: .4s;
-            border-radius: 30px;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .toggle-slider {
-            background-color: #00d4ff;
-        }
-
-        input:checked + .toggle-slider:before {
-            transform: translateX(30px);
-        }
-
-        /* Performance Chart */
-        .performance-chart {
+        /* Table styles */
+        .data-table {
+            width: 100%;
             background: #1e2543;
-            padding: 1.5rem;
             border-radius: 10px;
-            margin-top: 2rem;
+            overflow: hidden;
         }
 
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .chart-header h3 {
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #2a3050;
+        }
+
+        .data-table th {
+            background: #151a35;
             color: #00d4ff;
+            font-weight: 600;
         }
 
-        /* Toast Notifications */
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            background: #1e2543;
-            border: 1px solid #00d4ff;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
-            display: none;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-        }
-
-        .toast.success {
-            border-color: #10b981;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
-        }
-
-        .toast.error {
-            border-color: #ff6b6b;
-            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3);
-        }
-
-        /* Loading State */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #2a3050;
-            border-top-color: #00d4ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .data-table tr:hover {
+            background: #212847;
         }
     </style>
+    <!-- Add AI Routing specific styles -->
+    <link rel="stylesheet" href="assets/css/admin-ai.css">
 </head>
 <body>
     <div class="admin-container">
@@ -487,7 +240,7 @@
         <aside class="sidebar">
             <h2>TestLab Admin</h2>
             <nav>
-                <div class="nav-item" onclick="switchTab('dashboard')">
+                <div class="nav-item active" onclick="switchTab('dashboard')">
                     <span>📊</span> Dashboard
                 </div>
                 <div class="nav-item" onclick="switchTab('users')">
@@ -496,7 +249,7 @@
                 <div class="nav-item" onclick="switchTab('api-keys')">
                     <span>🔑</span> API Keys
                 </div>
-                <div class="nav-item active" onclick="switchTab('ai-routing')">
+                <div class="nav-item" onclick="switchTab('ai-routing')">
                     <span>🤖</span> AI Routing
                 </div>
                 <div class="nav-item" onclick="switchTab('analytics')">
@@ -505,13 +258,87 @@
                 <div class="nav-item" onclick="switchTab('settings')">
                     <span>⚙️</span> Settings
                 </div>
+                <div class="nav-item" onclick="logout()">
+                    <span>🚪</span> Logout
+                </div>
             </nav>
         </aside>
 
         <!-- Main Content Area -->
         <main class="main-content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard-tab" class="tab-content active">
+                <div class="dashboard-header">
+                    <h1>Dashboard Overview</h1>
+                    <p>Welcome to TestLab Admin Panel</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <div class="value" id="total-users">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Sessions</h3>
+                        <div class="value" id="active-sessions">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>AI Queries Today</h3>
+                        <div class="value" id="ai-queries">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>System Status</h3>
+                        <div class="value" style="color: #10b981;">Healthy</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="users-tab" class="tab-content">
+                <h1>User Management</h1>
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table">
+                            <!-- Users will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- API Keys Tab -->
+            <div id="api-keys-tab" class="tab-content">
+                <h1>API Key Management</h1>
+                <div class="form-section">
+                    <h2>Configure AI Services</h2>
+                    <form id="api-keys-form">
+                        <div class="form-group">
+                            <label for="openai-key">OpenAI API Key</label>
+                            <input type="password" id="openai-key" placeholder="sk-...">
+                        </div>
+                        <div class="form-group">
+                            <label for="anthropic-key">Anthropic (Claude) API Key</label>
+                            <input type="password" id="anthropic-key" placeholder="sk-ant-...">
+                        </div>
+                        <div class="form-group">
+                            <label for="together-key">Together AI API Key</label>
+                            <input type="password" id="together-key" placeholder="...">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save API Keys</button>
+                    </form>
+                </div>
+            </div>
+
             <!-- AI Routing Tab -->
-            <div id="ai-routing-tab" class="tab-content active">
+            <div id="ai-routing-tab" class="tab-content">
                 <div class="ai-routing-header">
                     <h1>AI Model Routing Management</h1>
                     <p>Configure keyword-based routing between Claude and OpenAI models for optimal responses</p>
@@ -521,22 +348,22 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <h3>Total Queries</h3>
-                        <div class="value" id="total-queries">1,247</div>
-                        <div class="sub-value">+23% this week</div>
+                        <div class="value" id="total-queries">0</div>
+                        <div class="sub-value">Loading...</div>
                     </div>
                     <div class="stat-card">
                         <h3>Claude Usage</h3>
-                        <div class="value" id="claude-usage">42%</div>
+                        <div class="value" id="claude-usage">0%</div>
                         <div class="sub-value">Security & Integration</div>
                     </div>
                     <div class="stat-card">
                         <h3>OpenAI Usage</h3>
-                        <div class="value" id="openai-usage">58%</div>
+                        <div class="value" id="openai-usage">0%</div>
                         <div class="sub-value">Unit & E2E Testing</div>
                     </div>
                     <div class="stat-card">
                         <h3>Avg Confidence</h3>
-                        <div class="value" id="avg-confidence">87%</div>
+                        <div class="value" id="avg-confidence">0%</div>
                         <div class="sub-value">Routing accuracy</div>
                     </div>
                 </div>
@@ -558,14 +385,7 @@
                             <div class="keywords-section">
                                 <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
                                 <div class="keywords-grid" id="unit-keywords">
-                                    <span class="keyword-tag">unit test <span class="remove" onclick="removeKeyword('unit-testing', 'unit test')">×</span></span>
-                                    <span class="keyword-tag">mock <span class="remove" onclick="removeKeyword('unit-testing', 'mock')">×</span></span>
-                                    <span class="keyword-tag">stub <span class="remove" onclick="removeKeyword('unit-testing', 'stub')">×</span></span>
-                                    <span class="keyword-tag">jest <span class="remove" onclick="removeKeyword('unit-testing', 'jest')">×</span></span>
-                                    <span class="keyword-tag">pytest <span class="remove" onclick="removeKeyword('unit-testing', 'pytest')">×</span></span>
-                                    <span class="keyword-tag">mocha <span class="remove" onclick="removeKeyword('unit-testing', 'mocha')">×</span></span>
-                                    <span class="keyword-tag">jasmine <span class="remove" onclick="removeKeyword('unit-testing', 'jasmine')">×</span></span>
-                                    <span class="keyword-tag">test suite <span class="remove" onclick="removeKeyword('unit-testing', 'test suite')">×</span></span>
+                                    <!-- Keywords will be populated by JavaScript -->
                                 </div>
                                 <div class="add-keyword">
                                     <input type="text" placeholder="Add new keyword..." id="unit-keyword-input">
@@ -622,13 +442,7 @@
                             <div class="keywords-section">
                                 <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
                                 <div class="keywords-grid" id="security-keywords">
-                                    <span class="keyword-tag">security <span class="remove" onclick="removeKeyword('security-testing', 'security')">×</span></span>
-                                    <span class="keyword-tag">vulnerability <span class="remove" onclick="removeKeyword('security-testing', 'vulnerability')">×</span></span>
-                                    <span class="keyword-tag">penetration <span class="remove" onclick="removeKeyword('security-testing', 'penetration')">×</span></span>
-                                    <span class="keyword-tag">owasp <span class="remove" onclick="removeKeyword('security-testing', 'owasp')">×</span></span>
-                                    <span class="keyword-tag">sql injection <span class="remove" onclick="removeKeyword('security-testing', 'sql injection')">×</span></span>
-                                    <span class="keyword-tag">xss <span class="remove" onclick="removeKeyword('security-testing', 'xss')">×</span></span>
-                                    <span class="keyword-tag">authentication <span class="remove" onclick="removeKeyword('security-testing', 'authentication')">×</span></span>
+                                    <!-- Keywords will be populated by JavaScript -->
                                 </div>
                                 <div class="add-keyword">
                                     <input type="text" placeholder="Add new keyword..." id="security-keyword-input">
@@ -665,11 +479,11 @@
                             <div class="keywords-section">
                                 <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
                                 <div class="keywords-grid" id="integration-keywords">
-                                    <span class="keyword-tag">integration test <span class="remove">×</span></span>
-                                    <span class="keyword-tag">api test <span class="remove">×</span></span>
-                                    <span class="keyword-tag">database test <span class="remove">×</span></span>
-                                    <span class="keyword-tag">service test <span class="remove">×</span></span>
-                                    <span class="keyword-tag">contract test <span class="remove">×</span></span>
+                                    <!-- Keywords will be populated by JavaScript -->
+                                </div>
+                                <div class="add-keyword">
+                                    <input type="text" placeholder="Add new keyword..." id="integration-keyword-input">
+                                    <button class="btn btn-primary btn-sm" onclick="addKeyword('integration-testing')">Add</button>
                                 </div>
                             </div>
                         </div>
@@ -688,12 +502,11 @@
                             <div class="keywords-section">
                                 <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
                                 <div class="keywords-grid" id="e2e-keywords">
-                                    <span class="keyword-tag">e2e <span class="remove">×</span></span>
-                                    <span class="keyword-tag">end to end <span class="remove">×</span></span>
-                                    <span class="keyword-tag">selenium <span class="remove">×</span></span>
-                                    <span class="keyword-tag">playwright <span class="remove">×</span></span>
-                                    <span class="keyword-tag">cypress <span class="remove">×</span></span>
-                                    <span class="keyword-tag">browser test <span class="remove">×</span></span>
+                                    <!-- Keywords will be populated by JavaScript -->
+                                </div>
+                                <div class="add-keyword">
+                                    <input type="text" placeholder="Add new keyword..." id="e2e-keyword-input">
+                                    <button class="btn btn-primary btn-sm" onclick="addKeyword('e2e-testing')">Add</button>
                                 </div>
                             </div>
                         </div>
@@ -712,16 +525,17 @@
                             <div class="keywords-section">
                                 <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
                                 <div class="keywords-grid" id="performance-keywords">
-                                    <span class="keyword-tag">performance <span class="remove">×</span></span>
-                                    <span class="keyword-tag">load test <span class="remove">×</span></span>
-                                    <span class="keyword-tag">stress test <span class="remove">×</span></span>
-                                    <span class="keyword-tag">benchmark <span class="remove">×</span></span>
-                                    <span class="keyword-tag">jmeter <span class="remove">×</span></span>
-                                    <span class="keyword-tag">gatling <span class="remove">×</span></span>
+                                    <!-- Keywords will be populated by JavaScript -->
+                                </div>
+                                <div class="add-keyword">
+                                    <input type="text" placeholder="Add new keyword..." id="performance-keyword-input">
+                                    <button class="btn btn-primary btn-sm" onclick="addKeyword('performance-testing')">Add</button>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Add more categories as needed -->
                 </div>
 
                 <!-- Performance Chart -->
@@ -746,30 +560,29 @@
                 </div>
             </div>
 
-            <!-- Other tabs (hidden by default) -->
-            <div id="dashboard-tab" class="tab-content">
-                <h1>Dashboard</h1>
-                <p>Main dashboard content...</p>
-            </div>
-
-            <div id="users-tab" class="tab-content">
-                <h1>User Management</h1>
-                <p>User management content...</p>
-            </div>
-
-            <div id="api-keys-tab" class="tab-content">
-                <h1>API Keys</h1>
-                <p>API key management content...</p>
-            </div>
-
+            <!-- Analytics Tab -->
             <div id="analytics-tab" class="tab-content">
                 <h1>Analytics</h1>
-                <p>Analytics content...</p>
+                <p>Analytics and reporting features coming soon...</p>
             </div>
 
+            <!-- Settings Tab -->
             <div id="settings-tab" class="tab-content">
                 <h1>Settings</h1>
-                <p>Settings content...</p>
+                <div class="form-section">
+                    <h2>System Settings</h2>
+                    <form id="settings-form">
+                        <div class="form-group">
+                            <label for="session-timeout">Session Timeout (minutes)</label>
+                            <input type="number" id="session-timeout" value="1440">
+                        </div>
+                        <div class="form-group">
+                            <label for="rate-limit">API Rate Limit (requests/hour)</label>
+                            <input type="number" id="rate-limit" value="100">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </form>
+                </div>
             </div>
         </main>
     </div>
@@ -780,41 +593,7 @@
     </div>
 
     <script>
-        // State management
-        const routingConfig = {
-            'unit-testing': {
-                keywords: ['unit test', 'mock', 'stub', 'jest', 'pytest', 'mocha', 'jasmine', 'test suite'],
-                model: 'openai',
-                confidence: 80,
-                secondaryEnabled: true
-            },
-            'security-testing': {
-                keywords: ['security', 'vulnerability', 'penetration', 'owasp', 'sql injection', 'xss', 'authentication'],
-                model: 'claude',
-                confidence: 90,
-                secondaryEnabled: true
-            },
-            'integration-testing': {
-                keywords: ['integration test', 'api test', 'database test', 'service test', 'contract test'],
-                model: 'claude',
-                confidence: 75,
-                secondaryEnabled: true
-            },
-            'e2e-testing': {
-                keywords: ['e2e', 'end to end', 'selenium', 'playwright', 'cypress', 'browser test'],
-                model: 'openai',
-                confidence: 80,
-                secondaryEnabled: true
-            },
-            'performance-testing': {
-                keywords: ['performance', 'load test', 'stress test', 'benchmark', 'jmeter', 'gatling'],
-                model: 'openai',
-                confidence: 70,
-                secondaryEnabled: false
-            }
-        };
-
-        // Tab switching
+        // Tab switching functionality
         function switchTab(tabName) {
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
@@ -833,162 +612,51 @@
             event.target.closest('.nav-item').classList.add('active');
         }
 
-        // Category expand/collapse
-        function toggleCategory(categoryId) {
-            const card = document.getElementById(categoryId);
-            card.classList.toggle('expanded');
-        }
-
-        // Keyword management
-        function removeKeyword(category, keyword) {
-            const index = routingConfig[category].keywords.indexOf(keyword);
-            if (index > -1) {
-                routingConfig[category].keywords.splice(index, 1);
-                updateKeywordsDisplay(category);
-                showToast(`Removed keyword: ${keyword}`, 'success');
-            }
-        }
-
-        function addKeyword(category) {
-            const input = document.getElementById(`${category.split('-')[0]}-keyword-input`);
-            const keyword = input.value.trim().toLowerCase();
-            
-            if (keyword && !routingConfig[category].keywords.includes(keyword)) {
-                routingConfig[category].keywords.push(keyword);
-                updateKeywordsDisplay(category);
-                input.value = '';
-                showToast(`Added keyword: ${keyword}`, 'success');
-            }
-        }
-
-        function updateKeywordsDisplay(category) {
-            const container = document.getElementById(`${category.split('-')[0]}-keywords`);
-            container.innerHTML = routingConfig[category].keywords.map(keyword => 
-                `<span class="keyword-tag">${keyword} <span class="remove" onclick="removeKeyword('${category}', '${keyword}')">×</span></span>`
-            ).join('');
-        }
-
-        // Model selection
-        function selectModel(category, model) {
-            routingConfig[category].model = model;
-            
-            // Update UI
-            const options = document.querySelectorAll(`#${category} .model-option`);
-            options.forEach(option => option.classList.remove('selected'));
-            event.target.closest('.model-option').classList.add('selected');
-            
-            // Update badge
-            const badge = document.querySelector(`#${category} .llm-badge`);
-            badge.className = `llm-badge ${model}`;
-            badge.textContent = model === 'openai' ? 'OpenAI GPT-4' : 'Claude 3';
-            
-            showToast(`${category.replace('-', ' ')} now using ${model.toUpperCase()}`, 'success');
-        }
-
-        // Save changes
-        async function saveAllChanges() {
+        // Load dashboard data
+        async function loadDashboard() {
             try {
-                // Show loading state
-                const btn = event.target;
-                btn.innerHTML = '<span class="loading"></span> Saving...';
-                btn.disabled = true;
-                
-                // Send to backend
-                const response = await fetch('/api/ai/routing-config', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                    },
-                    body: JSON.stringify(routingConfig)
-                });
-                
-                if (response.ok) {
-                    showToast('All changes saved successfully!', 'success');
-                } else {
-                    throw new Error('Failed to save changes');
-                }
-            } catch (error) {
-                showToast('Error saving changes: ' + error.message, 'error');
-            } finally {
-                // Reset button
-                const btn = event.target;
-                btn.innerHTML = 'Save All Changes';
-                btn.disabled = false;
-            }
-        }
-
-        // Export configuration
-        function exportConfig() {
-            const dataStr = JSON.stringify(routingConfig, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = `ai-routing-config-${new Date().toISOString().split('T')[0]}.json`;
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-            
-            showToast('Configuration exported!', 'success');
-        }
-
-        // Toast notifications
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toast-message');
-            
-            toast.className = `toast ${type}`;
-            toastMessage.textContent = message;
-            toast.style.display = 'block';
-            
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 3000);
-        }
-
-        // Load initial data
-        async function loadRoutingData() {
-            try {
-                const response = await fetch('/api/ai/routing-config', {
+                const response = await fetch('/api/admin/stats', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
                     }
                 });
-                
+
                 if (response.ok) {
-                    const data = await response.json();
-                    Object.assign(routingConfig, data);
-                    
-                    // Update UI with loaded data
-                    Object.keys(routingConfig).forEach(category => {
-                        updateKeywordsDisplay(category);
-                    });
+                    const stats = await response.json();
+                    document.getElementById('total-users').textContent = stats.totalUsers || 0;
+                    document.getElementById('ai-queries').textContent = stats.totalQueries || 0;
                 }
             } catch (error) {
-                console.error('Error loading routing config:', error);
+                console.error('Error loading dashboard:', error);
             }
         }
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            loadRoutingData();
-            
-            // Add enter key support for keyword inputs
-            document.querySelectorAll('input[id$="-keyword-input"]').forEach(input => {
-                input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        const category = input.id.replace('-keyword-input', '-testing');
-                        addKeyword(category);
-                    }
-                });
+        // Logout function
+        function logout() {
+            fetch('/api/admin/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                }
+            }).then(() => {
+                localStorage.removeItem('adminToken');
+                window.location.href = '/admin-login.html';
             });
-        });
+        }
 
-        // Auto-save draft every 30 seconds
-        setInterval(() => {
-            localStorage.setItem('ai-routing-draft', JSON.stringify(routingConfig));
-        }, 30000);
+        // Check authentication on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/admin-login.html';
+                return;
+            }
+
+            loadDashboard();
+        });
     </script>
+    
+    <!-- Load AI Routing JavaScript -->
+    <script src="assets/js/admin-ai.js"></script>
 </body>
 </html>
