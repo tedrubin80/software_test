@@ -1,4 +1,4 @@
-// FILE LOCATION: /simple-server.js (root directory)
+// FILE LOCATION: /frontend/simple-server.js
 // Enhanced server with real AI integration and persistent storage
 
 const express = require('express');
@@ -17,17 +17,29 @@ const sessions = new Map();
 const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 // Configuration file paths - use volume for persistence
-const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || '/data';
+let DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || '/data';
+
 // Fallback to local directory if volume not available
 if (!fs.existsSync(DATA_DIR)) {
-    console.log(`Creating data directory at: ${DATA_DIR}`);
+    console.log(`Data directory ${DATA_DIR} not found, checking alternatives...`);
+    
+    // Try to create the directory
     try {
         fs.mkdirSync(DATA_DIR, { recursive: true });
+        console.log(`Created data directory at: ${DATA_DIR}`);
     } catch (error) {
-        console.error('Failed to create data directory, using local fallback');
-        const DATA_DIR = path.join(__dirname, 'data');
+        console.error('Failed to create data directory:', error.message);
+        // Use local fallback
+        DATA_DIR = path.join(__dirname, '..', 'data');
+        console.log(`Using local fallback directory: ${DATA_DIR}`);
+        
         if (!fs.existsSync(DATA_DIR)) {
-            fs.mkdirSync(DATA_DIR, { recursive: true });
+            try {
+                fs.mkdirSync(DATA_DIR, { recursive: true });
+                console.log(`Created local data directory at: ${DATA_DIR}`);
+            } catch (err) {
+                console.error('Failed to create local data directory:', err.message);
+            }
         }
     }
 }
@@ -80,50 +92,46 @@ if (fs.existsSync(SETUP_MARKER)) {
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(cookieParser());
 
 // Serve static files from frontend directory
-app.use(express.static(path.join(__dirname, 'frontend')));
+app.use(express.static(path.join(__dirname)));
 
-// Logging middleware
-app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-    next();
-});
-
-// Session validation middleware
+// Authentication middleware
 function requireAuth(req, res, next) {
     const sessionId = req.cookies.sessionId;
+    
     if (!sessionId || !sessions.has(sessionId)) {
         return res.status(401).json({ error: 'Authentication required' });
     }
     
     const session = sessions.get(sessionId);
-    if (new Date() > new Date(session.expiresAt)) {
+    if (new Date() > session.expiresAt) {
         sessions.delete(sessionId);
         return res.status(401).json({ error: 'Session expired' });
     }
     
-    req.session = session;
     next();
 }
 
 // API Routes
+
+// Health check
 app.get('/api/health', (req, res) => {
     res.json({ 
-        status: 'healthy',
-        service: 'TestLab',
+        status: 'ok', 
         timestamp: new Date().toISOString(),
-        version: '2.0.0'
+        dataDir: DATA_DIR,
+        configExists: fs.existsSync(CONFIG_FILE)
     });
 });
 
+// Setup status
 app.get('/api/setup/status', (req, res) => {
     res.json({ 
         isSetup: config.isSetup,
-        hasAdminPassword: !!config.adminPassword
+        hasConfig: !!config.adminPassword
     });
 });
 
@@ -210,7 +218,7 @@ app.get('/api/admin/check', (req, res) => {
     res.json({ authenticated });
 });
 
-// Get API keys (protected) - show if from environment
+// Get API keys (protected)
 app.get('/api/admin/api-keys', requireAuth, (req, res) => {
     res.json({
         apiKeys: {
@@ -228,649 +236,112 @@ app.get('/api/admin/api-keys', requireAuth, (req, res) => {
 
 // Update API keys (protected)
 app.post('/api/admin/api-keys', requireAuth, (req, res) => {
-    const { openai, anthropic, together } = req.body;
+    const { apiKeys } = req.body;
     
-    // Only update keys that were provided and not from environment
-    if (openai && !process.env.OPENAI_API_KEY) {
-        config.apiKeys.openai = openai;
+    if (!apiKeys || typeof apiKeys !== 'object') {
+        return res.status(400).json({ error: 'Invalid API keys format' });
     }
-    if (anthropic && !process.env.ANTHROPIC_API_KEY) {
-        config.apiKeys.anthropic = anthropic;
-    }
-    if (together && !process.env.TOGETHER_AI_API_KEY) {
-        config.apiKeys.together = together;
-    }
+    
+    // Update API keys
+    if (apiKeys.openai !== undefined) config.apiKeys.openai = apiKeys.openai;
+    if (apiKeys.anthropic !== undefined) config.apiKeys.anthropic = apiKeys.anthropic;
+    if (apiKeys.together !== undefined) config.apiKeys.together = apiKeys.together;
     
     // Save configuration
     try {
         fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
-        console.log('Configuration saved to:', CONFIG_FILE);
+        res.json({ success: true, message: 'API keys updated successfully' });
     } catch (error) {
         console.error('Failed to save config:', error);
-        return res.status(500).json({ error: 'Failed to save configuration' });
-    }
-    
-    res.json({ success: true, message: 'API keys updated' });
-});
-
-// HTML validation endpoint with AI enhancement
-app.post('/api/validate/html', requireAuth, async (req, res) => {
-    const { html, url } = req.body;
-    
-    // Basic HTML validation
-    const issues = [];
-    
-    // Check for missing alt attributes on images
-    const imgRegex = /<img[^>]*>/gi;
-    const imgMatches = html.match(imgRegex) || [];
-    imgMatches.forEach(img => {
-        if (!img.includes('alt=')) {
-            issues.push({
-                type: 'error',
-                message: 'Image missing alt attribute',
-                line: img,
-                category: 'accessibility'
-            });
-        }
-    });
-    
-    // Check for missing labels on form inputs
-    const inputRegex = /<input[^>]*type=["'](text|email|password|tel|number)["'][^>]*>/gi;
-    const inputMatches = html.match(inputRegex) || [];
-    inputMatches.forEach(input => {
-        if (!input.includes('id=') || !html.includes('<label')) {
-            issues.push({
-                type: 'warning',
-                message: 'Form input may be missing associated label',
-                line: input,
-                category: 'accessibility'
-            });
-        }
-    });
-    
-    // Check for missing DOCTYPE
-    if (!html.toLowerCase().includes('<!doctype html>')) {
-        issues.push({
-            type: 'error',
-            message: 'Missing HTML5 DOCTYPE declaration',
-            category: 'structure'
-        });
-    }
-    
-    // Check for missing title
-    if (!html.match(/<title[^>]*>.*<\/title>/i)) {
-        issues.push({
-            type: 'error',
-            message: 'Missing page title',
-            category: 'seo'
-        });
-    }
-    
-    res.json({
-        url,
-        issueCount: issues.length,
-        issues,
-        timestamp: new Date().toISOString()
-    });
-});
-
-// Real AI analysis endpoint (protected)
-app.post('/api/analyze/:service', requireAuth, async (req, res) => {
-    const { service } = req.params;
-    const { content, analysisType } = req.body;
-    
-    // Check if API key exists for the service
-    const apiKey = config.apiKeys[service];
-    if (!apiKey) {
-        return res.status(400).json({ 
-            error: `No API key configured for ${service}` 
-        });
-    }
-    
-    try {
-        let analysis;
-        
-        switch (service) {
-            case 'openai':
-                analysis = await analyzeWithOpenAI(content, analysisType, apiKey);
-                break;
-            case 'anthropic':
-                analysis = await analyzeWithAnthropic(content, analysisType, apiKey);
-                break;
-            case 'together':
-                analysis = await analyzeWithTogether(content, analysisType, apiKey);
-                break;
-            default:
-                return res.status(400).json({ error: 'Invalid service' });
-        }
-        
-        res.json({
-            service,
-            analysis,
-            timestamp: new Date().toISOString()
-        });
-    } catch (error) {
-        console.error(`AI analysis error (${service}):`, error.message);
-        res.status(500).json({ 
-            error: `AI analysis failed: ${error.message}`,
-            service 
-        });
+        res.status(500).json({ error: 'Failed to save configuration' });
     }
 });
 
-// OpenAI Analysis Function
-async function analyzeWithOpenAI(content, analysisType, apiKey) {
-    const axios = require('axios');
-    
-    const prompt = `Analyze the following HTML code for ${analysisType} issues. 
-    Provide specific, actionable feedback with line numbers where possible.
-    Focus on: accessibility, SEO, performance, security, and best practices.
-    
-    HTML Code:
-    ${content}
-    
-    Format your response as JSON with this structure:
-    {
-        "score": 0-100,
-        "issues": [
-            {
-                "severity": "error|warning|info",
-                "category": "category name",
-                "description": "specific issue description",
-                "line": "affected code snippet",
-                "suggestion": "how to fix it"
-            }
-        ],
-        "summary": "brief overall assessment"
-    }`;
-    
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: 'gpt-4',
-        messages: [
-            {
-                role: 'system',
-                content: 'You are an expert web developer and HTML validator. Provide detailed, actionable feedback on code quality.'
-            },
-            {
-                role: 'user',
-                content: prompt
-            }
-        ],
-        temperature: 0.3,
-        max_tokens: 2000
-    }, {
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-        }
-    });
-    
-    try {
-        const aiResponse = response.data.choices[0].message.content;
-        return JSON.parse(aiResponse);
-    } catch (e) {
-        // If AI doesn't return valid JSON, create structured response
-        return {
-            score: 75,
-            issues: [{
-                severity: 'info',
-                category: 'analysis',
-                description: response.data.choices[0].message.content,
-                suggestion: 'Review the detailed analysis above'
-            }],
-            summary: 'Analysis completed by GPT-4'
-        };
-    }
-}
-
-// Anthropic (Claude) Analysis Function
-async function analyzeWithAnthropic(content, analysisType, apiKey) {
-    const axios = require('axios');
-    
-    const prompt = `Analyze this HTML code for ${analysisType} issues.
-    
-    HTML Code:
-    ${content}
-    
-    Provide a JSON response with:
-    - score (0-100)
-    - issues array with severity, category, description, line, and suggestion
-    - summary of findings
-    
-    Focus on accessibility, performance, SEO, and security issues.`;
-    
-    const response = await axios.post('https://api.anthropic.com/v1/messages', {
-        model: 'claude-3-opus-20240229',
-        max_tokens: 2000,
-        messages: [{
-            role: 'user',
-            content: prompt
-        }],
-        temperature: 0.3
-    }, {
-        headers: {
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-            'Content-Type': 'application/json'
-        }
-    });
-    
-    try {
-        const aiResponse = response.data.content[0].text;
-        return JSON.parse(aiResponse);
-    } catch (e) {
-        return {
-            score: 75,
-            issues: [{
-                severity: 'info',
-                category: 'analysis',
-                description: response.data.content[0].text,
-                suggestion: 'Review the detailed analysis above'
-            }],
-            summary: 'Analysis completed by Claude'
-        };
-    }
-}
-
-// Together AI (Llama) Analysis Function
-async function analyzeWithTogether(content, analysisType, apiKey) {
-    const axios = require('axios');
-    
-    const prompt = `<s>[INST] Analyze this HTML code for ${analysisType} issues and return a JSON response.
-
-HTML Code:
-${content}
-
-Return JSON with: score (0-100), issues array (severity, category, description, suggestion), and summary. [/INST]`;
-    
-    const response = await axios.post('https://api.together.xyz/v1/chat/completions', {
-        model: 'meta-llama/Llama-2-70b-chat-hf',
-        messages: [{
-            role: 'user',
-            content: prompt
-        }],
-        temperature: 0.3,
-        max_tokens: 2000
-    }, {
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-        }
-    });
-    
-    try {
-        const aiResponse = response.data.choices[0].message.content;
-        return JSON.parse(aiResponse);
-    } catch (e) {
-        return {
-            score: 75,
-            issues: [{
-                severity: 'info',
-                category: 'analysis',
-                description: response.data.choices[0].message.content,
-                suggestion: 'Review the detailed analysis above'
-            }],
-            summary: 'Analysis completed by Llama'
-        };
-    }
-}
-
-// Test API keys endpoint
-app.post('/api/admin/test-apis', requireAuth, async (req, res) => {
-    const results = {
-        openai: { success: false, error: null },
-        anthropic: { success: false, error: null },
-        together: { success: false, error: null }
-    };
-    
-    // Test OpenAI
-    if (config.apiKeys.openai) {
-        try {
-            const axios = require('axios');
-            await axios.post('https://api.openai.com/v1/chat/completions', {
-                model: 'gpt-3.5-turbo',
-                messages: [{ role: 'user', content: 'test' }],
-                max_tokens: 5
-            }, {
-                headers: { 'Authorization': `Bearer ${config.apiKeys.openai}` }
-            });
-            results.openai.success = true;
-        } catch (error) {
-            results.openai.error = error.response?.data?.error?.message || error.message;
-        }
-    }
-    
-    // Test Anthropic
-    if (config.apiKeys.anthropic) {
-        try {
-            const axios = require('axios');
-            await axios.post('https://api.anthropic.com/v1/messages', {
-                model: 'claude-3-haiku-20240307',
-                max_tokens: 5,
-                messages: [{ role: 'user', content: 'test' }]
-            }, {
-                headers: { 
-                    'x-api-key': config.apiKeys.anthropic,
-                    'anthropic-version': '2023-06-01'
-                }
-            });
-            results.anthropic.success = true;
-        } catch (error) {
-            results.anthropic.error = error.response?.data?.error?.message || error.message;
-        }
-    }
-    
-    // Test Together
-    if (config.apiKeys.together) {
-        try {
-            const axios = require('axios');
-            await axios.get('https://api.together.xyz/v1/models', {
-                headers: { 'Authorization': `Bearer ${config.apiKeys.together}` }
-            });
-            results.together.success = true;
-        } catch (error) {
-            results.together.error = error.response?.data?.error || error.message;
-        }
-    }
-    
-    res.json(results);
-});
-
-// Define AI agents with their personalities and keyword triggers
-const AI_AGENTS = {
-    techExpert: {
-        name: "TechBot",
-        personality: "You are a technical expert who helps with coding and debugging. You're precise, helpful, and always provide code examples.",
-        keywords: ["code", "debug", "error", "programming", "javascript", "html", "css", "api", "function", "bug"],
-        icon: "🤖",
-        model: "openai",
-        temperature: 0.3
-    },
-    creativeWriter: {
-        name: "CreativeBot",
-        personality: "You are a creative writing assistant who helps with content, storytelling, and marketing copy. You're imaginative, engaging, and love wordplay.",
-        keywords: ["write", "story", "creative", "blog", "content", "marketing", "copy", "headline", "article", "design"],
-        icon: "✨",
-        model: "anthropic",
-        temperature: 0.8
-    }
-};
-
-// Function to determine which agent should respond
-function selectAgent(input) {
-    const lowercaseInput = input.toLowerCase();
-    let bestMatch = null;
-    let maxMatches = 0;
-    
-    for (const [agentId, agent] of Object.entries(AI_AGENTS)) {
-        const matches = agent.keywords.filter(keyword => 
-            lowercaseInput.includes(keyword)
-        ).length;
-        
-        if (matches > maxMatches) {
-            maxMatches = matches;
-            bestMatch = { id: agentId, ...agent };
-        }
-    }
-    
-    return bestMatch || { id: 'techExpert', ...AI_AGENTS.techExpert };
-}
-
-// AI Chat Endpoint
+// AI Chat endpoint
 app.post('/api/ai/chat', requireAuth, async (req, res) => {
-    const { message, preferredAgent } = req.body;
+    const { message, model = 'gpt-3.5-turbo' } = req.body;
     
     if (!message) {
         return res.status(400).json({ error: 'Message is required' });
     }
     
-    try {
-        const agent = preferredAgent 
-            ? { id: preferredAgent, ...AI_AGENTS[preferredAgent] }
-            : selectAgent(message);
-        
-        const apiKey = config.apiKeys[agent.model];
+    // Determine which API to use based on model
+    let apiKey = '';
+    let apiUrl = '';
+    let headers = {};
+    let body = {};
+    
+    if (model.startsWith('gpt')) {
+        // OpenAI
+        apiKey = config.apiKeys.openai || process.env.OPENAI_API_KEY;
         if (!apiKey) {
-            return res.status(400).json({ 
-                error: `No API key configured for ${agent.model}` 
-            });
+            return res.status(400).json({ error: 'OpenAI API key not configured' });
         }
         
-        const systemPrompt = `${agent.personality}\n\nIMPORTANT: Always stay in character and respond according to your personality.`;
-        
-        let response;
-        switch (agent.model) {
-            case 'openai':
-                response = await callOpenAI(systemPrompt, message, apiKey, agent.temperature);
-                break;
-            case 'anthropic':
-                response = await callAnthropic(systemPrompt, message, apiKey, agent.temperature);
-                break;
-            case 'together':
-                response = await callTogether(systemPrompt, message, apiKey, agent.temperature);
-                break;
-        }
-        
-        res.json({
-            agent: {
-                id: agent.id,
-                name: agent.name,
-                icon: agent.icon
-            },
-            message: response,
-            timestamp: new Date().toISOString()
-        });
-        
-    } catch (error) {
-        console.error('AI chat error:', error);
-        res.status(500).json({ 
-            error: 'Failed to get AI response',
-            details: error.message 
-        });
-    }
-});
-
-// Multi-Agent Chat Endpoint
-app.post('/api/ai/multi-chat', requireAuth, async (req, res) => {
-    const { message, agents = ['techExpert', 'creativeWriter'] } = req.body;
-    
-    if (!message) {
-        return res.status(400).json({ error: 'Message is required' });
-    }
-    
-    try {
-        const responses = [];
-        
-        for (const agentId of agents) {
-            const agent = AI_AGENTS[agentId];
-            if (!agent) continue;
-            
-            const apiKey = config.apiKeys[agent.model];
-            if (!apiKey) {
-                responses.push({
-                    agent: { id: agentId, name: agent.name, icon: agent.icon },
-                    error: `No API key for ${agent.model}`
-                });
-                continue;
-            }
-            
-            try {
-                const systemPrompt = `${agent.personality}\n\nYou are having a conversation. Respond naturally and stay in character.`;
-                
-                let response;
-                switch (agent.model) {
-                    case 'openai':
-                        response = await callOpenAI(systemPrompt, message, apiKey, agent.temperature);
-                        break;
-                    case 'anthropic':
-                        response = await callAnthropic(systemPrompt, message, apiKey, agent.temperature);
-                        break;
-                    case 'together':
-                        response = await callTogether(systemPrompt, message, apiKey, agent.temperature);
-                        break;
-                }
-                
-                responses.push({
-                    agent: { id: agentId, name: agent.name, icon: agent.icon },
-                    message: response
-                });
-                
-            } catch (error) {
-                responses.push({
-                    agent: { id: agentId, name: agent.name, icon: agent.icon },
-                    error: error.message
-                });
-            }
-        }
-        
-        res.json({
-            originalMessage: message,
-            responses,
-            timestamp: new Date().toISOString()
-        });
-        
-    } catch (error) {
-        console.error('Multi-agent chat error:', error);
-        res.status(500).json({ 
-            error: 'Failed to get AI responses',
-            details: error.message 
-        });
-    }
-});
-
-// Get available agents
-app.get('/api/ai/agents', requireAuth, (req, res) => {
-    const agentList = Object.entries(AI_AGENTS).map(([id, agent]) => ({
-        id,
-        name: agent.name,
-        icon: agent.icon,
-        keywords: agent.keywords,
-        model: agent.model
-    }));
-    
-    res.json({ agents: agentList });
-});
-
-// Helper functions for AI calls with personality
-async function callOpenAI(systemPrompt, userMessage, apiKey, temperature = 0.7) {
-    const axios = require('axios');
-    
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: 'gpt-4',
-        messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userMessage }
-        ],
-        temperature: temperature,
-        max_tokens: 1000
-    }, {
-        headers: {
+        apiUrl = 'https://api.openai.com/v1/chat/completions';
+        headers = {
             'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
+        };
+        body = {
+            model: model,
+            messages: [{ role: 'user', content: message }],
+            temperature: 0.7
+        };
+    } else if (model.startsWith('claude')) {
+        // Anthropic
+        apiKey = config.apiKeys.anthropic || process.env.ANTHROPIC_API_KEY;
+        if (!apiKey) {
+            return res.status(400).json({ error: 'Anthropic API key not configured' });
         }
-    });
-    
-    return response.data.choices[0].message.content;
-}
-
-async function callAnthropic(systemPrompt, userMessage, apiKey, temperature = 0.7) {
-    const axios = require('axios');
-    
-    const response = await axios.post('https://api.anthropic.com/v1/messages', {
-        model: 'claude-3-opus-20240229',
-        max_tokens: 1000,
-        temperature: temperature,
-        system: systemPrompt,
-        messages: [{
-            role: 'user',
-            content: userMessage
-        }]
-    }, {
-        headers: {
+        
+        apiUrl = 'https://api.anthropic.com/v1/messages';
+        headers = {
             'x-api-key': apiKey,
             'anthropic-version': '2023-06-01',
             'Content-Type': 'application/json'
-        }
-    });
-    
-    return response.data.content[0].text;
-}
-
-async function callTogether(systemPrompt, userMessage, apiKey, temperature = 0.7) {
-    const axios = require('axios');
-    
-    const response = await axios.post('https://api.together.xyz/v1/chat/completions', {
-        model: 'meta-llama/Llama-2-70b-chat-hf',
-        messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userMessage }
-        ],
-        temperature: temperature,
-        max_tokens: 1000
-    }, {
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-        }
-    });
-    
-    return response.data.choices[0].message.content;
-}
-
-// Debug endpoint
-app.get('/api/debug', (req, res) => {
-    const info = {
-        cwd: process.cwd(),
-        dirname: __dirname,
-        files: fs.readdirSync(__dirname).slice(0, 20),
-        frontend: fs.existsSync(path.join(__dirname, 'frontend')) 
-            ? fs.readdirSync(path.join(__dirname, 'frontend')).slice(0, 10)
-            : 'Frontend directory not found',
-        env: {
-            NODE_ENV: process.env.NODE_ENV,
-            PORT: process.env.PORT
-        },
-        config: {
-            isSetup: config.isSetup,
-            hasApiKeys: {
-                openai: !!config.apiKeys.openai,
-                anthropic: !!config.apiKeys.anthropic,
-                together: !!config.apiKeys.together
-            }
-        }
-    };
-    res.json(info);
-});
-
-// Serve specific HTML files
-app.get('/admin', (req, res) => {
-    const adminPath = path.join(__dirname, 'frontend', 'admin.html');
-    if (fs.existsSync(adminPath)) {
-        res.sendFile(adminPath);
+        };
+        body = {
+            model: model,
+            messages: [{ role: 'user', content: message }],
+            max_tokens: 1000
+        };
     } else {
-        res.redirect('/');
+        return res.status(400).json({ error: 'Unsupported model' });
+    }
+    
+    try {
+        const fetch = (await import('node-fetch')).default;
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(body)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error?.message || 'API request failed');
+        }
+        
+        // Extract response based on API
+        let aiResponse = '';
+        if (model.startsWith('gpt')) {
+            aiResponse = data.choices[0]?.message?.content || 'No response';
+        } else if (model.startsWith('claude')) {
+            aiResponse = data.content[0]?.text || 'No response';
+        }
+        
+        res.json({ response: aiResponse });
+    } catch (error) {
+        console.error('AI API error:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
-// 404 handler
-app.use((req, res) => {
-    console.log('404 Not Found:', req.path);
-    res.status(404).json({ 
-        error: 'Not found', 
-        path: req.path,
-        method: req.method,
-        suggestion: 'Try /api/debug for debugging info'
-    });
-});
-
-// Error handler
-app.use((err, req, res, next) => {
-    console.error('Server error:', err);
-    res.status(500).json({ 
-        error: 'Server error',
-        message: err.message,
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-    });
+// Catch all route - serve index.html for client-side routing
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Start server
@@ -884,23 +355,15 @@ app.listen(PORT, '0.0.0.0', () => {
     // Show API key status
     const apiKeySources = [];
     if (process.env.OPENAI_API_KEY) apiKeySources.push('OpenAI (env)');
-    else if (config.apiKeys.openai) apiKeySources.push('OpenAI (config)');
-    
     if (process.env.ANTHROPIC_API_KEY) apiKeySources.push('Anthropic (env)');
-    else if (config.apiKeys.anthropic) apiKeySources.push('Anthropic (config)');
-    
     if (process.env.TOGETHER_AI_API_KEY) apiKeySources.push('Together (env)');
-    else if (config.apiKeys.together) apiKeySources.push('Together (config)');
     
-    console.log(`🤖 API Keys: ${apiKeySources.length > 0 ? apiKeySources.join(', ') : 'None configured'}`);
+    if (apiKeySources.length > 0) {
+        console.log(`🔑 API Keys from environment: ${apiKeySources.join(', ')}`);
+    }
     
-    console.log(`\n📋 Available endpoints:`);
-    console.log(`   • Main App: http://localhost:${PORT}/`);
-    console.log(`   • Admin Panel: http://localhost:${PORT}/admin`);
-    console.log(`   • AI Chat: http://localhost:${PORT}/ai-chat.html`);
-    console.log(`   • Test Page: http://localhost:${PORT}/test.html`);
-    console.log(`   • Setup: http://localhost:${PORT}/setup`);
-    console.log(`   • API Health: http://localhost:${PORT}/api/health`);
-    console.log(`   • Debug Info: http://localhost:${PORT}/api/debug`);
-    console.log(`\n✅ Server is running!\n`);
+    console.log(`\n📝 Admin Panel: http://localhost:${PORT}/admin.html`);
+    if (!config.isSetup) {
+        console.log(`⚠️  Initial setup required: http://localhost:${PORT}/setup.html`);
+    }
 });
