@@ -1,15 +1,11 @@
 {
-  "name": "testlab",
-  "version": "1.0.0",
-  "description": "TestLab - Software Testing Education Platform",
-  "main": "server.js",
+  "name": "testlab-v2",
+  "version": "2.0.0",
+  "main": "app.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node app.js"
   },
   "dependencies": {
     "express": "^4.18.2"
-  },
-  "engines": {
-    "node": ">=16.0.0"
   }
 }
