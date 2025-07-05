@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TestLab Setup Debug</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 TestLab Setup Debugger</h1>
+        
+        <div class="debug-section">
+            <h3>Step 1: Check Server Health</h3>
+            <button onclick="testHealth()">Test /api/health</button>
+            <button onclick="testDebug()">Test /api/debug</button>
+            <button onclick="testSetupStatus()">Test /api/setup/status</button>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 2: Test Setup Endpoint</h3>
+            <button onclick="testSetupGet()">Test GET /api/setup/complete</button>
+            <button onclick="testSetupPost()">Test POST /api/setup/complete</button>
+            <button onclick="testSetupOptions()">Test OPTIONS /api/setup/complete</button>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Step 3: Manual Setup Test</h3>
+            <input type="text" id="testData" placeholder="Enter test data" value="test-setup">
+            <button onclick="manualSetup()">Run Manual Setup</button>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Results:</h3>
+            <pre id="results">Click a button to start debugging...</pre>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="/setup.html" style="margin: 0 10px;">Back to Setup</a>
+            <a href="/" style="margin: 0 10px;">Home</a>
+            <a href="/api/debug" style="margin: 0 10px;">API Debug</a>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toISOString();
+            const color = type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#3b82f6';
+            results.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span>\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testHealth() {
+            clearLog();
+            log('Testing GET /api/health...');
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                log(`Response: ${response.status} ${response.statusText}`, 'success');
+                log(`Data: ${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDebug() {
+            clearLog();
+            log('Testing GET /api/debug...');
+            try {
+                const response = await fetch('/api/debug');
+                const data = await response.json();
+                log(`Response: ${response.status} ${response.statusText}`, 'success');
+                log(`Data: ${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSetupStatus() {
+            clearLog();
+            log('Testing GET /api/setup/status...');
+            try {
+                const response = await fetch('/api/setup/status');
+                const data = await response.json();
+                log(`Response: ${response.status} ${response.statusText}`, 'success');
+                log(`Data: ${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSetupGet() {
+            clearLog();
+            log('Testing GET /api/setup/complete...');
+            try {
+                const response = await fetch('/api/setup/complete', {
+                    method: 'GET'
+                });
+                const text = await response.text();
+                log(`Response: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                log(`Body: ${text}`);
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSetupPost() {
+            clearLog();
+            log('Testing POST /api/setup/complete with empty body...');
+            try {
+                const response = await fetch('/api/setup/complete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: '{}'
+                });
+                const text = await response.text();
+                log(`Response: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                log(`Body: ${text}`);
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSetupOptions() {
+            clearLog();
+            log('Testing OPTIONS /api/setup/complete...');
+            try {
+                const response = await fetch('/api/setup/complete', {
+                    method: 'OPTIONS'
+                });
+                log(`Response: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                log(`Headers: ${JSON.stringify(Object.fromEntries(response.headers))}`);
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function manualSetup() {
+            clearLog();
+            const testData = document.getElementById('testData').value;
+            log(`Running manual setup with data: ${testData}`);
+            
+            const setupData = {
+                test: testData,
+                timestamp: new Date().toISOString(),
+                source: 'debug-page'
+            };
+            
+            log(`Sending POST to /api/setup/complete`);
+            log(`Headers: Content-Type: application/json`);
+            log(`Body: ${JSON.stringify(setupData, null, 2)}`);
+            
+            try {
+                const response = await fetch('/api/setup/complete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(setupData)
+                });
+                
+                const responseText = await response.text();
+                log(`Response Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                log(`Response Headers: ${JSON.stringify(Object.fromEntries(response.headers))}`);
+                log(`Response Body: ${responseText}`);
+                
+                // Try to parse as JSON
+                try {
+                    const data = JSON.parse(responseText);
+                    log(`Parsed JSON: ${JSON.stringify(data, null, 2)}`, 'success');
+                } catch (e) {
+                    log(`Not valid JSON: ${e.message}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`Network Error: ${error.message}`, 'error');
+                log(`Error Type: ${error.constructor.name}`, 'error');
+                log(`Full Error: ${JSON.stringify(error, null, 2)}`, 'error');
+            }
+        }
+
+        // Run basic test on load
+        window.onload = () => {
+            log('Debug page loaded. Click buttons to test endpoints.');
+        };
+    </script>
+</body>
+</html>
