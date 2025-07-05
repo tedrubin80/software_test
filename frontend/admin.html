@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TestLab Admin Dashboard</title>
+    <title>TestLab Admin Login</title>
     <style>
         * {
             margin: 0;
@@ -12,122 +12,32 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0a0e27;
             color: #e0e0e0;
-            line-height: 1.6;
-        }
-
-        .admin-container {
             display: flex;
-            height: 100vh;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 250px;
-            background: #151a35;
-            padding: 2rem 0;
-            border-right: 1px solid #2a3050;
-        }
-
-        .sidebar h2 {
-            color: #00d4ff;
-            padding: 0 2rem;
-            margin-bottom: 2rem;
-            font-size: 1.5rem;
-        }
-
-        .nav-item {
-            padding: 1rem 2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 0.5rem;
+            min-height: 100vh;
         }
 
-        .nav-item:hover {
-            background: #1e2543;
-            border-left: 3px solid #00d4ff;
-        }
-
-        .nav-item.active {
-            background: #1e2543;
-            border-left: 3px solid #00d4ff;
-            color: #00d4ff;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Dashboard styles */
-        .dashboard-header {
-            margin-bottom: 2rem;
-        }
-
-        .dashboard-header h1 {
-            color: #00d4ff;
-            margin-bottom: 0.5rem;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: #1e2543;
-            padding: 1.5rem;
-            border-radius: 10px;
-            border: 1px solid #2a3050;
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            border-color: #00d4ff;
-        }
-
-        .stat-card h3 {
-            color: #888;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-        }
-
-        .stat-card .value {
-            color: #00d4ff;
-            font-size: 2rem;
-            font-weight: bold;
-        }
-
-        /* Form styles */
-        .form-section {
-            background: #1e2543;
+        .login-container {
+            background: #151a35;
             padding: 2rem;
             border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
             margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            color: #00d4ff;
+            margin-bottom: 0.5rem;
         }
 
         .form-group {
@@ -140,8 +50,7 @@
             color: #00d4ff;
         }
 
-        .form-group input,
-        .form-group select {
+        .form-group input {
             width: 100%;
             padding: 0.75rem;
             background: #0a0e27;
@@ -151,512 +60,168 @@
             font-size: 1rem;
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #00d4ff;
         }
 
-        /* Button styles */
         .btn {
-            padding: 0.75rem 1.5rem;
+            width: 100%;
+            padding: 0.75rem;
+            background: #00d4ff;
+            color: #0a0e27;
             border: none;
             border-radius: 5px;
             font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-weight: 600;
         }
 
-        .btn-primary {
-            background: #00d4ff;
-            color: #0a0e27;
-        }
-
-        .btn-primary:hover {
+        .btn:hover {
             background: #00b8e6;
             transform: translateY(-1px);
         }
 
-        .btn-secondary {
-            background: #2a3050;
-            color: #e0e0e0;
+        .alert {
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
         }
 
-        .btn-secondary:hover {
-            background: #3a4060;
+        .alert-success {
+            background: #10b981;
+            color: white;
         }
 
-        .btn-danger {
+        .alert-danger {
             background: #ff6b6b;
             color: white;
         }
 
-        .btn-danger:hover {
-            background: #ff5252;
+        .setup-notice {
+            text-align: center;
+            margin-top: 1rem;
+            color: #888;
         }
 
-        .btn-sm {
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-        }
-
-        /* Table styles */
-        .data-table {
-            width: 100%;
-            background: #1e2543;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .data-table table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #2a3050;
-        }
-
-        .data-table th {
-            background: #151a35;
+        .setup-notice a {
             color: #00d4ff;
-            font-weight: 600;
-        }
-
-        .data-table tr:hover {
-            background: #212847;
+            text-decoration: none;
         }
     </style>
-    <!-- Add AI Routing specific styles -->
-    <link rel="stylesheet" href="assets/css/admin-ai.css">
 </head>
 <body>
-    <div class="admin-container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <h2>TestLab Admin</h2>
-            <nav>
-                <div class="nav-item active" onclick="switchTab('dashboard')">
-                    <span>📊</span> Dashboard
-                </div>
-                <div class="nav-item" onclick="switchTab('users')">
-                    <span>👥</span> Users
-                </div>
-                <div class="nav-item" onclick="switchTab('api-keys')">
-                    <span>🔑</span> API Keys
-                </div>
-                <div class="nav-item" onclick="switchTab('ai-routing')">
-                    <span>🤖</span> AI Routing
-                </div>
-                <div class="nav-item" onclick="switchTab('analytics')">
-                    <span>📈</span> Analytics
-                </div>
-                <div class="nav-item" onclick="switchTab('settings')">
-                    <span>⚙️</span> Settings
-                </div>
-                <div class="nav-item" onclick="logout()">
-                    <span>🚪</span> Logout
-                </div>
-            </nav>
-        </aside>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🔐 Admin Access</h1>
+            <p>TestLab Administration Panel</p>
+        </div>
 
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <!-- Dashboard Tab -->
-            <div id="dashboard-tab" class="tab-content active">
-                <div class="dashboard-header">
-                    <h1>Dashboard Overview</h1>
-                    <p>Welcome to TestLab Admin Panel</p>
-                </div>
+        <div id="alertBox" class="alert"></div>
 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>Total Users</h3>
-                        <div class="value" id="total-users">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Active Sessions</h3>
-                        <div class="value" id="active-sessions">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>AI Queries Today</h3>
-                        <div class="value" id="ai-queries">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>System Status</h3>
-                        <div class="value" style="color: #10b981;">Healthy</div>
-                    </div>
-                </div>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="password">Admin Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    placeholder="Enter admin password"
+                    autofocus
+                >
             </div>
 
-            <!-- Users Tab -->
-            <div id="users-tab" class="tab-content">
-                <h1>User Management</h1>
-                <div class="data-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="users-table">
-                            <!-- Users will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <button type="submit" class="btn" id="loginBtn">
+                Access Admin Panel
+            </button>
+        </form>
 
-            <!-- API Keys Tab -->
-            <div id="api-keys-tab" class="tab-content">
-                <h1>API Key Management</h1>
-                <div class="form-section">
-                    <h2>Configure AI Services</h2>
-                    <form id="api-keys-form">
-                        <div class="form-group">
-                            <label for="openai-key">OpenAI API Key</label>
-                            <input type="password" id="openai-key" placeholder="sk-...">
-                        </div>
-                        <div class="form-group">
-                            <label for="anthropic-key">Anthropic (Claude) API Key</label>
-                            <input type="password" id="anthropic-key" placeholder="sk-ant-...">
-                        </div>
-                        <div class="form-group">
-                            <label for="together-key">Together AI API Key</label>
-                            <input type="password" id="together-key" placeholder="...">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Save API Keys</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- AI Routing Tab -->
-            <div id="ai-routing-tab" class="tab-content">
-                <div class="ai-routing-header">
-                    <h1>AI Model Routing Management</h1>
-                    <p>Configure keyword-based routing between Claude and OpenAI models for optimal responses</p>
-                </div>
-
-                <!-- Statistics Overview -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>Total Queries</h3>
-                        <div class="value" id="total-queries">0</div>
-                        <div class="sub-value">Loading...</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Claude Usage</h3>
-                        <div class="value" id="claude-usage">0%</div>
-                        <div class="sub-value">Security & Integration</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>OpenAI Usage</h3>
-                        <div class="value" id="openai-usage">0%</div>
-                        <div class="sub-value">Unit & E2E Testing</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Avg Confidence</h3>
-                        <div class="value" id="avg-confidence">0%</div>
-                        <div class="sub-value">Routing accuracy</div>
-                    </div>
-                </div>
-
-                <!-- Routing Categories -->
-                <div class="routing-categories">
-                    <h2 style="margin-bottom: 1rem; color: #00d4ff;">Testing Categories</h2>
-                    
-                    <!-- Unit Testing Category -->
-                    <div class="category-card expanded" id="unit-testing">
-                        <div class="category-header" onclick="toggleCategory('unit-testing')">
-                            <h3><span>🧪</span> Unit Testing</h3>
-                            <div class="category-info">
-                                <span class="llm-badge openai">OpenAI GPT-4</span>
-                                <span class="expand-icon">▼</span>
-                            </div>
-                        </div>
-                        <div class="category-content">
-                            <div class="keywords-section">
-                                <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
-                                <div class="keywords-grid" id="unit-keywords">
-                                    <!-- Keywords will be populated by JavaScript -->
-                                </div>
-                                <div class="add-keyword">
-                                    <input type="text" placeholder="Add new keyword..." id="unit-keyword-input">
-                                    <button class="btn btn-primary btn-sm" onclick="addKeyword('unit-testing')">Add</button>
-                                </div>
-                            </div>
-                            
-                            <div class="model-selection">
-                                <h4 style="color: #888; margin-bottom: 0.5rem;">Preferred Model</h4>
-                                <div class="model-options">
-                                    <div class="model-option selected" onclick="selectModel('unit-testing', 'openai')">
-                                        <h4>OpenAI GPT-4</h4>
-                                        <p>Best for code generation, detailed explanations, and modern frameworks</p>
-                                    </div>
-                                    <div class="model-option" onclick="selectModel('unit-testing', 'claude')">
-                                        <h4>Claude 3</h4>
-                                        <p>Better for complex logic, edge cases, and thoughtful analysis</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="settings-section">
-                                <h4 style="color: #888; margin-bottom: 0.5rem;">Advanced Settings</h4>
-                                <div class="setting-item">
-                                    <span class="setting-label">Confidence Threshold</span>
-                                    <div class="setting-control">
-                                        <input type="range" min="0" max="100" value="80" id="unit-confidence">
-                                        <span>80%</span>
-                                    </div>
-                                </div>
-                                <div class="setting-item">
-                                    <span class="setting-label">Enable Secondary Model</span>
-                                    <div class="setting-control">
-                                        <label class="toggle-switch">
-                                            <input type="checkbox" checked>
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Security Testing Category -->
-                    <div class="category-card" id="security-testing">
-                        <div class="category-header" onclick="toggleCategory('security-testing')">
-                            <h3><span>🔒</span> Security Testing</h3>
-                            <div class="category-info">
-                                <span class="llm-badge claude">Claude 3</span>
-                                <span class="expand-icon">▼</span>
-                            </div>
-                        </div>
-                        <div class="category-content">
-                            <div class="keywords-section">
-                                <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
-                                <div class="keywords-grid" id="security-keywords">
-                                    <!-- Keywords will be populated by JavaScript -->
-                                </div>
-                                <div class="add-keyword">
-                                    <input type="text" placeholder="Add new keyword..." id="security-keyword-input">
-                                    <button class="btn btn-primary btn-sm" onclick="addKeyword('security-testing')">Add</button>
-                                </div>
-                            </div>
-                            
-                            <div class="model-selection">
-                                <h4 style="color: #888; margin-bottom: 0.5rem;">Preferred Model</h4>
-                                <div class="model-options">
-                                    <div class="model-option" onclick="selectModel('security-testing', 'openai')">
-                                        <h4>OpenAI GPT-4</h4>
-                                        <p>Good for OWASP standards and common vulnerabilities</p>
-                                    </div>
-                                    <div class="model-option selected" onclick="selectModel('security-testing', 'claude')">
-                                        <h4>Claude 3</h4>
-                                        <p>Excellent for threat modeling and comprehensive security analysis</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Integration Testing Category -->
-                    <div class="category-card" id="integration-testing">
-                        <div class="category-header" onclick="toggleCategory('integration-testing')">
-                            <h3><span>🔗</span> Integration Testing</h3>
-                            <div class="category-info">
-                                <span class="llm-badge claude">Claude 3</span>
-                                <span class="expand-icon">▼</span>
-                            </div>
-                        </div>
-                        <div class="category-content">
-                            <div class="keywords-section">
-                                <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
-                                <div class="keywords-grid" id="integration-keywords">
-                                    <!-- Keywords will be populated by JavaScript -->
-                                </div>
-                                <div class="add-keyword">
-                                    <input type="text" placeholder="Add new keyword..." id="integration-keyword-input">
-                                    <button class="btn btn-primary btn-sm" onclick="addKeyword('integration-testing')">Add</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- E2E Testing Category -->
-                    <div class="category-card" id="e2e-testing">
-                        <div class="category-header" onclick="toggleCategory('e2e-testing')">
-                            <h3><span>🌐</span> End-to-End Testing</h3>
-                            <div class="category-info">
-                                <span class="llm-badge openai">OpenAI GPT-4</span>
-                                <span class="expand-icon">▼</span>
-                            </div>
-                        </div>
-                        <div class="category-content">
-                            <div class="keywords-section">
-                                <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
-                                <div class="keywords-grid" id="e2e-keywords">
-                                    <!-- Keywords will be populated by JavaScript -->
-                                </div>
-                                <div class="add-keyword">
-                                    <input type="text" placeholder="Add new keyword..." id="e2e-keyword-input">
-                                    <button class="btn btn-primary btn-sm" onclick="addKeyword('e2e-testing')">Add</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Performance Testing Category -->
-                    <div class="category-card" id="performance-testing">
-                        <div class="category-header" onclick="toggleCategory('performance-testing')">
-                            <h3><span>⚡</span> Performance Testing</h3>
-                            <div class="category-info">
-                                <span class="llm-badge openai">OpenAI GPT-4</span>
-                                <span class="expand-icon">▼</span>
-                            </div>
-                        </div>
-                        <div class="category-content">
-                            <div class="keywords-section">
-                                <h4 style="color: #888; margin-bottom: 0.5rem;">Trigger Keywords</h4>
-                                <div class="keywords-grid" id="performance-keywords">
-                                    <!-- Keywords will be populated by JavaScript -->
-                                </div>
-                                <div class="add-keyword">
-                                    <input type="text" placeholder="Add new keyword..." id="performance-keyword-input">
-                                    <button class="btn btn-primary btn-sm" onclick="addKeyword('performance-testing')">Add</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Add more categories as needed -->
-                </div>
-
-                <!-- Performance Chart -->
-                <div class="performance-chart">
-                    <div class="chart-header">
-                        <h3>Model Performance Comparison</h3>
-                        <select style="background: #0a0e27; color: #e0e0e0; border: 1px solid #2a3050; padding: 0.5rem; border-radius: 5px;">
-                            <option>Last 7 days</option>
-                            <option>Last 30 days</option>
-                            <option>Last 90 days</option>
-                        </select>
-                    </div>
-                    <div id="performance-chart" style="height: 300px; background: #0a0e27; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #666;">
-                        Chart visualization would appear here
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
-                    <button class="btn btn-secondary" onclick="exportConfig()">Export Config</button>
-                    <button class="btn btn-primary" onclick="saveAllChanges()">Save All Changes</button>
-                </div>
-            </div>
-
-            <!-- Analytics Tab -->
-            <div id="analytics-tab" class="tab-content">
-                <h1>Analytics</h1>
-                <p>Analytics and reporting features coming soon...</p>
-            </div>
-
-            <!-- Settings Tab -->
-            <div id="settings-tab" class="tab-content">
-                <h1>Settings</h1>
-                <div class="form-section">
-                    <h2>System Settings</h2>
-                    <form id="settings-form">
-                        <div class="form-group">
-                            <label for="session-timeout">Session Timeout (minutes)</label>
-                            <input type="number" id="session-timeout" value="1440">
-                        </div>
-                        <div class="form-group">
-                            <label for="rate-limit">API Rate Limit (requests/hour)</label>
-                            <input type="number" id="rate-limit" value="100">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Save Settings</button>
-                    </form>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="toast">
-        <span id="toast-message">Changes saved successfully!</span>
+        <div class="setup-notice">
+            <p>Not set up yet? <a href="/setup">Complete Setup</a></p>
+        </div>
     </div>
 
     <script>
-        // Tab switching functionality
-        function switchTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Remove active class from nav items
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Show selected tab
-            document.getElementById(`${tabName}-tab`).classList.add('active');
-            
-            // Add active class to clicked nav item
-            event.target.closest('.nav-item').classList.add('active');
-        }
-
-        // Load dashboard data
-        async function loadDashboard() {
+        // Check setup status on load
+        async function checkSetup() {
             try {
-                const response = await fetch('/api/admin/stats', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                    }
-                });
-
-                if (response.ok) {
-                    const stats = await response.json();
-                    document.getElementById('total-users').textContent = stats.totalUsers || 0;
-                    document.getElementById('ai-queries').textContent = stats.totalQueries || 0;
+                const response = await fetch('/api/setup/status');
+                const data = await response.json();
+                
+                if (!data.isSetup) {
+                    window.location.href = '/setup';
                 }
             } catch (error) {
-                console.error('Error loading dashboard:', error);
+                console.error('Setup check failed:', error);
             }
         }
 
-        // Logout function
-        function logout() {
-            fetch('/api/admin/logout', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            // Show loading state
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Authenticating...';
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showAlert('Login successful! Redirecting...', 'success');
+                    
+                    // Store session
+                    if (data.sessionId) {
+                        localStorage.setItem('adminSessionId', data.sessionId);
+                    }
+                    
+                    // Redirect to admin panel
+                    setTimeout(() => {
+                        window.location.href = '/admin';
+                    }, 1000);
+                } else {
+                    showAlert(data.error || 'Invalid password', 'danger');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Access Admin Panel';
+                    document.getElementById('password').value = '';
+                    document.getElementById('password').focus();
                 }
-            }).then(() => {
-                localStorage.removeItem('adminToken');
-                window.location.href = '/admin-login.html';
-            });
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('Connection error. Please try again.', 'danger');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Access Admin Panel';
+            }
         }
 
-        // Check authentication on load
-        document.addEventListener('DOMContentLoaded', () => {
-            const token = localStorage.getItem('adminToken');
-            if (!token) {
-                window.location.href = '/admin-login.html';
-                return;
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type}`;
+            alertBox.textContent = message;
+            alertBox.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    alertBox.style.display = 'none';
+                }, 5000);
             }
+        }
 
-            loadDashboard();
-        });
+        // Check setup status on page load
+        document.addEventListener('DOMContentLoaded', checkSetup);
     </script>
-    
-    <!-- Load AI Routing JavaScript -->
-    <script src="assets/js/admin-ai.js"></script>
 </body>
 </html>
