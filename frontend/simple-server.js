@@ -1,5 +1,5 @@
 // FILE LOCATION: /frontend/simple-server.js
-// Enhanced server with real AI integration and persistent storage
+// Enhanced server with debugging for setup issues
 
 const express = require('express');
 const path = require('path');
@@ -16,30 +16,49 @@ const PORT = process.env.PORT || 3000;
 const sessions = new Map();
 const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
+// Debug logging
+console.log('=== SERVER STARTUP DEBUG ===');
+console.log('Current directory:', __dirname);
+console.log('Process cwd:', process.cwd());
+console.log('RAILWAY_VOLUME_MOUNT_PATH:', process.env.RAILWAY_VOLUME_MOUNT_PATH);
+
 // Configuration file paths - use volume for persistence
 let DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || '/data';
 
-// Fallback to local directory if volume not available
-if (!fs.existsSync(DATA_DIR)) {
-    console.log(`Data directory ${DATA_DIR} not found, checking alternatives...`);
+// Check multiple possible data locations
+const possibleDataDirs = [
+    process.env.RAILWAY_VOLUME_MOUNT_PATH,
+    '/data',
+    path.join(process.cwd(), 'data'),
+    path.join(__dirname, '..', 'data'),
+    path.join(__dirname, 'data')
+].filter(Boolean);
+
+console.log('Checking possible data directories:', possibleDataDirs);
+
+// Find or create data directory
+let dataDirectoryFound = false;
+for (const dir of possibleDataDirs) {
+    if (fs.existsSync(dir)) {
+        DATA_DIR = dir;
+        dataDirectoryFound = true;
+        console.log(`✅ Found existing data directory: ${dir}`);
+        break;
+    }
+}
+
+if (!dataDirectoryFound) {
+    // Try to create data directory
+    console.log('No data directory found, attempting to create...');
     
-    // Try to create the directory
-    try {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-        console.log(`Created data directory at: ${DATA_DIR}`);
-    } catch (error) {
-        console.error('Failed to create data directory:', error.message);
-        // Use local fallback
-        DATA_DIR = path.join(__dirname, '..', 'data');
-        console.log(`Using local fallback directory: ${DATA_DIR}`);
-        
-        if (!fs.existsSync(DATA_DIR)) {
-            try {
-                fs.mkdirSync(DATA_DIR, { recursive: true });
-                console.log(`Created local data directory at: ${DATA_DIR}`);
-            } catch (err) {
-                console.error('Failed to create local data directory:', err.message);
-            }
+    for (const dir of ['/data', path.join(process.cwd(), 'data')]) {
+        try {
+            fs.mkdirSync(dir, { recursive: true });
+            DATA_DIR = dir;
+            console.log(`✅ Created data directory: ${dir}`);
+            break;
+        } catch (err) {
+            console.log(`❌ Failed to create ${dir}:`, err.message);
         }
     }
 }
@@ -47,8 +66,12 @@ if (!fs.existsSync(DATA_DIR)) {
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 const SETUP_MARKER = path.join(DATA_DIR, '.setup-complete');
 
+console.log('=== CONFIGURATION PATHS ===');
 console.log(`Data directory: ${DATA_DIR}`);
 console.log(`Config file: ${CONFIG_FILE}`);
+console.log(`Setup marker: ${SETUP_MARKER}`);
+console.log(`Config exists: ${fs.existsSync(CONFIG_FILE)}`);
+console.log(`Setup marker exists: ${fs.existsSync(SETUP_MARKER)}`);
 
 // Load or initialize configuration
 let config = {
@@ -61,13 +84,32 @@ let config = {
     isSetup: false
 };
 
-// Load existing config if available
-if (fs.existsSync(CONFIG_FILE)) {
-    try {
-        config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
-        console.log('Loaded existing configuration');
-    } catch (e) {
-        console.error('Error loading config:', e);
+// Check for config in multiple locations (migration support)
+const configLocations = [
+    CONFIG_FILE,
+    path.join(process.cwd(), 'config.json'),
+    path.join(__dirname, '..', 'config.json'),
+    '/app/config.json'
+];
+
+console.log('=== CHECKING CONFIG LOCATIONS ===');
+for (const location of configLocations) {
+    if (fs.existsSync(location)) {
+        console.log(`Found config at: ${location}`);
+        try {
+            const tempConfig = JSON.parse(fs.readFileSync(location, 'utf8'));
+            config = tempConfig;
+            console.log(`Loaded config from: ${location}`);
+            
+            // If not in the right place, copy it
+            if (location !== CONFIG_FILE && DATA_DIR !== '/app') {
+                console.log(`Copying config to: ${CONFIG_FILE}`);
+                fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+            }
+            break;
+        } catch (e) {
+            console.error(`Error loading config from ${location}:`, e.message);
+        }
     }
 }
 
@@ -86,14 +128,23 @@ if (process.env.TOGETHER_AI_API_KEY) {
 }
 
 // Check if setup is complete
-if (fs.existsSync(SETUP_MARKER)) {
+if (fs.existsSync(SETUP_MARKER) || config.adminPassword) {
     config.isSetup = true;
+    console.log('✅ Setup is complete');
+} else {
+    console.log('⚠️  Setup is NOT complete');
 }
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+
+// Debug middleware
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
+    next();
+});
 
 // Serve static files from frontend directory
 app.use(express.static(path.join(__dirname)));
@@ -117,6 +168,29 @@ function requireAuth(req, res, next) {
 
 // API Routes
 
+// Debug endpoint
+app.get('/api/debug', (req, res) => {
+    res.json({
+        dataDir: DATA_DIR,
+        configFile: CONFIG_FILE,
+        configExists: fs.existsSync(CONFIG_FILE),
+        setupComplete: config.isSetup,
+        hasAdminPassword: !!config.adminPassword,
+        environment: {
+            NODE_ENV: process.env.NODE_ENV,
+            RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+            RAILWAY_VOLUME_MOUNT_PATH: process.env.RAILWAY_VOLUME_MOUNT_PATH
+        },
+        directories: {
+            cwd: process.cwd(),
+            dirname: __dirname,
+            dataDir: DATA_DIR,
+            dataDirExists: fs.existsSync(DATA_DIR),
+            dataDirContents: fs.existsSync(DATA_DIR) ? fs.readdirSync(DATA_DIR) : []
+        }
+    });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ 
@@ -129,15 +203,19 @@ app.get('/api/health', (req, res) => {
 
 // Setup status
 app.get('/api/setup/status', (req, res) => {
+    console.log('Setup status check:', { isSetup: config.isSetup, hasPassword: !!config.adminPassword });
     res.json({ 
         isSetup: config.isSetup,
-        hasConfig: !!config.adminPassword
+        hasConfig: !!config.adminPassword,
+        dataDir: DATA_DIR
     });
 });
 
 // Initial setup endpoint
 app.post('/api/setup/initial', async (req, res) => {
-    if (config.isSetup) {
+    console.log('Setup attempt:', { isSetup: config.isSetup, body: req.body });
+    
+    if (config.isSetup && config.adminPassword) {
         return res.status(400).json({ error: 'Setup already complete' });
     }
     
@@ -149,30 +227,44 @@ app.post('/api/setup/initial', async (req, res) => {
     
     try {
         // Hash the admin password
-        config.adminPassword = await bcrypt.hash(adminPassword, 10);
+        const hash = await bcrypt.hash(adminPassword, 10);
+        config.adminPassword = hash;
         config.isSetup = true;
+        
+        console.log('Saving config to:', CONFIG_FILE);
+        
+        // Ensure directory exists
+        const dir = path.dirname(CONFIG_FILE);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
         
         // Save configuration
         fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
         fs.writeFileSync(SETUP_MARKER, new Date().toISOString());
         
+        console.log('✅ Setup completed successfully');
         res.json({ success: true, message: 'Initial setup completed!' });
     } catch (error) {
         console.error('Setup error:', error);
-        res.status(500).json({ error: 'Setup failed' });
+        res.status(500).json({ error: 'Setup failed: ' + error.message });
     }
 });
 
 // Admin login endpoint
 app.post('/api/admin/login', async (req, res) => {
+    console.log('Login attempt');
     const { password } = req.body;
     
     if (!config.adminPassword) {
+        console.log('No admin password configured');
         return res.status(400).json({ error: 'Admin not configured' });
     }
     
     try {
         const valid = await bcrypt.compare(password, config.adminPassword);
+        console.log('Password valid:', valid);
+        
         if (!valid) {
             return res.status(401).json({ error: 'Invalid password' });
         }
@@ -218,6 +310,37 @@ app.get('/api/admin/check', (req, res) => {
     res.json({ authenticated });
 });
 
+// Reset setup endpoint (for debugging)
+app.post('/api/debug/reset-setup', (req, res) => {
+    console.log('Resetting setup...');
+    
+    try {
+        // Remove config and marker files
+        if (fs.existsSync(CONFIG_FILE)) {
+            fs.unlinkSync(CONFIG_FILE);
+        }
+        if (fs.existsSync(SETUP_MARKER)) {
+            fs.unlinkSync(SETUP_MARKER);
+        }
+        
+        // Reset in-memory config
+        config = {
+            adminPassword: null,
+            apiKeys: {
+                openai: '',
+                anthropic: '',
+                together: ''
+            },
+            isSetup: false
+        };
+        
+        res.json({ success: true, message: 'Setup reset complete' });
+    } catch (error) {
+        console.error('Reset error:', error);
+        res.status(500).json({ error: 'Reset failed: ' + error.message });
+    }
+});
+
 // Get API keys (protected)
 app.get('/api/admin/api-keys', requireAuth, (req, res) => {
     res.json({
@@ -225,11 +348,6 @@ app.get('/api/admin/api-keys', requireAuth, (req, res) => {
             openai: config.apiKeys.openai ? '***' + config.apiKeys.openai.slice(-4) : '',
             anthropic: config.apiKeys.anthropic ? '***' + config.apiKeys.anthropic.slice(-4) : '',
             together: config.apiKeys.together ? '***' + config.apiKeys.together.slice(-4) : ''
-        },
-        fromEnv: {
-            openai: !!process.env.OPENAI_API_KEY,
-            anthropic: !!process.env.ANTHROPIC_API_KEY,
-            together: !!process.env.TOGETHER_AI_API_KEY
         }
     });
 });
@@ -257,113 +375,30 @@ app.post('/api/admin/api-keys', requireAuth, (req, res) => {
     }
 });
 
-// AI Chat endpoint
-app.post('/api/ai/chat', requireAuth, async (req, res) => {
-    const { message, model = 'gpt-3.5-turbo' } = req.body;
-    
-    if (!message) {
-        return res.status(400).json({ error: 'Message is required' });
-    }
-    
-    // Determine which API to use based on model
-    let apiKey = '';
-    let apiUrl = '';
-    let headers = {};
-    let body = {};
-    
-    if (model.startsWith('gpt')) {
-        // OpenAI
-        apiKey = config.apiKeys.openai || process.env.OPENAI_API_KEY;
-        if (!apiKey) {
-            return res.status(400).json({ error: 'OpenAI API key not configured' });
-        }
-        
-        apiUrl = 'https://api.openai.com/v1/chat/completions';
-        headers = {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-        };
-        body = {
-            model: model,
-            messages: [{ role: 'user', content: message }],
-            temperature: 0.7
-        };
-    } else if (model.startsWith('claude')) {
-        // Anthropic
-        apiKey = config.apiKeys.anthropic || process.env.ANTHROPIC_API_KEY;
-        if (!apiKey) {
-            return res.status(400).json({ error: 'Anthropic API key not configured' });
-        }
-        
-        apiUrl = 'https://api.anthropic.com/v1/messages';
-        headers = {
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-            'Content-Type': 'application/json'
-        };
-        body = {
-            model: model,
-            messages: [{ role: 'user', content: message }],
-            max_tokens: 1000
-        };
-    } else {
-        return res.status(400).json({ error: 'Unsupported model' });
-    }
-    
-    try {
-        const fetch = (await import('node-fetch')).default;
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(body)
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.error?.message || 'API request failed');
-        }
-        
-        // Extract response based on API
-        let aiResponse = '';
-        if (model.startsWith('gpt')) {
-            aiResponse = data.choices[0]?.message?.content || 'No response';
-        } else if (model.startsWith('claude')) {
-            aiResponse = data.content[0]?.text || 'No response';
-        }
-        
-        res.json({ response: aiResponse });
-    } catch (error) {
-        console.error('AI API error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
 // Catch all route - serve index.html for client-side routing
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    const indexPath = path.join(__dirname, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).send('Page not found');
+    }
 });
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`\n🚀 TestLab Server v2.0 (With AI Integration)`);
+    console.log(`\n🚀 TestLab Server v2.0 (Debug Mode)`);
     console.log(`📍 Port: ${PORT}`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`📁 Data Directory: ${DATA_DIR}`);
     console.log(`🔐 Setup Status: ${config.isSetup ? 'Complete' : 'Required'}`);
     
-    // Show API key status
-    const apiKeySources = [];
-    if (process.env.OPENAI_API_KEY) apiKeySources.push('OpenAI (env)');
-    if (process.env.ANTHROPIC_API_KEY) apiKeySources.push('Anthropic (env)');
-    if (process.env.TOGETHER_AI_API_KEY) apiKeySources.push('Together (env)');
+    console.log(`\n📝 Debug endpoint: http://localhost:${PORT}/api/debug`);
+    console.log(`📝 Admin Panel: http://localhost:${PORT}/admin.html`);
     
-    if (apiKeySources.length > 0) {
-        console.log(`🔑 API Keys from environment: ${apiKeySources.join(', ')}`);
-    }
-    
-    console.log(`\n📝 Admin Panel: http://localhost:${PORT}/admin.html`);
     if (!config.isSetup) {
         console.log(`⚠️  Initial setup required: http://localhost:${PORT}/setup.html`);
     }
+    
+    console.log('\n=== STARTUP COMPLETE ===\n');
 });
